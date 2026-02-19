@@ -4232,16 +4232,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b39cdef0fa800fc44525c84ccb54a029961a8215f9619753635a9c0d2538d46d"
 
 [[package]]
-name = "twill"
-version = "0.2.0"
-dependencies = [
- "eframe",
- "egui",
- "iced",
- "slint",
-]
-
-[[package]]
 name = "rustybuzz"
 version = "0.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4992,6 +4982,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2df906b07856748fa3f6e0ad0cbaa047052d4a7dd609e231c4f72cee8c36f31"
 dependencies = [
  "core_maths",
+]
+
+[[package]]
+name = "twill"
+version = "0.2.0"
+dependencies = [
+ "eframe",
+ "egui",
+ "iced",
+ "image",
+ "slint",
 ]
 
 [[package]]
