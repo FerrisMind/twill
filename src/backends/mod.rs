@@ -14,7 +14,7 @@ pub mod slint;
 pub use egui::{to_color32, to_vec2, to_corner_radius, to_frame};
 
 #[cfg(feature = "iced")]
-pub use iced::{to_color, to_padding, to_border_radius, styled_button, primary_button, secondary_button, danger_button};
+pub use iced::to_color;
 
 #[cfg(feature = "slint")]
 pub use slint::{to_slint_color, to_length, to_radius, SlintColors, SlintSpacing, SlintRadius};
