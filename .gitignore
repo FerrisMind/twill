@@ -1,0 +1,30 @@
+# .gitignore — Rust project
+
+# Build artifacts
+/target/
+
+# Rust/Cargo intermediate files
+**/*.rmeta
+**/*.rlib
+**/*.rs.bk
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+
+# Node (if present)
+node_modules/

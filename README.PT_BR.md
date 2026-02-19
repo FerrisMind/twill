@@ -1,47 +1,4 @@
-<!--
-  README TEMPLATE — TAURI + SVELTE
-  
-  Замените плейсхолдеры {{...}} и удалите этот комментарий.
-  
-  {{PROJECT_NAME}}     — Название проекта
-  {{PROJECT_SLUG}}     — GitHub slug (owner/repo)
-  {{LOGO_URL}}         — URL логотипа
-  {{SCREENSHOT_URL}}   — URL главного скриншота
-  {{YEAR}}             — Год копирайта
-  {{AUTHOR}}           — Имя автора
-  {{LICENSE_TYPE}}     — Тип лицензии
-
-  ─────────────────────────────────────────────────────────────────────────────
-  ОБЯЗАТЕЛЬНЫЕ ПЕРЕВОДЫ (3 языка):
-  ─────────────────────────────────────────────────────────────────────────────
-  
-  1. README.md      — English (основной)
-  2. README.RU.md   — Русский
-  3. README.PT_BR.md — Português (Brasil)
-  
-  Цвета бейджей:
-  - Активный язык (текущий файл):
-    • English:    #5B7CFA (синий)
-    • Русский:    #D65C5C (красный)
-    • Português:  #3ABF7A (зелёный)
-  - Неактивный язык: #232323 (тёмно-серый)
--->
-
-</p>
 <p align="left">
-  <!-- Para README.md (English — ativo)
-  <a href="README.md"><img src="https://img.shields.io/badge/English-5B7CFA" alt="English"></a>
-  <a href="README.RU.md"><img src="https://img.shields.io/badge/Русский-232323" alt="Русский"></a>
-  <a href="README.PT_BR.md"><img src="https://img.shields.io/badge/Português_BR-232323" alt="Português"></a>
-  -->
-  
-  <!-- Para README.RU.md (Русский — ativo)
-  <a href="README.md"><img src="https://img.shields.io/badge/English-232323" alt="English"></a>
-  <a href="README.RU.md"><img src="https://img.shields.io/badge/Русский-D65C5C" alt="Русский"></a>
-  <a href="README.PT_BR.md"><img src="https://img.shields.io/badge/Português_BR-232323" alt="Português"></a>
-  -->
-  
-  <!-- Para README.PT_BR.md (Português — ativo) -->
   <a href="README.md"><img src="https://img.shields.io/badge/English-232323" alt="English"></a>
   <a href="README.RU.md"><img src="https://img.shields.io/badge/Русский-232323" alt="Русский"></a>
   <a href="README.PT_BR.md"><img src="https://img.shields.io/badge/Português_BR-3ABF7A" alt="Português"></a>
@@ -50,146 +7,361 @@
 ---
 
 <p align="center">
-  <img src="{{LOGO_URL}}" alt="{{PROJECT_NAME}} Logo" width="512" height="512">
-
-<p align="center">
-  <b>{{PROJECT_DESCRIPTION}}</b><br>
-  {{PROJECT_TAGLINE}}
+  <h1 align="center">🦀 Rustwind</h1>
 </p>
 
 <p align="center">
-  <a href="https://github.com/{{PROJECT_SLUG}}/releases"><img src="https://img.shields.io/github/v/release/{{PROJECT_SLUG}}?logo=github" alt="Última Versão"></a>
-  <!-- Descomente se o projeto estiver incluído no awesome-list correspondente:
-  <a href="https://github.com/tauri-apps/awesome-tauri"><img src="https://img.shields.io/badge/Awesome-Tauri-24C8D8?logo=tauri" alt="Awesome Tauri"></a>
-  <a href="https://github.com/TheComputerM/awesome-svelte"><img src="https://img.shields.io/badge/Awesome-Svelte-FF3E00?logo=svelte" alt="Awesome Svelte"></a>
-  <a href="https://github.com/{{PROJECT_SLUG}}/stargazers"><img src="https://img.shields.io/github/stars/{{PROJECT_SLUG}}?logo=github" alt="GitHub Stars"></a>
-  -->
+  <b>Biblioteca de estilização idiomática para Rust inspirada no Tailwind CSS</b><br>
+  <i>Estilos type-safe e compostos para aplicações GUI nativas</i>
 </p>
-
-<h1 align="center"></h1>
 
 <p align="center">
-  <img src="{{SCREENSHOT_URL}}" alt="{{PROJECT_NAME}} Interface" width="900">
+  <a href="https://github.com/FerrisMind/rustwind/blob/main/LICENSE"><img src="https://img.shields.io/github/license/FerrisMind/rustwind" alt="Licença"></a>
+  <a href="https://crates.io/crates/rustwind"><img src="https://img.shields.io/crates/v/rustwind" alt="Crates.io"></a>
+  <a href="https://docs.rs/rustwind"><img src="https://img.shields.io/docsrs/rustwind" alt="Docs.rs"></a>
+  <a href="https://github.com/FerrisMind/rustwind/stargazers"><img src="https://img.shields.io/github/stars/FerrisMind/rustwind?logo=github" alt="GitHub Stars"></a>
 </p>
+
+---
 
 ## 📚 Índice
 
-- [O que é isso?](#-o-que-é-isso)
-- [Demo](#-demo)
+- [O que é Rustwind?](#-o-que-é-rustwind)
 - [Principais Recursos](#-principais-recursos)
-- [Instalação e Configuração](#️-instalação-e-configuração)
-- [Como Começar a Usar](#-como-começar-a-usar)
-- [Requisitos do Sistema](#️-requisitos-do-sistema)
-- [Agradecimentos](#-agradecimentos)
+- [Instalação](#-instalação)
+- [Início Rápido](#-início-rápido)
+- [Design Tokens](#-design-tokens)
+- [Construtor de Estilos](#-construtor-de-estilos)
+- [Componentes](#-componentes)
+- [Suporte de Backends](#-suporte-de-backends)
+- [Exemplos](#-exemplos)
+- [Referência da API](#-referência-da-api)
+- [Contribuindo](#-contribuindo)
 - [Licença](#-licença)
 
-## ✨ O que é isso?
+## ✨ O que é Rustwind?
 
-{{PROJECT_NAME}} é um aplicativo desktop nativo para [propósito]. Construído com Rust e Tauri v2, oferece um [benefício chave] rápido sem exigir [limitação que remove].
+Rustwind é uma biblioteca de estilização para Rust que traz as melhores ideias do Tailwind CSS para o desenvolvimento de GUI nativo:
 
-## 🎬 Demo
+- **Design Tokens** — valores base type-safe (cores, espaçamentos, tamanhos)
+- **Utility-first** — estilos atômicos compostos
+- **Variantes de Componentes** — variantes de componentes pré-construídas
 
-<!-- Insira o vídeo demo através dos assets do GitHub -->
-https://github.com/user-attachments/assets/your-video-id
+Mas implementa através de **tipos Rust em vez de classes CSS**!
+
+```rust
+use rustwind::{Style, Color, Scale, Spacing, Padding, BorderRadius, ToCss};
+
+let button_style = Style::new()
+    .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
+    .bg(Color::blue(Scale::S500))
+    .text_color(Color::slate(Scale::S50))
+    .rounded(BorderRadius::Md)
+    .to_css();
+
+// Resultado: "padding: 0.5rem 1rem; background-color: #3b82f6; color: #f8fafc; border-radius: 0.375rem"
+```
 
 ## 🚀 Principais Recursos
 
-- Recurso 1 — descrição
-- Recurso 2 — descrição
-- Recurso 3 — descrição
-- Recurso 4 — descrição
-- Recurso 5 — descrição
+| Recurso | Descrição |
+|---------|-----------|
+| ✅ **Type-safe** | Impossível especificar cores ou tamanhos inválidos |
+| ✅ **Autocomplete no IDE** | Todas as opções disponíveis são sugeridas pelo IDE |
+| ✅ **Verificações em tempo de compilação** | Erros de estilo detectados em tempo de compilação |
+| ✅ **Componível** | Estilos podem ser combinados e reutilizados |
+| ✅ **Multi-backend** | Suporte a CSS, egui, iced, slint |
+| ✅ **Custo zero em runtime** | Todos os estilos computados em tempo de compilação |
 
-### Aceleração de Hardware
+## 📦 Instalação
 
-| Backend | Status | Notas |
-|---------|:------:|-------|
-| CPU | ✅ | Padrão, funciona em todos os lugares |
-| CUDA (NVIDIA) | ✅ | Requer CUDA toolkit |
-| Metal (Apple) | ✅ | Apenas macOS |
-| Intel MKL | ⚠️ | Opcional |
+Adicione ao seu `Cargo.toml`:
 
-## 🛠️ Instalação e Configuração
+```toml
+[dependencies]
+rustwind = "0.1"
 
-### Pré-requisitos
-
-- Node.js (para build do frontend)
-- Rust toolchain (para backend)
-- Para CUDA: GPU NVIDIA com CUDA toolkit
-- Para Metal: macOS com Apple Silicon
-
-### Desenvolvimento
-
-```bash
-# Instalar dependências
-npm install
-
-# Executar com backend CPU
-npm run tauri:dev:cpu
-
-# Executar com backend CUDA (GPU NVIDIA)
-npm run tauri:dev:cuda
-
-# Desenvolvimento com detecção de plataforma
-npm run app:dev
+# Opcional: habilitar suporte de backend
+rustwind = { version = "0.1", features = ["egui"] }   # Para egui
+rustwind = { version = "0.1", features = ["iced"] }   # Para iced
+rustwind = { version = "0.1", features = ["slint"] }  # Para slint
 ```
 
-### Build
+## 🎯 Início Rápido
 
-```bash
-# Build com backend CPU
-npm run tauri:build:cpu
+### Construtor de Estilos Básico
 
-# Build com backend CUDA
-npm run tauri:build:cuda
+```rust
+use rustwind::{
+    Style, Color, Scale, Spacing, Padding, Margin, 
+    BorderRadius, Shadow, ToCss
+};
+
+// Criar um estilo de card
+let card = Style::new()
+    .padding(Padding::all(Spacing::S6))
+    .bg(Color::white())
+    .rounded(BorderRadius::Lg)
+    .shadow(Shadow::Md);
+
+println!("{}", card.to_css());
+// "padding: 1.5rem; background-color: #ffffff; border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1)"
 ```
 
-### Verificação de Qualidade
+### Layouts Flex
 
-```bash
-npm run lint          # ESLint
-npm run lint:fix      # ESLint com auto-correção
-npm run check         # Verificação de tipos Svelte
-npm run format        # Formatação Prettier
-npm run test          # Testes Vitest
+```rust
+// Coluna centralizada
+let centered = Style::centered_col()
+    .gap(Spacing::S4)
+    .padding(Padding::all(Spacing::S8));
+
+// Linha flex
+let row = Style::flex_row()
+    .gap(Spacing::S2)
+    .justify(JustifyContent::SpaceBetween);
 ```
 
-### Específico para Rust (de src-tauri/)
+### Componentes Pré-construídos
 
-```bash
-cargo clippy          # Linting
-cargo test            # Testes unitários
-cargo audit           # Auditoria de segurança
+```rust
+use rustwind::{Button, ToCss};
+
+// Variantes de botão
+let primary = Button::primary().to_css();
+let outline = Button::outline().to_css();
+let destructive = Button::destructive().to_css();
+
+// Tamanhos de botão
+let small = Button::primary().sm().to_css();
+let large = Button::primary().lg().to_css();
+let full_width = Button::primary().full_width().to_css();
 ```
 
-## 📖 Como Começar a Usar
+## 🎨 Design Tokens
 
-1. Compile ou baixe o aplicativo
-2. Baixe modelos/dados necessários (se aplicável)
-3. Inicie {{PROJECT_NAME}}
-4. Configure através da interface
-5. Comece a usar!
+### Cores
 
-## 🖥️ Requisitos do Sistema
+Paleta completa de cores do Tailwind CSS com valores de escala type-safe:
 
-- Windows, macOS ou Linux
-- Mínimo 4 GB de RAM (8+ GB recomendado)
-- Para aceleração GPU:
-  - NVIDIA: GPU compatível com CUDA
-  - Apple: chip M1/M2/M3/M4 (Metal)
+```rust
+use rustwind::{Color, Scale};
 
-## 🙏 Agradecimentos
+// Famílias de cores
+Color::slate(Scale::S500)    // #64748b
+Color::gray(Scale::S500)     // #6b7280
+Color::red(Scale::S500)      // #ef4444
+Color::orange(Scale::S500)   // #f97316
+Color::blue(Scale::S500)     // #3b82f6
+Color::green(Scale::S500)    // #22c55e
+Color::purple(Scale::S500)   // #a855f7
+Color::pink(Scale::S500)     // #ec4899
 
-Este projeto é construído sobre excelente trabalho de código aberto:
+// Cores especiais
+Color::white()               // #ffffff
+Color::black()               // #000000
+Color::transparent()         // transparent
 
-- [Tauri](https://tauri.app/) — Framework de aplicativo desktop
-- [Svelte](https://svelte.dev/) — Framework frontend
-- [Dependency](URL) — Descrição
+// Valores de escala: S50, S100, S200, S300, S400, S500, S600, S700, S800, S900, S950
+```
 
-Veja [THIRD_PARTY_LICENSES.md](THIRD_PARTY_LICENSES.md) para atribuição completa de dependências.
+### Espaçamentos
+
+```rust
+use rustwind::Spacing;
+
+Spacing::S0   // 0
+Spacing::S1   // 0.25rem (4px)
+Spacing::S2   // 0.5rem  (8px)
+Spacing::S4   // 1rem    (16px)
+Spacing::S6   // 1.5rem  (24px)
+Spacing::S8   // 2rem    (32px)
+Spacing::S12  // 3rem    (48px)
+Spacing::S16  // 4rem    (64px)
+// ... até S96
+```
+
+### Border Radius
+
+```rust
+use rustwind::BorderRadius;
+
+BorderRadius::None  // 0
+BorderRadius::Sm    // 0.125rem
+BorderRadius::Md    // 0.375rem
+BorderRadius::Lg    // 0.5rem
+BorderRadius::Xl    // 0.75rem
+BorderRadius::Full  // 9999px
+```
+
+### Sombras
+
+```rust
+use rustwind::Shadow;
+
+Shadow::Sm   // Sombra pequena
+Shadow::Md   // Sombra média
+Shadow::Lg   // Sombra grande
+Shadow::Xl   // Sombra extra grande
+Shadow::None // Sem sombra
+```
+
+## 🔧 Construtor de Estilos
+
+A struct `Style` fornece uma API fluente para compor estilos:
+
+```rust
+use rustwind::{Style, Color, Scale, Spacing, Padding, Margin, BorderRadius, Shadow};
+
+let style = Style::new()
+    // Layout
+    .display(Display::Flex)
+    .position(Position::Relative)
+    .z_index(ZIndex::S10)
+    
+    // Flex/Grid
+    .flex(FlexContainer::centered_col())
+    .gap(Spacing::S4)
+    
+    // Espaçamento
+    .padding(Padding::all(Spacing::S4))
+    .margin(Margin::symmetric(Spacing::S2, Spacing::S4))
+    
+    // Tamanho
+    .width(Width::full())
+    .height(Height::auto())
+    
+    // Background
+    .bg(Color::blue(Scale::S500))
+    .opacity(0.9)
+    
+    // Borda
+    .rounded(BorderRadius::Md)
+    .border(BorderWidth::S1, BorderStyle::Solid, Color::gray(Scale::S200))
+    
+    // Sombra
+    .shadow(Shadow::Lg)
+    
+    // Tipografia
+    .text_size(FontSize::Lg)
+    .font_weight(FontWeight::Bold)
+    .text_color(Color::slate(Scale::S900));
+```
+
+## 🧩 Componentes
+
+### Botão
+
+```rust
+use rustwind::{Button, ButtonVariant, ButtonSize, ToCss};
+
+// Variantes
+Button::primary()      // Fundo azul sólido
+Button::secondary()    // Fundo cinza
+Button::outline()      // Transparente com borda
+Button::ghost()        // Transparente, sem borda
+Button::destructive()  // Fundo vermelho
+Button::link()         // Estilo de link
+
+// Tamanhos
+Button::primary().sm()           // Pequeno
+Button::primary()                // Médio (padrão)
+Button::primary().lg()           // Grande
+Button::primary().icon()         // Botão quadrado de ícone
+
+// Modificadores
+Button::primary().disabled()     // 50% de opacidade
+Button::primary().full_width()   // Largura: 100%
+```
+
+## 🔌 Suporte de Backends
+
+Rustwind suporta múltiplos frameworks GUI através de feature flags:
+
+| Backend | Feature | Status | Descrição |
+|---------|---------|:------:|-----------|
+| CSS | — | ✅ | Padrão, gera strings CSS |
+| egui | `egui` | ✅ | GUI nativo em Rust |
+| iced | `iced` | ✅ | GUI multiplataforma |
+| slint | `slint` | ✅ | Toolkit de UI declarativo |
+
+### Usando com egui
+
+```rust
+use rustwind::{Style, Color, Scale, Spacing, Padding};
+
+#[cfg(feature = "egui")]
+fn show_button(ui: &mut egui::Ui) {
+    let style = Style::new()
+        .padding(Padding::all(Spacing::S4))
+        .bg(Color::blue(Scale::S500));
+    
+    // Converter para estilo egui
+    let egui_style = rustwind::backends::egui::convert(&style);
+    // Aplicar aos widgets egui...
+}
+```
+
+## 📝 Exemplos
+
+Execute os exemplos:
+
+```bash
+# Demo básico (gera CSS)
+cargo run --example demo
+
+# Demo egui
+cargo run --example demo-egui --features egui
+
+# Demo iced
+cargo run --example demo-iced --features iced
+
+# Demo slint
+cargo run --example demo-slint --features slint
+```
+
+## 📖 Referência da API
+
+Documentação completa da API disponível em [docs.rs/rustwind](https://docs.rs/rustwind).
+
+### Traits Principais
+
+| Trait | Descrição |
+|-------|-----------|
+| `ToCss` | Converte estilo para string CSS |
+| `Merge` | Combina dois estilos |
+| `ComputeValue` | Computa valor final |
+
+### Tipos Principais
+
+| Tipo | Descrição |
+|------|-----------|
+| `Style` | Construtor de estilos principal |
+| `Button` | Componente de botão |
+| `Color` | Valores de cores |
+| `Spacing` | Escala de espaçamento |
+| `Padding` | Utilitários de padding |
+| `Margin` | Utilitários de margin |
+| `BorderRadius` | Valores de border radius |
+
+## 🤝 Contribuindo
+
+Contribuições são bem-vindas! Sinta-se à vontade para enviar um Pull Request.
+
+1. Faça um fork do repositório
+2. Crie sua branch de feature (`git checkout -b feature/amazing-feature`)
+3. Commit suas mudanças (`git commit -m 'Add some amazing feature'`)
+4. Push para a branch (`git push origin feature/amazing-feature`)
+5. Abra um Pull Request
 
 ## 📄 Licença
 
-{{LICENSE_TYPE}} — veja [LICENSE](LICENSE)
+MIT License — veja [LICENSE](LICENSE)
 
-Copyright (c) {{YEAR}} {{AUTHOR}}
+Copyright (c) 2024 FerrisMind
+
+---
+
+<p align="center">
+  Feito com ❤️ por <a href="https://github.com/FerrisMind">FerrisMind</a>
+</p>

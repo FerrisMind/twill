@@ -1,0 +1,36 @@
+[package]
+name = "rustwind"
+version = "0.1.0"
+edition = "2024"
+description = "Idiomatic Rust styling library inspired by Tailwind CSS for Native GUI"
+license = "MIT"
+
+[dependencies]
+# Optional UI framework backends
+egui = { version = "0.33", optional = true }
+iced = { version = "0.14", optional = true, features = ["advanced"] }
+slint = { version = "1.15", optional = true }
+
+[dev-dependencies]
+eframe = { version = "0.33", default-features = false, features = ["glow"] }
+
+[features]
+default = []
+egui = ["dep:egui"]
+iced = ["dep:iced"]
+slint = ["dep:slint"]
+
+[[example]]
+name = "demo-egui"
+required-features = ["egui"]
+
+[[example]]
+name = "demo-iced"
+required-features = ["iced"]
+
+[[example]]
+name = "demo-slint"
+required-features = ["slint"]
+
+[[example]]
+name = "demo"
