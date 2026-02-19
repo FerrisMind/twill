@@ -23,7 +23,7 @@ pub fn to_color(color: Color) -> iced::Color {
 /// Convert rustwind Spacing to iced Padding.
 pub fn to_padding(spacing: Spacing) -> iced::Padding {
     let rem = spacing.to_rem().unwrap_or(0.0);
-    let px = (rem * 16.0) as f32;
+    let px = rem * 16.0;
     iced::Padding::new(px)
 }
 
@@ -53,24 +53,25 @@ pub fn styled_button<'a, Message: Clone + 'a>(
     iced::widget::button(iced::widget::text(label).color(to_color(text_color)))
         .style(move |_theme: &iced::Theme, status: iced::widget::button::Status| {
             let bg = to_color(bg_color);
-            let mut style = iced::widget::button::Style::default();
-            style.background = Some(iced::Background::Color(match status {
-                iced::widget::button::Status::Hovered => iced::Color {
-                    a: bg.a * 0.9,
-                    ..bg
+            iced::widget::button::Style {
+                background: Some(iced::Background::Color(match status {
+                    iced::widget::button::Status::Hovered => iced::Color {
+                        a: bg.a * 0.9,
+                        ..bg
+                    },
+                    iced::widget::button::Status::Pressed => iced::Color {
+                        a: bg.a * 0.8,
+                        ..bg
+                    },
+                    _ => bg,
+                })),
+                text_color: to_color(text_color),
+                border: iced::Border {
+                    radius: 6.0.into(),
+                    ..Default::default()
                 },
-                iced::widget::button::Status::Pressed => iced::Color {
-                    a: bg.a * 0.8,
-                    ..bg
-                },
-                _ => bg,
-            }));
-            style.text_color = to_color(text_color);
-            style.border = iced::Border {
-                radius: 6.0.into(),
                 ..Default::default()
-            };
-            style
+            }
         })
         .on_press(on_press)
         .into()
@@ -123,17 +124,16 @@ pub fn styled_container<'a, Message: Clone + 'a>(
     let mut container = iced::widget::container(content);
     
     // Padding
-    if let Some(p) = &style.padding {
-        if let (Some(t), Some(r), Some(b), Some(l)) = 
+    if let Some(p) = &style.padding
+        && let (Some(t), Some(r), Some(b), Some(l)) = 
             (p.top, p.right, p.bottom, p.left) {
-            let top = (t.to_rem().unwrap_or(0.0) * 16.0) as f32;
-            let right = (r.to_rem().unwrap_or(0.0) * 16.0) as f32;
-            let bottom = (b.to_rem().unwrap_or(0.0) * 16.0) as f32;
-            let left = (l.to_rem().unwrap_or(0.0) * 16.0) as f32;
+            let top = t.to_rem().unwrap_or(0.0) * 16.0;
+            let right = r.to_rem().unwrap_or(0.0) * 16.0;
+            let bottom = b.to_rem().unwrap_or(0.0) * 16.0;
+            let left = l.to_rem().unwrap_or(0.0) * 16.0;
             // Use uniform padding (average)
             container = container.padding(iced::Padding::new((top + right + bottom + left) / 4.0));
         }
-    }
     
     // Background
     if let Some(bg) = &style.background_color {

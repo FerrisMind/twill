@@ -5,7 +5,7 @@ slint::slint! {
     
     export component DemoWindow inherits Window {
         title: "Rustwind - Slint Demo";
-        background: #0f172a; // slate-900
+        background: rgb(15, 23, 42);
         preferred-width: 800px;
         preferred-height: 600px;
         
@@ -18,28 +18,25 @@ slint::slint! {
             padding: 32px;
             alignment: start;
             
-            // Title
             Text {
                 text: "Rustwind + Slint Demo";
                 font-size: 28px;
-                color: #f8fafc; // slate-50
+                color: rgb(248, 250, 252);
                 font-weight: 700;
                 horizontal-alignment: center;
             }
             
-            // Description
             Text {
                 text: "Type-safe styling for Rust GUI applications";
                 font-size: 16px;
-                color: #94a3b8; // slate-400
+                color: rgb(148, 163, 184);
                 horizontal-alignment: center;
             }
             
             Rectangle { height: 24px; }
             
-            // Counter card
             Rectangle {
-                background: #1e293b; // slate-800
+                background: rgb(30, 41, 59);
                 border-radius: 8px;
                 min-height: 120px;
                 
@@ -50,14 +47,14 @@ slint::slint! {
                     Text {
                         text: "Counter";
                         font-size: 14px;
-                        color: #94a3b8;
+                        color: rgb(148, 163, 184);
                         horizontal-alignment: center;
                     }
                     
                     Text {
                         text: root.counter;
                         font-size: 48px;
-                        color: #f8fafc;
+                        color: rgb(248, 250, 252);
                         font-weight: 700;
                         horizontal-alignment: center;
                     }
@@ -66,22 +63,23 @@ slint::slint! {
             
             Rectangle { height: 24px; }
             
-            // Buttons
             HorizontalBox {
                 spacing: 16px;
                 alignment: center;
                 
-                // Primary button
+                // Primary button - Increment
                 Rectangle {
-                    background: touch1.pressed ? #2563eb : touch1.has-hover ? #3b82f6 : #3b82f6;
+                    background: touch1.pressed ? rgb(37, 99, 235) : touch1.has-hover ? rgb(59, 130, 246) : rgb(59, 130, 246);
                     border-radius: 6px;
                     min-width: 120px;
                     min-height: 44px;
                     
-                    touch1 := TouchArea {}
+                    touch1 := TouchArea {
+                        clicked => { root.increment(); }
+                    }
                     Text {
                         text: "Increment";
-                        color: #ffffff;
+                        color: rgb(255, 255, 255);
                         font-size: 14px;
                         font-weight: 500;
                         horizontal-alignment: center;
@@ -89,17 +87,19 @@ slint::slint! {
                     }
                 }
                 
-                // Secondary button
+                // Secondary button - Decrement
                 Rectangle {
-                    background: touch2.pressed ? #e5e7eb : touch2.has-hover ? #f3f4f6 : #f3f4f6;
+                    background: touch2.pressed ? rgb(229, 231, 235) : touch2.has-hover ? rgb(243, 244, 246) : rgb(243, 244, 246);
                     border-radius: 6px;
                     min-width: 120px;
                     min-height: 44px;
                     
-                    touch2 := TouchArea {}
+                    touch2 := TouchArea {
+                        clicked => { root.decrement(); }
+                    }
                     Text {
                         text: "Decrement";
-                        color: #111827;
+                        color: rgb(17, 24, 39);
                         font-size: 14px;
                         font-weight: 500;
                         horizontal-alignment: center;
@@ -107,17 +107,19 @@ slint::slint! {
                     }
                 }
                 
-                // Danger button
+                // Danger button - Reset
                 Rectangle {
-                    background: touch3.pressed ? #dc2626 : touch3.has-hover ? #ef4444 : #ef4444;
+                    background: touch3.pressed ? rgb(220, 38, 38) : touch3.has-hover ? rgb(239, 68, 68) : rgb(239, 68, 68);
                     border-radius: 6px;
                     min-width: 120px;
                     min-height: 44px;
                     
-                    touch3 := TouchArea {}
+                    touch3 := TouchArea {
+                        clicked => { root.reset(); }
+                    }
                     Text {
                         text: "Reset";
-                        color: #ffffff;
+                        color: rgb(255, 255, 255);
                         font-size: 14px;
                         font-weight: 500;
                         horizontal-alignment: center;
@@ -128,55 +130,48 @@ slint::slint! {
             
             Rectangle { height: 32px; }
             
-            // Color palette section
             Text {
                 text: "Color Palette";
                 font-size: 20px;
-                color: #f8fafc;
+                color: rgb(248, 250, 252);
                 font-weight: 600;
                 horizontal-alignment: center;
             }
             
             Rectangle { height: 12px; }
             
-            // Blue palette
             HorizontalBox {
                 spacing: 8px;
                 alignment: center;
-                
-                Rectangle { background: #dbeafe; border-radius: 6px; min-width: 40px; min-height: 40px; }
-                Rectangle { background: #93c5fd; border-radius: 6px; min-width: 40px; min-height: 40px; }
-                Rectangle { background: #3b82f6; border-radius: 6px; min-width: 40px; min-height: 40px; }
-                Rectangle { background: #1d4ed8; border-radius: 6px; min-width: 40px; min-height: 40px; }
-                Rectangle { background: #1e3a8a; border-radius: 6px; min-width: 40px; min-height: 40px; }
+                Rectangle { background: rgb(219, 234, 254); border-radius: 6px; min-width: 40px; min-height: 40px; }
+                Rectangle { background: rgb(147, 197, 253); border-radius: 6px; min-width: 40px; min-height: 40px; }
+                Rectangle { background: rgb(59, 130, 246); border-radius: 6px; min-width: 40px; min-height: 40px; }
+                Rectangle { background: rgb(29, 78, 216); border-radius: 6px; min-width: 40px; min-height: 40px; }
+                Rectangle { background: rgb(30, 58, 138); border-radius: 6px; min-width: 40px; min-height: 40px; }
             }
             
             Rectangle { height: 8px; }
             
-            // Red palette
             HorizontalBox {
                 spacing: 8px;
                 alignment: center;
-                
-                Rectangle { background: #fee2e2; border-radius: 6px; min-width: 40px; min-height: 40px; }
-                Rectangle { background: #fca5a5; border-radius: 6px; min-width: 40px; min-height: 40px; }
-                Rectangle { background: #ef4444; border-radius: 6px; min-width: 40px; min-height: 40px; }
-                Rectangle { background: #b91c1c; border-radius: 6px; min-width: 40px; min-height: 40px; }
-                Rectangle { background: #7f1d1d; border-radius: 6px; min-width: 40px; min-height: 40px; }
+                Rectangle { background: rgb(254, 226, 226); border-radius: 6px; min-width: 40px; min-height: 40px; }
+                Rectangle { background: rgb(252, 165, 165); border-radius: 6px; min-width: 40px; min-height: 40px; }
+                Rectangle { background: rgb(239, 68, 68); border-radius: 6px; min-width: 40px; min-height: 40px; }
+                Rectangle { background: rgb(185, 28, 28); border-radius: 6px; min-width: 40px; min-height: 40px; }
+                Rectangle { background: rgb(127, 29, 29); border-radius: 6px; min-width: 40px; min-height: 40px; }
             }
             
             Rectangle { height: 8px; }
             
-            // Green palette
             HorizontalBox {
                 spacing: 8px;
                 alignment: center;
-                
-                Rectangle { background: #dcfce7; border-radius: 6px; min-width: 40px; min-height: 40px; }
-                Rectangle { background: #86efac; border-radius: 6px; min-width: 40px; min-height: 40px; }
-                Rectangle { background: #22c55e; border-radius: 6px; min-width: 40px; min-height: 40px; }
-                Rectangle { background: #15803d; border-radius: 6px; min-width: 40px; min-height: 40px; }
-                Rectangle { background: #14532d; border-radius: 6px; min-width: 40px; min-height: 40px; }
+                Rectangle { background: rgb(220, 252, 231); border-radius: 6px; min-width: 40px; min-height: 40px; }
+                Rectangle { background: rgb(134, 239, 172); border-radius: 6px; min-width: 40px; min-height: 40px; }
+                Rectangle { background: rgb(34, 197, 94); border-radius: 6px; min-width: 40px; min-height: 40px; }
+                Rectangle { background: rgb(21, 128, 61); border-radius: 6px; min-width: 40px; min-height: 40px; }
+                Rectangle { background: rgb(20, 83, 45); border-radius: 6px; min-width: 40px; min-height: 40px; }
             }
         }
     }

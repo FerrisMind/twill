@@ -21,7 +21,7 @@ pub fn to_slint_color(color: Color) -> slint::Color {
 
 /// Convert rustwind Spacing to Slint length (logical pixels).
 pub fn to_length(spacing: Spacing) -> f32 {
-    spacing.to_rem() * 16.0
+    spacing.to_rem().unwrap_or(0.0) * 16.0
 }
 
 /// Convert rustwind BorderRadius to Slint border radius.
