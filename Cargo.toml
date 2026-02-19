@@ -2,8 +2,29 @@
 name = "rustwind"
 version = "0.2.0"
 edition = "2024"
-description = "Idiomatic Rust styling library inspired by Tailwind CSS for Native GUI"
+rust-version = "1.93"
+description = "Idiomatic Rust styling library inspired by Tailwind CSS for GUI"
 license = "MIT"
+authors = ["FerrisMind"]
+repository = "https://github.com/FerrisMind/rustwind"
+homepage = "https://github.com/FerrisMind/rustwind"
+documentation = "https://docs.rs/rustwind"
+readme = "README.md"
+keywords = ["styling", "tailwind", "gui", "egui", "iced"]
+categories = ["gui", "rendering"]
+exclude = [
+    "docs/",
+    "mdbook-build/",
+    "PLAN.md",
+    "README.RU.md",
+    "README.PT_BR.md",
+    ".github/",
+]
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = true
 
 [dependencies]
 # Optional UI framework backends
