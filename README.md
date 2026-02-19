@@ -36,6 +36,7 @@
 - [Backend Support](#-backend-support)
 - [Examples](#-examples)
 - [API Reference](#-api-reference)
+- [mdBook Docs](#-mdbook-docs)
 - [Contributing](#-contributing)
 - [License](#-license)
 
@@ -367,6 +368,23 @@ Full API documentation is available at [docs.rs/rustwind](https://docs.rs/rustwi
 | `Padding` | Padding utilities |
 | `Margin` | Margin utilities |
 | `BorderRadius` | Border radius values |
+
+## 📚 mdBook Docs
+
+Documentation is built with `mdbook` from `docs/` sources.
+
+- Source: [`docs/`](docs/)
+- Config: [`docs/book.toml`](docs/book.toml)
+- Build output: `mdbook-build/`
+
+Commands:
+
+```bash
+cd docs
+mdbook build
+mdbook serve --open
+mdbook test
+```
 
 ## 🤝 Contributing
 

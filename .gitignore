@@ -28,3 +28,9 @@ Thumbs.db
 
 # Node (if present)
 node_modules/
+
+# Docs build artifacts
+mdbook-build/
+_book/
+.storage/
+.vite/

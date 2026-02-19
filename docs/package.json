@@ -1,0 +1,9 @@
+{
+  "name": "rustwind-docs",
+  "private": true,
+  "scripts": {
+    "docs:build": "mdbook build",
+    "docs:serve": "mdbook serve --open",
+    "docs:test": "mdbook test"
+  }
+}
