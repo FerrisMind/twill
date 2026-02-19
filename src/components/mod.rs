@@ -2,4 +2,4 @@
 
 pub mod button;
 
-pub use button::{Button, ButtonVariant, ButtonSize};
+pub use button::{Button, ButtonSize, ButtonVariant};

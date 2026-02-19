@@ -1,7 +1,7 @@
 //! Layout utilities for flexbox, grid, display, and positioning.
 
-use crate::traits::ToCss;
 use crate::tokens::Spacing;
+use crate::traits::ToCss;
 
 /// Display type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -218,68 +218,74 @@ pub struct FlexContainer {
 }
 
 impl FlexContainer {
-    pub fn new() -> Self { Self::default() }
-    
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     pub fn direction(mut self, direction: FlexDirection) -> Self {
         self.direction = Some(direction);
         self
     }
-    
+
     pub fn wrap(mut self, wrap: FlexWrap) -> Self {
         self.wrap = Some(wrap);
         self
     }
-    
+
     pub fn justify(mut self, justify: JustifyContent) -> Self {
         self.justify = Some(justify);
         self
     }
-    
+
     pub fn align(mut self, align: AlignItems) -> Self {
         self.align = Some(align);
         self
     }
-    
+
     pub fn gap(mut self, gap: Spacing) -> Self {
         self.gap = Some(gap);
         self
     }
-    
+
     pub fn row_gap(mut self, gap: Spacing) -> Self {
         self.row_gap = Some(gap);
         self
     }
-    
+
     pub fn col_gap(mut self, gap: Spacing) -> Self {
         self.col_gap = Some(gap);
         self
     }
-    
+
     /// Row direction (flex-row)
     pub fn row() -> Self {
         Self::new().direction(FlexDirection::Row)
     }
-    
+
     /// Column direction (flex-col)
     pub fn col() -> Self {
         Self::new().direction(FlexDirection::Col)
     }
-    
+
     /// Centered row
     pub fn centered_row() -> Self {
-        Self::row().justify(JustifyContent::Center).align(AlignItems::Center)
+        Self::row()
+            .justify(JustifyContent::Center)
+            .align(AlignItems::Center)
     }
-    
+
     /// Centered column
     pub fn centered_col() -> Self {
-        Self::col().justify(JustifyContent::Center).align(AlignItems::Center)
+        Self::col()
+            .justify(JustifyContent::Center)
+            .align(AlignItems::Center)
     }
 }
 
 impl ToCss for FlexContainer {
     fn to_css(&self) -> String {
         let mut props = Vec::new();
-        
+
         if let Some(d) = &self.direction {
             props.push(format!("flex-direction: {}", d.to_css()));
         }
@@ -301,7 +307,7 @@ impl ToCss for FlexContainer {
         if let Some(g) = &self.col_gap {
             props.push(format!("column-gap: {}", g.to_css()));
         }
-        
+
         props.join("; ")
     }
 }
@@ -355,33 +361,35 @@ impl ToCss for GridTemplate {
 }
 
 impl GridContainer {
-    pub fn new() -> Self { Self::default() }
-    
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     pub fn columns(mut self, cols: GridTemplate) -> Self {
         self.columns = Some(cols);
         self
     }
-    
+
     pub fn rows(mut self, rows: GridTemplate) -> Self {
         self.rows = Some(rows);
         self
     }
-    
+
     pub fn gap(mut self, gap: Spacing) -> Self {
         self.gap = Some(gap);
         self
     }
-    
+
     /// Grid with 2 columns
     pub fn cols_2() -> Self {
         Self::new().columns(GridTemplate::Cols2)
     }
-    
+
     /// Grid with 3 columns
     pub fn cols_3() -> Self {
         Self::new().columns(GridTemplate::Cols3)
     }
-    
+
     /// Grid with 4 columns
     pub fn cols_4() -> Self {
         Self::new().columns(GridTemplate::Cols4)
@@ -391,7 +399,7 @@ impl GridContainer {
 impl ToCss for GridContainer {
     fn to_css(&self) -> String {
         let mut props = Vec::new();
-        
+
         if let Some(c) = &self.columns {
             props.push(format!("grid-template-columns: {}", c.to_css()));
         }
@@ -413,7 +421,7 @@ impl ToCss for GridContainer {
         if let Some(a) = &self.align {
             props.push(format!("align-items: {}", a.to_css()));
         }
-        
+
         props.join("; ")
     }
 }
@@ -478,7 +486,7 @@ mod tests {
         assert!(css.contains("justify-content: center"));
         assert!(css.contains("gap: 1rem"));
     }
-    
+
     #[test]
     fn test_grid_container() {
         let grid = GridContainer::cols_3().gap(Spacing::S2);

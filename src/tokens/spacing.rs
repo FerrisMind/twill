@@ -124,7 +124,7 @@ impl Spacing {
             Spacing::Auto => None,
         }
     }
-    
+
     /// Get the pixel value (assuming 16px base font size).
     pub fn to_px(&self) -> Option<i32> {
         match self {
@@ -170,7 +170,7 @@ impl Spacing {
 
 impl ComputeValue for Spacing {
     type Output = String;
-    
+
     fn compute(&self) -> Self::Output {
         match self {
             Spacing::S0 => "0".to_string(),

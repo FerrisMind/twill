@@ -206,6 +206,30 @@ Shadow::Xl   // Extra large shadow
 Shadow::None // No shadow
 ```
 
+### Motion (Tailwind-aligned)
+
+```rust
+use rustwind::{Style, TransitionDuration, Easing, AnimationToken};
+
+let motion = Style::new()
+    .transition_property("opacity, transform")
+    .transition_duration(TransitionDuration::Ms300)
+    .transition_ease(Easing::InOut)
+    .animate(AnimationToken::Pulse);
+```
+
+### Semantic Variables (Optional, shadcn-style)
+
+```rust
+use rustwind::{SemanticColor, SemanticThemeVars};
+
+let semantic_bg = SemanticColor::Background.to_css(); // "var(--background)"
+let css_vars = SemanticThemeVars::shadcn_neutral().to_css_variables(); // :root + .dark blocks
+let bg_dark = SemanticThemeVars::shadcn_neutral()
+    .resolve(SemanticColor::Background, true)
+    .unwrap(); // Color::gray(Scale::S950)
+```
+
 ## 🔧 Style Builder
 
 The `Style` struct provides a fluent API for composing styles:

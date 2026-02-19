@@ -73,7 +73,7 @@ impl FontSize {
             FontSize::S9xl => 8.0,
         }
     }
-    
+
     /// Get line-height.
     pub fn line_height(&self) -> f32 {
         match self {

@@ -1,7 +1,7 @@
 //! Egui backend for rustwind.
 
-use crate::tokens::{Color, Spacing, BorderRadius};
 use crate::style::Style;
+use crate::tokens::{BorderRadius, Color, Spacing};
 use crate::traits::ToCss;
 
 /// Convert rustwind Color to egui Color32.
@@ -44,28 +44,43 @@ pub fn to_corner_radius(radius: BorderRadius) -> f32 {
 /// Create an egui Frame from a rustwind Style.
 pub fn to_frame(style: &Style) -> egui::Frame {
     let mut frame = egui::Frame::default();
-    
+
     // Padding
     if let Some(p) = &style.padding {
-        let top = p.top.map(|s| s.to_rem().unwrap_or(0.0) * 16.0).unwrap_or(0.0) as i8;
-        let right = p.right.map(|s| s.to_rem().unwrap_or(0.0) * 16.0).unwrap_or(0.0) as i8;
-        let bottom = p.bottom.map(|s| s.to_rem().unwrap_or(0.0) * 16.0).unwrap_or(0.0) as i8;
-        let left = p.left.map(|s| s.to_rem().unwrap_or(0.0) * 16.0).unwrap_or(0.0) as i8;
+        let top = p
+            .top
+            .map(|s| s.to_rem().unwrap_or(0.0) * 16.0)
+            .unwrap_or(0.0) as i8;
+        let right = p
+            .right
+            .map(|s| s.to_rem().unwrap_or(0.0) * 16.0)
+            .unwrap_or(0.0) as i8;
+        let bottom = p
+            .bottom
+            .map(|s| s.to_rem().unwrap_or(0.0) * 16.0)
+            .unwrap_or(0.0) as i8;
+        let left = p
+            .left
+            .map(|s| s.to_rem().unwrap_or(0.0) * 16.0)
+            .unwrap_or(0.0) as i8;
         frame = frame.inner_margin(egui::Margin {
-            top, left, right, bottom
+            top,
+            left,
+            right,
+            bottom,
         });
     }
-    
+
     // Background
     if let Some(bg) = &style.background_color {
         frame = frame.fill(to_color32(*bg));
     }
-    
+
     // Border radius
     if let Some(r) = &style.border_radius {
         frame = frame.corner_radius(to_corner_radius(*r));
     }
-    
+
     // Border
     if let (Some(width), Some(color)) = (&style.border_width, &style.border_color) {
         let w = match width {
@@ -77,7 +92,7 @@ pub fn to_frame(style: &Style) -> egui::Frame {
         };
         frame = frame.stroke(egui::Stroke::new(w, to_color32(*color)));
     }
-    
+
     // Shadow (simplified for newer egui API)
     if let Some(_s) = &style.box_shadow {
         frame = frame.shadow(egui::epaint::Shadow {
@@ -87,7 +102,7 @@ pub fn to_frame(style: &Style) -> egui::Frame {
             color: egui::Color32::from_black_alpha(30),
         });
     }
-    
+
     frame
 }
 
@@ -95,7 +110,7 @@ pub fn to_frame(style: &Style) -> egui::Frame {
 mod tests {
     use super::*;
     use crate::tokens::Scale;
-    
+
     #[test]
     fn test_color_conversion() {
         let blue = Color::blue(Scale::S500);
@@ -104,7 +119,7 @@ mod tests {
         assert_eq!(c32.g(), 130);
         assert_eq!(c32.b(), 246);
     }
-    
+
     #[test]
     fn test_spacing_conversion() {
         let s4 = to_vec2(Spacing::S4);

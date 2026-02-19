@@ -47,40 +47,38 @@
 //! let btn = Button::outline().sm().to_css();
 //! ```
 
-pub mod traits;
-pub mod tokens;
-pub mod utilities;
-pub mod style;
-pub mod components;
 pub mod backends;
+pub mod components;
+pub mod style;
+pub mod tokens;
+pub mod traits;
+pub mod utilities;
 
 // Re-export commonly used types
-pub use traits::{ToCss, Merge, ComputeValue};
+pub use traits::{ComputeValue, Merge, ToCss};
 
 // Tokens
 pub use tokens::{
-    Color, ColorFamily, ColorValue, Scale, SpecialColor,
-    Spacing, Percentage, Container,
-    FontFamily, FontSize, FontWeight, LetterSpacing, LineHeight,
-    TextAlign, TextDecoration, TextTransform, TextOverflow, WhiteSpace, WordBreak,
-    BorderRadius, BorderStyle, BorderWidth, DivideWidth, OutlineStyle, RingWidth,
-    Shadow, DropShadow, InsetShadow, TextShadow as TextShadowToken,
+    AnimationToken, BorderRadius, BorderStyle, BorderWidth, Color, ColorFamily, ColorValue,
+    Container, DivideWidth, DropShadow, Easing, FontFamily, FontSize, FontWeight, InsetShadow,
+    LetterSpacing, LineHeight, MotionDefaults, OutlineStyle, Percentage, RingWidth, Scale,
+    SemanticColor, SemanticThemeVars, Shadow, Spacing, SpecialColor, TextAlign, TextDecoration,
+    TextOverflow, TextShadow as TextShadowToken, TextTransform, TransitionDuration, WhiteSpace,
+    WordBreak,
 };
 
 // Utilities
 pub use utilities::{
-    Padding, Margin, Width, Height, SizeConstraints,
-    Display, Position, FlexContainer, FlexDirection, FlexWrap,
-    JustifyContent, AlignItems, AlignSelf,
-    GridContainer, GridTemplate,
-    Overflow, ZIndex,
+    AlignItems, AlignSelf, Display, FlexContainer, FlexDirection, FlexWrap, GridContainer,
+    GridTemplate, Height, JustifyContent, Margin, Overflow, Padding, Position, SizeConstraints,
+    Width, ZIndex,
 };
 
 // Style
 pub use style::Style;
 
 // Components
-pub use components::{Button, ButtonVariant, ButtonSize};
+pub use components::{Button, ButtonSize, ButtonVariant};
 
 // Backends (feature-gated)
 #[cfg(feature = "egui")]
@@ -92,32 +90,70 @@ pub use backends::slint;
 
 // Color shortcuts
 pub mod colors {
-    pub use crate::tokens::{
-        Color, ColorFamily, Scale, SpecialColor,
-    };
-    
+    pub use crate::tokens::{Color, ColorFamily, Scale, SpecialColor};
+
     // Common color shortcuts
-    pub fn slate(s: Scale) -> Color { Color::slate(s) }
-    pub fn gray(s: Scale) -> Color { Color::gray(s) }
-    pub fn zinc(s: Scale) -> Color { Color::zinc(s) }
-    pub fn red(s: Scale) -> Color { Color::red(s) }
-    pub fn orange(s: Scale) -> Color { Color::orange(s) }
-    pub fn amber(s: Scale) -> Color { Color::amber(s) }
-    pub fn yellow(s: Scale) -> Color { Color::yellow(s) }
-    pub fn lime(s: Scale) -> Color { Color::lime(s) }
-    pub fn green(s: Scale) -> Color { Color::green(s) }
-    pub fn emerald(s: Scale) -> Color { Color::emerald(s) }
-    pub fn teal(s: Scale) -> Color { Color::teal(s) }
-    pub fn cyan(s: Scale) -> Color { Color::cyan(s) }
-    pub fn sky(s: Scale) -> Color { Color::sky(s) }
-    pub fn blue(s: Scale) -> Color { Color::blue(s) }
-    pub fn indigo(s: Scale) -> Color { Color::indigo(s) }
-    pub fn violet(s: Scale) -> Color { Color::violet(s) }
-    pub fn purple(s: Scale) -> Color { Color::purple(s) }
-    pub fn fuchsia(s: Scale) -> Color { Color::fuchsia(s) }
-    pub fn pink(s: Scale) -> Color { Color::pink(s) }
-    pub fn rose(s: Scale) -> Color { Color::rose(s) }
-    
+    pub fn slate(s: Scale) -> Color {
+        Color::slate(s)
+    }
+    pub fn gray(s: Scale) -> Color {
+        Color::gray(s)
+    }
+    pub fn zinc(s: Scale) -> Color {
+        Color::zinc(s)
+    }
+    pub fn red(s: Scale) -> Color {
+        Color::red(s)
+    }
+    pub fn orange(s: Scale) -> Color {
+        Color::orange(s)
+    }
+    pub fn amber(s: Scale) -> Color {
+        Color::amber(s)
+    }
+    pub fn yellow(s: Scale) -> Color {
+        Color::yellow(s)
+    }
+    pub fn lime(s: Scale) -> Color {
+        Color::lime(s)
+    }
+    pub fn green(s: Scale) -> Color {
+        Color::green(s)
+    }
+    pub fn emerald(s: Scale) -> Color {
+        Color::emerald(s)
+    }
+    pub fn teal(s: Scale) -> Color {
+        Color::teal(s)
+    }
+    pub fn cyan(s: Scale) -> Color {
+        Color::cyan(s)
+    }
+    pub fn sky(s: Scale) -> Color {
+        Color::sky(s)
+    }
+    pub fn blue(s: Scale) -> Color {
+        Color::blue(s)
+    }
+    pub fn indigo(s: Scale) -> Color {
+        Color::indigo(s)
+    }
+    pub fn violet(s: Scale) -> Color {
+        Color::violet(s)
+    }
+    pub fn purple(s: Scale) -> Color {
+        Color::purple(s)
+    }
+    pub fn fuchsia(s: Scale) -> Color {
+        Color::fuchsia(s)
+    }
+    pub fn pink(s: Scale) -> Color {
+        Color::pink(s)
+    }
+    pub fn rose(s: Scale) -> Color {
+        Color::rose(s)
+    }
+
     pub const TRANSPARENT: SpecialColor = SpecialColor::Transparent;
     pub const CURRENT: SpecialColor = SpecialColor::Current;
     pub const BLACK: SpecialColor = SpecialColor::Black;
@@ -127,7 +163,7 @@ pub mod colors {
 // Spacing shortcuts
 pub mod spacing {
     pub use crate::tokens::Spacing;
-    
+
     pub const PX: Spacing = Spacing::Px;
     pub const S0: Spacing = Spacing::S0;
     pub const S1: Spacing = Spacing::S1;
@@ -149,31 +185,30 @@ pub mod spacing {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_basic_style() {
         let style = Style::new()
             .padding(Padding::all(Spacing::S4))
             .bg(Color::blue(Scale::S500))
             .rounded(BorderRadius::Md);
-        
+
         let css = style.to_css();
         assert!(css.contains("padding: 1rem"));
         assert!(css.contains("background-color: #3b82f6"));
         assert!(css.contains("border-radius: 0.375rem"));
     }
-    
+
     #[test]
     fn test_flex_layout() {
-        let style = Style::centered_col()
-            .gap(Spacing::S4);
-        
+        let style = Style::centered_col().gap(Spacing::S4);
+
         let css = style.to_css();
         assert!(css.contains("flex-direction: column"));
         assert!(css.contains("justify-content: center"));
         assert!(css.contains("align-items: center"));
     }
-    
+
     #[test]
     fn test_button_component() {
         let btn = Button::primary();
