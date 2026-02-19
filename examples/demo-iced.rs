@@ -4,8 +4,9 @@ use iced::widget::{button, column, container, row, scrollable, text};
 use iced::{Background, Border, Element, Length, Task, Theme};
 use rustwind::backends::to_color;
 use rustwind::{
-    AnimationToken, BorderRadius, Button, Color, Easing, FontSize, FontWeight, Scale,
-    SemanticColor, SemanticThemeVars, Shadow, Spacing, Style, ToCss, TransitionDuration,
+    AnimationToken, BorderRadius, BorderWidth, Button, ButtonSize, ButtonVariant, Color, Easing,
+    FontSize, FontWeight, Scale, SemanticColor, SemanticThemeVars, Shadow, Spacing, Style, ToCss,
+    TransitionDuration,
 };
 
 type PaletteFn = fn(Scale) -> Color;
@@ -89,18 +90,22 @@ impl DemoApp {
 
         let mut tabs = row![];
         for (tab, label) in Tab::all() {
-            tabs = tabs.push(button(*label).on_press(Message::SetTab(*tab)).padding(8));
+            let active = self.tab == *tab;
+            let btn = if active {
+                Button::primary()
+            } else {
+                Button::secondary().sm()
+            };
+            tabs = tabs.push(styled_button(label, btn, Message::SetTab(*tab)));
         }
 
         let content = column![
             row![
-                button(if self.dark_mode {
+                styled_button(if self.dark_mode {
                     "Switch to Light (gray-50)"
                 } else {
                     "Switch to Dark (gray-950)"
-                })
-                .on_press(Message::ToggleTheme)
-                .padding(8),
+                }, Button::primary(), Message::ToggleTheme),
                 tabs.spacing(6)
             ]
             .spacing(10),
@@ -293,11 +298,7 @@ fn render_components(fg: Color) -> Element<'static, Message> {
         text(Button::outline().to_css()),
         text(Button::ghost().to_css()),
         text(Button::destructive().to_css()),
-        text(Button::new(
-            rustwind::ButtonVariant::Link,
-            rustwind::ButtonSize::Md
-        )
-        .to_css()),
+        text(Button::new(ButtonVariant::Link, ButtonSize::Md).to_css()),
         text(Button::primary().sm().to_css()),
         text(Button::primary().lg().to_css()),
         text(Button::primary().icon().to_css()),
@@ -347,6 +348,18 @@ fn render_motion(fg: Color) -> Element<'static, Message> {
 
 fn render_semantic(fg: Color) -> Element<'static, Message> {
     let theme = SemanticThemeVars::shadcn_neutral();
+    let primary = theme
+        .resolve_light(SemanticColor::Primary)
+        .unwrap_or(Color::blue(Scale::S600));
+    let primary_fg = theme
+        .resolve_light(SemanticColor::PrimaryForeground)
+        .unwrap_or(Color::white());
+    let secondary = theme
+        .resolve_light(SemanticColor::Secondary)
+        .unwrap_or(Color::gray(Scale::S200));
+    let secondary_fg = theme
+        .resolve_light(SemanticColor::SecondaryForeground)
+        .unwrap_or(Color::gray(Scale::S900));
     column![
         section("Semantic vars (CSS)", fg),
         text(format!("{:?} => {}", SemanticColor::Background, SemanticColor::Background.to_css())),
@@ -362,6 +375,26 @@ fn render_semantic(fg: Color) -> Element<'static, Message> {
             "dark background: {}",
             theme.resolve_dark(SemanticColor::Background).map(|c| c.to_css()).unwrap_or_default()
         )),
+        section("Semantic visual demo", fg),
+        row![
+            semantic_chip("Background", theme.resolve_light(SemanticColor::Background).unwrap_or(Color::gray(Scale::S50)), fg),
+            semantic_chip("Card", theme.resolve_light(SemanticColor::Card).unwrap_or(Color::white()), fg),
+            semantic_chip("Accent", theme.resolve_light(SemanticColor::Accent).unwrap_or(Color::gray(Scale::S100)), fg),
+            semantic_chip("Destructive", theme.resolve_light(SemanticColor::Destructive).unwrap_or(Color::red(Scale::S600)), primary_fg),
+        ].spacing(8).wrap(),
+        row![
+            semantic_button("Primary", primary, primary_fg),
+            semantic_button("Secondary", secondary, secondary_fg),
+            semantic_button(
+                "Destructive",
+                theme.resolve_light(SemanticColor::Destructive).unwrap_or(Color::red(Scale::S600)),
+                primary_fg,
+            ),
+        ].spacing(8).wrap(),
+        row![
+            semantic_button("Tab: Active", primary, primary_fg),
+            semantic_button("Tab: Idle", secondary, secondary_fg),
+        ].spacing(8),
         text("Generated variable block:"),
         container(text(theme.to_css_variables()).size(11)).padding(8).style(|_| container::Style {
             background: Some(Background::Color(to_color(Color::slate(Scale::S950)))),
@@ -391,3 +424,91 @@ fn swatch(color: Color) -> Element<'static, Message> {
         .into()
 }
 
+fn styled_button<'a>(label: &'a str, spec: Button, msg: Message) -> Element<'a, Message> {
+    let s = spec.style();
+    let bg = s
+        .background_color
+        .map(to_color)
+        .unwrap_or_else(|| to_color(Color::gray(Scale::S200)));
+    let fg = s
+        .text_color
+        .map(to_color)
+        .unwrap_or_else(|| to_color(Color::gray(Scale::S900)));
+    let border_radius = s.border_radius.map(radius_to_px).unwrap_or(6.0);
+    let border_width = s
+        .border_width
+        .map(|w| match w {
+            BorderWidth::S0 => 0.0,
+            BorderWidth::S1 => 1.0,
+            BorderWidth::S2 => 2.0,
+            BorderWidth::S4 => 4.0,
+            BorderWidth::S8 => 8.0,
+        })
+        .unwrap_or(0.0);
+    let border_color = s.border_color.map(to_color).unwrap_or(bg);
+
+    button(text(label).color(fg))
+        .padding(8)
+        .on_press(msg)
+        .style(move |_theme, _status| {
+            button::Style {
+                background: Some(Background::Color(bg)),
+                text_color: fg,
+                border: Border {
+                    radius: border_radius.into(),
+                    width: border_width,
+                    color: border_color,
+                },
+                ..button::Style::default()
+            }
+        })
+        .into()
+}
+
+fn semantic_button<'a>(label: &'a str, bg: Color, fg: Color) -> Element<'a, Message> {
+    button(text(label).color(to_color(fg)))
+        .padding(8)
+        .style(move |_theme, _status| {
+            button::Style {
+                background: Some(Background::Color(to_color(bg))),
+                text_color: to_color(fg),
+                border: Border {
+                    radius: 6.0.into(),
+                    width: 0.0,
+                    color: to_color(bg),
+                },
+                ..button::Style::default()
+            }
+        })
+        .into()
+}
+
+fn semantic_chip<'a>(label: &'a str, bg: Color, fg: Color) -> Element<'a, Message> {
+    container(text(label).size(11).color(to_color(fg)))
+        .padding([6, 10])
+        .style(move |_| container::Style {
+            background: Some(Background::Color(to_color(bg))),
+            border: Border {
+                radius: 6.0.into(),
+                width: 1.0,
+                color: to_color(Color::gray(Scale::S300)),
+            },
+            ..Default::default()
+        })
+        .into()
+}
+
+fn radius_to_px(radius: BorderRadius) -> f32 {
+    match radius {
+        BorderRadius::None => 0.0,
+        BorderRadius::Xs => 2.0,
+        BorderRadius::Sm => 4.0,
+        BorderRadius::Md => 6.0,
+        BorderRadius::Lg => 8.0,
+        BorderRadius::Xl => 12.0,
+        BorderRadius::S2xl => 16.0,
+        BorderRadius::S3xl => 24.0,
+        BorderRadius::S4xl => 32.0,
+        BorderRadius::Full => 9999.0,
+    }
+}

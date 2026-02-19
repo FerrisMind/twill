@@ -80,19 +80,29 @@ impl eframe::App for DemoApp {
 
         egui::CentralPanel::default().show(ctx, |ui| {
             ui.horizontal(|ui| {
-                if ui
-                    .button(if self.dark_mode {
+                if styled_button(
+                    ui,
+                    if self.dark_mode {
                         "Switch to Light (gray-50)"
                     } else {
                         "Switch to Dark (gray-950)"
-                    })
-                    .clicked()
+                    },
+                    Button::primary(),
+                    false,
+                )
+                .clicked()
                 {
                     self.dark_mode = !self.dark_mode;
                 }
                 ui.separator();
                 for (tab, label) in Tab::all() {
-                    if ui.selectable_label(self.tab == *tab, *label).clicked() {
+                    let active = self.tab == *tab;
+                    let tab_btn = if active {
+                        Button::primary()
+                    } else {
+                        Button::secondary().sm()
+                    };
+                    if styled_button(ui, label, tab_btn, active).clicked() {
                         self.tab = *tab;
                     }
                 }
@@ -393,17 +403,60 @@ fn render_semantic_tab(ui: &mut egui::Ui) {
         ui.label(format!("{token:?} -> {}", token.to_css()));
     }
     section_title(ui, "Direct Color resolve (no CSS)");
-    for token in [
+    let semantic_samples = [
         SemanticColor::Background,
         SemanticColor::Foreground,
         SemanticColor::Primary,
         SemanticColor::Secondary,
         SemanticColor::Destructive,
-    ] {
+        SemanticColor::Card,
+        SemanticColor::Accent,
+        SemanticColor::Border,
+    ];
+    ui.horizontal_wrapped(|ui| {
+        for token in semantic_samples {
+            let light = theme.resolve_light(token).unwrap_or(Color::gray(Scale::S50));
+            let dark = theme.resolve_dark(token).unwrap_or(Color::gray(Scale::S950));
+            egui::Frame::default()
+                .fill(to_color32(light))
+                .corner_radius(8.0)
+                .inner_margin(egui::Vec2::new(10.0, 8.0))
+                .show(ui, |ui| {
+                    ui.label(egui::RichText::new(format!("{token:?}")).color(to_color32(dark)));
+                });
+        }
+    });
+    for token in semantic_samples {
         let light = theme.resolve_light(token).map(|c| c.to_css()).unwrap_or_default();
         let dark = theme.resolve_dark(token).map(|c| c.to_css()).unwrap_or_default();
         ui.label(format!("{token:?}: light={light}, dark={dark}"));
     }
+
+    section_title(ui, "Semantic buttons/tabs visual");
+    let primary = theme.resolve_light(SemanticColor::Primary).unwrap_or(Color::blue(Scale::S600));
+    let primary_fg = theme
+        .resolve_light(SemanticColor::PrimaryForeground)
+        .unwrap_or(Color::white());
+    let secondary = theme.resolve_light(SemanticColor::Secondary).unwrap_or(Color::gray(Scale::S200));
+    let secondary_fg = theme
+        .resolve_light(SemanticColor::SecondaryForeground)
+        .unwrap_or(Color::gray(Scale::S900));
+    ui.horizontal(|ui| {
+        semantic_button(ui, "Semantic Primary", primary, primary_fg);
+        semantic_button(ui, "Semantic Secondary", secondary, secondary_fg);
+        semantic_button(
+            ui,
+            "Semantic Destructive",
+            theme.resolve_light(SemanticColor::Destructive)
+                .unwrap_or(Color::red(Scale::S600)),
+            primary_fg,
+        );
+    });
+    ui.horizontal(|ui| {
+        semantic_tab(ui, "Overview", true, primary, primary_fg, secondary, secondary_fg);
+        semantic_tab(ui, "Settings", false, primary, primary_fg, secondary, secondary_fg);
+        semantic_tab(ui, "Danger Zone", false, primary, primary_fg, secondary, secondary_fg);
+    });
     section_title(ui, "Generated CSS vars");
     egui::Frame::default()
         .fill(to_color32(Color::slate(Scale::S950)))
@@ -421,4 +474,71 @@ fn render_semantic_tab(ui: &mut egui::Ui) {
 fn section_title(ui: &mut egui::Ui, text: &str) {
     ui.label(egui::RichText::new(text).size(18.0).strong());
     ui.add_space(6.0);
+}
+
+fn styled_button(
+    ui: &mut egui::Ui,
+    label: &str,
+    button: Button,
+    active: bool,
+) -> egui::Response {
+    let s = button.style();
+    let fill = s
+        .background_color
+        .map(to_color32)
+        .unwrap_or_else(|| to_color32(Color::gray(Scale::S200)));
+    let text_color = s
+        .text_color
+        .map(to_color32)
+        .unwrap_or_else(|| to_color32(Color::gray(Scale::S900)));
+    let radius = s.border_radius.map(to_corner_radius).unwrap_or(4.0);
+    let stroke = if let (Some(w), Some(c)) = (s.border_width, s.border_color) {
+        let width = match w {
+            rustwind::BorderWidth::S0 => 0.0,
+            rustwind::BorderWidth::S1 => 1.0,
+            rustwind::BorderWidth::S2 => 2.0,
+            rustwind::BorderWidth::S4 => 4.0,
+            rustwind::BorderWidth::S8 => 8.0,
+        };
+        egui::Stroke::new(width, to_color32(c))
+    } else if active {
+        egui::Stroke::new(1.0, to_color32(Color::blue(Scale::S700)))
+    } else {
+        egui::Stroke::NONE
+    };
+    ui.add(
+        egui::Button::new(egui::RichText::new(label).color(text_color))
+            .fill(fill)
+            .stroke(stroke)
+            .corner_radius(radius),
+    )
+}
+
+fn semantic_button(ui: &mut egui::Ui, label: &str, bg: Color, fg: Color) {
+    ui.add(
+        egui::Button::new(egui::RichText::new(label).color(to_color32(fg)))
+            .fill(to_color32(bg))
+            .corner_radius(6.0),
+    );
+}
+
+fn semantic_tab(
+    ui: &mut egui::Ui,
+    label: &str,
+    active: bool,
+    active_bg: Color,
+    active_fg: Color,
+    idle_bg: Color,
+    idle_fg: Color,
+) {
+    let (bg, fg) = if active {
+        (active_bg, active_fg)
+    } else {
+        (idle_bg, idle_fg)
+    };
+    ui.add(
+        egui::Button::new(egui::RichText::new(label).color(to_color32(fg)))
+            .fill(to_color32(bg))
+            .corner_radius(6.0),
+    );
 }
