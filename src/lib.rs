@@ -1,4 +1,4 @@
-//! # Rustwind
+//! # Twill
 //!
 //! Idiomatic Rust styling library inspired by Tailwind CSS.
 //!
@@ -22,7 +22,7 @@
 //! ## Quick Start
 //!
 //! ```rust
-//! use rustwind::{Style, Color, Scale, Spacing, Padding, BorderRadius, ToCss};
+//! use twill::{Style, Color, Scale, Spacing, Padding, BorderRadius, ToCss};
 //!
 //! // Create a button style
 //! let button_style = Style::new()
@@ -38,7 +38,7 @@
 //! ## Components
 //!
 //! ```rust
-//! use rustwind::{Button, ToCss};
+//! use twill::{Button, ToCss};
 //!
 //! // Create a primary button
 //! let btn = Button::primary().lg().to_css();

@@ -3,7 +3,7 @@
 Enable feature:
 
 ```toml
-rustwind = { version = "0.2", features = ["iced"] }
+twill = { version = "0.2", features = ["iced"] }
 ```
 
 ## What you get

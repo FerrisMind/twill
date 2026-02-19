@@ -3,7 +3,7 @@
 Enable feature:
 
 ```toml
-rustwind = { version = "0.2", features = ["slint"] }
+twill = { version = "0.2", features = ["slint"] }
 ```
 
 ## What you get
@@ -17,5 +17,5 @@ rustwind = { version = "0.2", features = ["slint"] }
 cargo run --example demo-slint --features slint
 ```
 
-In the demo, theme-dependent colors are resolved from Rustwind and pushed to Slint properties.
+In the demo, theme-dependent colors are resolved from Twill and pushed to Slint properties.
 

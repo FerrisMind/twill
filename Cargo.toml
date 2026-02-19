@@ -1,14 +1,14 @@
 [package]
-name = "rustwind"
+name = "twill"
 version = "0.2.0"
 edition = "2024"
 rust-version = "1.93"
 description = "Idiomatic Rust styling library inspired by Tailwind CSS for GUI"
 license = "MIT"
 authors = ["FerrisMind"]
-repository = "https://github.com/FerrisMind/rustwind"
-homepage = "https://github.com/FerrisMind/rustwind"
-documentation = "https://docs.rs/rustwind"
+repository = "https://github.com/FerrisMind/twill"
+homepage = "https://github.com/FerrisMind/twill"
+documentation = "https://docs.rs/twill"
 readme = "README.md"
 keywords = ["styling", "tailwind", "gui", "egui", "iced"]
 categories = ["gui", "rendering"]
@@ -34,6 +34,7 @@ slint = { version = "1.15", optional = true }
 
 [dev-dependencies]
 eframe = { version = "0.33", default-features = false, features = ["glow"] }
+image = { version = "0.25", default-features = false, features = ["png"] }
 
 [features]
 default = []

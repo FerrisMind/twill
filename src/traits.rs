@@ -1,4 +1,4 @@
-//! Core traits for rustwind styling system.
+//! Core traits for twill styling system.
 
 use crate::Style;
 

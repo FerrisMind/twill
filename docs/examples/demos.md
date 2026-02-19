@@ -1,6 +1,6 @@
 # Demo Applications
 
-Rustwind ships three GUI demos plus a generic CSS-style demo:
+Twill ships three GUI demos plus a generic CSS-style demo:
 
 - `examples/demo-egui.rs`
 - `examples/demo-iced.rs`

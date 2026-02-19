@@ -1,7 +1,7 @@
 [book]
-title = "Rustwind Documentation"
+title = "Twill Documentation"
 description = "Type-safe styling library for Rust GUI apps inspired by Tailwind CSS."
-authors = ["Rustwind Contributors"]
+authors = ["Twill Contributors"]
 language = "en"
 src = "."
 
@@ -11,5 +11,5 @@ build-dir = "../mdbook-build"
 [output.html]
 default-theme = "rust"
 preferred-dark-theme = "navy"
-git-repository-url = "https://github.com/FerrisMind/rustwind"
-edit-url-template = "https://github.com/FerrisMind/rustwind/edit/main/docs/{path}"
+git-repository-url = "https://github.com/FerrisMind/twill"
+edit-url-template = "https://github.com/FerrisMind/twill/edit/main/docs/{path}"

@@ -1,12 +1,12 @@
 # Design Tokens
 
-Rustwind tokens are Rust enums and value types representing styling primitives.
+Twill tokens are Rust enums and value types representing styling primitives.
 
 ## Color tokens
 Use `Color` + `Scale`:
 
 ```rust
-use rustwind::{Color, Scale};
+use twill::{Color, Scale};
 
 let primary = Color::blue(Scale::S500);
 let danger = Color::red(Scale::S600);
@@ -22,7 +22,7 @@ Special colors:
 Use `Spacing` for paddings, margins, gaps:
 
 ```rust
-use rustwind::Spacing;
+use twill::Spacing;
 
 let p = Spacing::S4;   // 1rem
 let gap = Spacing::S2; // 0.5rem

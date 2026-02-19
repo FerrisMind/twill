@@ -1,11 +1,11 @@
-//! Slint backend for rustwind.
+//! Slint backend for twill.
 //!
 //! Provides color constants and utilities for Slint UI.
 
 use crate::tokens::{BorderRadius, Color, Scale, Spacing};
 use crate::traits::ToCss;
 
-/// Convert rustwind Color to Slint-compatible hex string.
+/// Convert twill Color to Slint-compatible hex string.
 pub fn to_slint_color(color: Color) -> slint::Color {
     let css = color.to_css();
     let hex = css.trim_start_matches('#');
@@ -19,12 +19,12 @@ pub fn to_slint_color(color: Color) -> slint::Color {
     }
 }
 
-/// Convert rustwind Spacing to Slint length (logical pixels).
+/// Convert twill Spacing to Slint length (logical pixels).
 pub fn to_length(spacing: Spacing) -> f32 {
     spacing.to_rem().unwrap_or(0.0) * 16.0
 }
 
-/// Convert rustwind BorderRadius to Slint border radius.
+/// Convert twill BorderRadius to Slint border radius.
 pub fn to_radius(radius: BorderRadius) -> f32 {
     match radius {
         BorderRadius::None => 0.0,
@@ -40,7 +40,7 @@ pub fn to_radius(radius: BorderRadius) -> f32 {
     }
 }
 
-/// Pre-defined Slint color palette from rustwind.
+/// Pre-defined Slint color palette from twill.
 pub struct SlintColors;
 
 impl SlintColors {

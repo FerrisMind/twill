@@ -3,7 +3,7 @@
 ## Basic style composition
 
 ```rust
-use rustwind::{Style, Color, Scale, Padding, Spacing, BorderRadius, ToCss};
+use twill::{Style, Color, Scale, Padding, Spacing, BorderRadius, ToCss};
 
 let style = Style::new()
     .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
@@ -17,7 +17,7 @@ println!("{}", style.to_css());
 ## Prebuilt button
 
 ```rust
-use rustwind::{Button, ToCss};
+use twill::{Button, ToCss};
 
 let primary = Button::primary().lg().to_css();
 let outline = Button::outline().sm().to_css();
@@ -26,7 +26,7 @@ let outline = Button::outline().sm().to_css();
 ## Layout utilities
 
 ```rust
-use rustwind::{Style, Spacing, Padding};
+use twill::{Style, Spacing, Padding};
 
 let centered = Style::centered_col()
     .gap(Spacing::S4)

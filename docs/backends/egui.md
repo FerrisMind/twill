@@ -3,7 +3,7 @@
 Enable feature:
 
 ```toml
-rustwind = { version = "0.2", features = ["egui"] }
+twill = { version = "0.2", features = ["egui"] }
 ```
 
 ## What you get

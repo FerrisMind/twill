@@ -1,6 +1,6 @@
 # Public API
 
-This page summarizes the primary exports from `rustwind`.
+This page summarizes the primary exports from `twill`.
 
 ## Core traits
 - `ToCss`
@@ -32,12 +32,12 @@ This page summarizes the primary exports from `rustwind`.
 - `ButtonSize`
 
 ## Feature-gated backend exports
-- `rustwind::egui` with `egui` feature
-- `rustwind::iced` with `iced` feature
-- `rustwind::slint` with `slint` feature
+- `twill::egui` with `egui` feature
+- `twill::iced` with `iced` feature
+- `twill::slint` with `slint` feature
 
 ## Shortcuts
-`rustwind` also exports:
+`twill` also exports:
 - `colors::*` helper module
 - `spacing::*` helper module
 

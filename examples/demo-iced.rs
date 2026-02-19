@@ -1,9 +1,9 @@
-//! Iced demo showcasing rustwind capabilities via tabs.
+//! Iced demo showcasing twill capabilities via tabs.
 
 use iced::widget::{button, column, container, row, scrollable, text};
 use iced::{Background, Border, Element, Length, Task, Theme};
-use rustwind::backends::to_color;
-use rustwind::{
+use twill::backends::to_color;
+use twill::{
     AnimationToken, BorderRadius, BorderWidth, Button, ButtonSize, ButtonVariant, Color, Easing,
     FontSize, FontWeight, Scale, SemanticColor, SemanticThemeVars, Shadow, Spacing, Style, ToCss,
     TransitionDuration,
@@ -109,7 +109,7 @@ impl DemoApp {
                 tabs.spacing(6)
             ]
             .spacing(10),
-            text("Rustwind - Iced Demo").size(30).color(to_color(fg)),
+            text("Twill - Iced Demo").size(30).color(to_color(fg)),
             render_tab(self.tab, fg)
         ]
         .spacing(10)

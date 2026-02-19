@@ -1,12 +1,12 @@
-//! Iced backend for rustwind.
+//! Iced backend for twill.
 //!
-//! Converts rustwind styles to iced types.
+//! Converts twill styles to iced types.
 
 use crate::style::Style;
 use crate::tokens::{BorderRadius, Color, Scale, Spacing};
 use crate::traits::ToCss;
 
-/// Convert rustwind Color to iced Color.
+/// Convert twill Color to iced Color.
 pub fn to_color(color: Color) -> iced::Color {
     let css = color.to_css();
     let hex = css.trim_start_matches('#');
@@ -20,14 +20,14 @@ pub fn to_color(color: Color) -> iced::Color {
     }
 }
 
-/// Convert rustwind Spacing to iced Padding.
+/// Convert twill Spacing to iced Padding.
 pub fn to_padding(spacing: Spacing) -> iced::Padding {
     let rem = spacing.to_rem().unwrap_or(0.0);
     let px = rem * 16.0;
     iced::Padding::new(px)
 }
 
-/// Convert rustwind BorderRadius to iced border radius.
+/// Convert twill BorderRadius to iced border radius.
 pub fn to_border_radius(radius: BorderRadius) -> f32 {
     match radius {
         BorderRadius::None => 0.0,
@@ -43,7 +43,7 @@ pub fn to_border_radius(radius: BorderRadius) -> f32 {
     }
 }
 
-/// Create a styled button using rustwind colors.
+/// Create a styled button using twill colors.
 pub fn styled_button<'a, Message: Clone + 'a>(
     label: &'a str,
     bg_color: Color,
@@ -108,7 +108,7 @@ pub fn danger_button<'a, Message: Clone + 'a>(
     styled_button(label, Color::red(Scale::S500), Color::white(), on_press)
 }
 
-/// Create a styled container with rustwind Style.
+/// Create a styled container with twill Style.
 pub fn styled_container<'a, Message: Clone + 'a>(
     content: iced::Element<'a, Message>,
     style: &Style,

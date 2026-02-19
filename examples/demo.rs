@@ -1,12 +1,12 @@
-//! Demo example showing rustwind capabilities.
+//! Demo example showing twill capabilities.
 
-use rustwind::{
+use twill::{
     BorderRadius, Button, Color, FontSize, FontWeight, Padding, Scale, Shadow, Spacing, Style,
     ToCss,
 };
 
 fn main() {
-    println!("=== Rustwind Demo ===\n");
+    println!("=== Twill Demo ===\n");
 
     // 1. Basic style builder
     println!("1. Basic Style Builder:");
@@ -59,15 +59,15 @@ fn main() {
     // 7. Complex component
     println!("7. Complex Component (Card):");
     let complex_card = Style::new()
-        .display(rustwind::Display::Flex)
-        .flex(rustwind::FlexContainer::col().gap(Spacing::S4))
+        .display(twill::Display::Flex)
+        .flex(twill::FlexContainer::col().gap(Spacing::S4))
         .padding(Padding::all(Spacing::S6))
         .bg(Color::white())
         .rounded(BorderRadius::Xl)
         .shadow(Shadow::Lg)
         .border(
-            rustwind::BorderWidth::S1,
-            rustwind::BorderStyle::Solid,
+            twill::BorderWidth::S1,
+            twill::BorderStyle::Solid,
             Color::gray(Scale::S200),
         );
     println!("   {}\n", complex_card.to_css());

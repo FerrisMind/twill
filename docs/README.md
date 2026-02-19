@@ -1,5 +1,5 @@
-# Rustwind
-Rustwind is an idiomatic Rust styling library inspired by Tailwind CSS.
+# Twill
+Twill is an idiomatic Rust styling library inspired by Tailwind CSS.
 
 It gives you:
 - type-safe design tokens,

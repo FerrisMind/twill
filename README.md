@@ -7,7 +7,8 @@
 ---
 
 <p align="center">
-  <h1 align="center">🦀 Rustwind</h1>
+  <img src="assets/icon.svg" width="128" alt="Twill Logo">
+  <h1 align="center">Twill</h1>
 </p>
 
 <p align="center">
@@ -16,17 +17,17 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/FerrisMind/rustwind/blob/main/LICENSE"><img src="https://img.shields.io/github/license/FerrisMind/rustwind" alt="License"></a>
-  <a href="https://crates.io/crates/rustwind"><img src="https://img.shields.io/crates/v/rustwind" alt="Crates.io"></a>
-  <a href="https://docs.rs/rustwind"><img src="https://img.shields.io/docsrs/rustwind" alt="Docs.rs"></a>
-  <a href="https://github.com/FerrisMind/rustwind/stargazers"><img src="https://img.shields.io/github/stars/FerrisMind/rustwind?logo=github" alt="GitHub Stars"></a>
+  <a href="https://github.com/FerrisMind/twill/blob/main/LICENSE"><img src="https://img.shields.io/github/license/FerrisMind/twill" alt="License"></a>
+  <a href="https://crates.io/crates/twill"><img src="https://img.shields.io/crates/v/twill" alt="Crates.io"></a>
+  <a href="https://docs.rs/twill"><img src="https://img.shields.io/docsrs/twill" alt="Docs.rs"></a>
+  <a href="https://github.com/FerrisMind/twill/stargazers"><img src="https://img.shields.io/github/stars/FerrisMind/twill?logo=github" alt="GitHub Stars"></a>
 </p>
 
 ---
 
 ## 📚 Table of Contents
 
-- [What is Rustwind?](#-what-is-rustwind)
+- [What is Twill?](#-what-is-twill)
 - [Key Features](#-key-features)
 - [Installation](#-installation)
 - [Quick Start](#-quick-start)
@@ -40,9 +41,9 @@
 - [Contributing](#-contributing)
 - [License](#-license)
 
-## ✨ What is Rustwind?
+## ✨ What is Twill?
 
-Rustwind is a styling library for Rust that brings the best ideas from Tailwind CSS to native GUI development:
+Twill is a styling library for Rust that brings the best ideas from Tailwind CSS to native GUI development:
 
 - **Design Tokens** — type-safe base values (colors, spacing, sizes)
 - **Utility-first** — composable atomic styles
@@ -51,7 +52,7 @@ Rustwind is a styling library for Rust that brings the best ideas from Tailwind 
 But implements them through **Rust types instead of CSS classes**!
 
 ```rust
-use rustwind::{Style, Color, Scale, Spacing, Padding, BorderRadius, ToCss};
+use twill::{Style, Color, Scale, Spacing, Padding, BorderRadius, ToCss};
 
 let button_style = Style::new()
     .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
@@ -80,12 +81,12 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rustwind = "0.1"
+twill = "0.1"
 
 # Optional: enable backend support
-rustwind = { version = "0.1", features = ["egui"] }   # For egui
-rustwind = { version = "0.1", features = ["iced"] }   # For iced
-rustwind = { version = "0.1", features = ["slint"] }  # For slint
+twill = { version = "0.1", features = ["egui"] }   # For egui
+twill = { version = "0.1", features = ["iced"] }   # For iced
+twill = { version = "0.1", features = ["slint"] }  # For slint
 ```
 
 ## 🎯 Quick Start
@@ -93,7 +94,7 @@ rustwind = { version = "0.1", features = ["slint"] }  # For slint
 ### Basic Style Builder
 
 ```rust
-use rustwind::{
+use twill::{
     Style, Color, Scale, Spacing, Padding, Margin, 
     BorderRadius, Shadow, ToCss
 };
@@ -126,7 +127,7 @@ let row = Style::flex_row()
 ### Pre-built Components
 
 ```rust
-use rustwind::{Button, ToCss};
+use twill::{Button, ToCss};
 
 // Button variants
 let primary = Button::primary().to_css();
@@ -146,7 +147,7 @@ let full_width = Button::primary().full_width().to_css();
 Full Tailwind CSS color palette with type-safe scale values:
 
 ```rust
-use rustwind::{Color, Scale};
+use twill::{Color, Scale};
 
 // Color families
 Color::slate(Scale::S500)    // #64748b
@@ -169,7 +170,7 @@ Color::transparent()         // transparent
 ### Spacing
 
 ```rust
-use rustwind::Spacing;
+use twill::Spacing;
 
 Spacing::S0   // 0
 Spacing::S1   // 0.25rem (4px)
@@ -185,7 +186,7 @@ Spacing::S16  // 4rem    (64px)
 ### Border Radius
 
 ```rust
-use rustwind::BorderRadius;
+use twill::BorderRadius;
 
 BorderRadius::None  // 0
 BorderRadius::Sm    // 0.125rem
@@ -198,7 +199,7 @@ BorderRadius::Full  // 9999px
 ### Shadows
 
 ```rust
-use rustwind::Shadow;
+use twill::Shadow;
 
 Shadow::Sm   // Small shadow
 Shadow::Md   // Medium shadow
@@ -210,7 +211,7 @@ Shadow::None // No shadow
 ### Motion (Tailwind-aligned)
 
 ```rust
-use rustwind::{Style, TransitionDuration, Easing, AnimationToken};
+use twill::{Style, TransitionDuration, Easing, AnimationToken};
 
 let motion = Style::new()
     .transition_property("opacity, transform")
@@ -222,7 +223,7 @@ let motion = Style::new()
 ### Semantic Variables (Optional, shadcn-style)
 
 ```rust
-use rustwind::{SemanticColor, SemanticThemeVars};
+use twill::{SemanticColor, SemanticThemeVars};
 
 let semantic_bg = SemanticColor::Background.to_css(); // "var(--background)"
 let css_vars = SemanticThemeVars::shadcn_neutral().to_css_variables(); // :root + .dark blocks
@@ -236,7 +237,7 @@ let bg_dark = SemanticThemeVars::shadcn_neutral()
 The `Style` struct provides a fluent API for composing styles:
 
 ```rust
-use rustwind::{Style, Color, Scale, Spacing, Padding, Margin, BorderRadius, Shadow};
+use twill::{Style, Color, Scale, Spacing, Padding, Margin, BorderRadius, Shadow};
 
 let style = Style::new()
     // Layout
@@ -278,7 +279,7 @@ let style = Style::new()
 ### Button
 
 ```rust
-use rustwind::{Button, ButtonVariant, ButtonSize, ToCss};
+use twill::{Button, ButtonVariant, ButtonSize, ToCss};
 
 // Variants
 Button::primary()      // Solid blue background
@@ -301,7 +302,7 @@ Button::primary().full_width()   // Width: 100%
 
 ## 🔌 Backend Support
 
-Rustwind supports multiple GUI frameworks through feature flags:
+Twill supports multiple GUI frameworks through feature flags:
 
 | Backend | Feature | Status | Description |
 |---------|---------|:------:|-------------|
@@ -313,7 +314,7 @@ Rustwind supports multiple GUI frameworks through feature flags:
 ### Using with egui
 
 ```rust
-use rustwind::{Style, Color, Scale, Spacing, Padding};
+use twill::{Style, Color, Scale, Spacing, Padding};
 
 #[cfg(feature = "egui")]
 fn show_button(ui: &mut egui::Ui) {
@@ -322,7 +323,7 @@ fn show_button(ui: &mut egui::Ui) {
         .bg(Color::blue(Scale::S500));
     
     // Convert to egui style
-    let egui_style = rustwind::backends::egui::convert(&style);
+    let egui_style = twill::backends::egui::convert(&style);
     // Apply to egui widgets...
 }
 ```
@@ -347,7 +348,7 @@ cargo run --example demo-slint --features slint
 
 ## 📖 API Reference
 
-Full API documentation is available at [docs.rs/rustwind](https://docs.rs/rustwind).
+Full API documentation is available at [docs.rs/twill](https://docs.rs/twill).
 
 ### Core Traits
 

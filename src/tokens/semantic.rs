@@ -98,7 +98,7 @@ pub struct SemanticThemeVars {
 }
 
 impl SemanticThemeVars {
-    /// Default neutral semantic theme mapped to rustwind RGB palette.
+    /// Default neutral semantic theme mapped to twill RGB palette.
     pub fn shadcn_neutral() -> Self {
         const LIGHT: &[(SemanticColor, Color)] = &[
             (SemanticColor::Background, Color::gray(Scale::S50)),

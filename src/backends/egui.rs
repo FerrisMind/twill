@@ -1,10 +1,10 @@
-//! Egui backend for rustwind.
+//! Egui backend for twill.
 
 use crate::style::Style;
 use crate::tokens::{BorderRadius, Color, Spacing};
 use crate::traits::ToCss;
 
-/// Convert rustwind Color to egui Color32.
+/// Convert twill Color to egui Color32.
 pub fn to_color32(color: Color) -> egui::Color32 {
     let css = color.to_css();
     let hex = css.trim_start_matches('#');
@@ -18,14 +18,14 @@ pub fn to_color32(color: Color) -> egui::Color32 {
     }
 }
 
-/// Convert rustwind Spacing to egui Vec2 (in points).
+/// Convert twill Spacing to egui Vec2 (in points).
 pub fn to_vec2(spacing: Spacing) -> egui::Vec2 {
     let rem = spacing.to_rem().unwrap_or(0.0);
     let px = rem * 16.0;
     egui::Vec2::splat(px)
 }
 
-/// Convert rustwind BorderRadius to egui f32.
+/// Convert twill BorderRadius to egui f32.
 pub fn to_corner_radius(radius: BorderRadius) -> f32 {
     match radius {
         BorderRadius::None => 0.0,
@@ -41,7 +41,7 @@ pub fn to_corner_radius(radius: BorderRadius) -> f32 {
     }
 }
 
-/// Create an egui Frame from a rustwind Style.
+/// Create an egui Frame from a twill Style.
 pub fn to_frame(style: &Style) -> egui::Frame {
     let mut frame = egui::Frame::default();
 

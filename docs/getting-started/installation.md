@@ -1,11 +1,11 @@
 # Installation
 
 ## Minimum setup
-Add `rustwind` to your `Cargo.toml`:
+Add `twill` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-rustwind = "0.2"
+twill = "0.2"
 ```
 
 ## Enable GUI backends
@@ -13,18 +13,18 @@ Enable only the backends you use:
 
 ```toml
 [dependencies]
-rustwind = { version = "0.2", features = ["egui"] }
+twill = { version = "0.2", features = ["egui"] }
 # or
-rustwind = { version = "0.2", features = ["iced"] }
+twill = { version = "0.2", features = ["iced"] }
 # or
-rustwind = { version = "0.2", features = ["slint"] }
+twill = { version = "0.2", features = ["slint"] }
 ```
 
 You can combine features:
 
 ```toml
 [dependencies]
-rustwind = { version = "0.2", features = ["egui", "iced", "slint"] }
+twill = { version = "0.2", features = ["egui", "iced", "slint"] }
 ```
 
 ## Verify installation

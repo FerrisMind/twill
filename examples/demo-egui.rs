@@ -1,8 +1,8 @@
-//! Egui demo showcasing rustwind capabilities via tabs.
+//! Egui demo showcasing twill capabilities via tabs.
 
 use eframe::egui;
-use rustwind::backends::{to_color32, to_corner_radius, to_frame};
-use rustwind::{
+use twill::backends::{to_color32, to_corner_radius, to_frame};
+use twill::{
     AnimationToken, BorderRadius, Button, ButtonSize, ButtonVariant, Color, Easing, FontSize,
     FontWeight, Padding, Scale, SemanticColor, SemanticThemeVars, Shadow, Spacing, Style, ToCss,
     TransitionDuration,
@@ -35,12 +35,12 @@ fn main() -> eframe::Result<()> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([1200.0, 900.0])
-            .with_title("Rustwind - Egui Demo"),
+            .with_title("Twill - Egui Demo"),
         ..Default::default()
     };
 
     eframe::run_native(
-        "Rustwind Egui",
+        "Twill Egui",
         options,
         Box::new(|_cc| Ok(Box::new(DemoApp::default()))),
     )
@@ -494,11 +494,11 @@ fn styled_button(
     let radius = s.border_radius.map(to_corner_radius).unwrap_or(4.0);
     let stroke = if let (Some(w), Some(c)) = (s.border_width, s.border_color) {
         let width = match w {
-            rustwind::BorderWidth::S0 => 0.0,
-            rustwind::BorderWidth::S1 => 1.0,
-            rustwind::BorderWidth::S2 => 2.0,
-            rustwind::BorderWidth::S4 => 4.0,
-            rustwind::BorderWidth::S8 => 8.0,
+            twill::BorderWidth::S0 => 0.0,
+            twill::BorderWidth::S1 => 1.0,
+            twill::BorderWidth::S2 => 2.0,
+            twill::BorderWidth::S4 => 4.0,
+            twill::BorderWidth::S8 => 8.0,
         };
         egui::Stroke::new(width, to_color32(c))
     } else if active {

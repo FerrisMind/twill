@@ -1,5 +1,5 @@
 {
-  "name": "rustwind-docs",
+  "name": "twill-docs",
   "private": true,
   "scripts": {
     "docs:build": "mdbook build",

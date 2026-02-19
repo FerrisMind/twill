@@ -18,7 +18,7 @@ Use semantic names like `Primary`, `Background`, `MutedForeground` instead of di
 ## Example: resolve into concrete color
 
 ```rust
-use rustwind::{SemanticThemeVars, SemanticColor};
+use twill::{SemanticThemeVars, SemanticColor};
 
 let theme = SemanticThemeVars::shadcn_neutral();
 let light_bg = theme.resolve_light(SemanticColor::Background).unwrap();
@@ -28,7 +28,7 @@ let dark_bg = theme.resolve_dark(SemanticColor::Background).unwrap();
 ## Example: export CSS variables
 
 ```rust
-use rustwind::SemanticThemeVars;
+use twill::SemanticThemeVars;
 
 let css_vars = SemanticThemeVars::shadcn_neutral().to_css_variables();
 println!("{css_vars}");

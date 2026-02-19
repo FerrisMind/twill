@@ -5,7 +5,7 @@
 ## Typical chain
 
 ```rust
-use rustwind::{
+use twill::{
     Style, Color, Scale, Padding, Spacing, BorderRadius, Shadow,
     Display, FlexContainer, JustifyContent, AlignItems
 };
@@ -34,7 +34,7 @@ let card = Style::new()
 Use `Merge` to compose reusable snippets:
 
 ```rust
-use rustwind::{Style, Merge, Padding, Spacing};
+use twill::{Style, Merge, Padding, Spacing};
 
 let base = Style::new().padding(Padding::all(Spacing::S3));
 let elevated = Style::new();
@@ -45,7 +45,7 @@ let composed = base.merge(elevated);
 Use `ToCss`:
 
 ```rust
-use rustwind::ToCss;
+use twill::ToCss;
 
 let css = card.to_css();
 println!("{css}");

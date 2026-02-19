@@ -1,10 +1,10 @@
-//! Slint demo showcasing rustwind capabilities via tabs.
+//! Slint demo showcasing twill capabilities via tabs.
 
 slint::slint! {
     import { VerticalBox, HorizontalBox, ScrollView } from "std-widgets.slint";
 
     export component DemoWindow inherits Window {
-        title: "Rustwind - Slint Demo";
+        title: "Twill - Slint Demo";
         in-out property <bool> dark_mode: true;
         in-out property <int> active_tab: 0;
         in-out property <color> color_text: black;
@@ -104,7 +104,7 @@ slint::slint! {
                 }
 
                 Text {
-                    text: "Rustwind - Slint Demo";
+                    text: "Twill - Slint Demo";
                     font-size: 28px;
                     color: root.color_text;
                     font-weight: 700;
@@ -235,41 +235,41 @@ fn main() -> Result<(), slint::PlatformError> {
 }
 
 fn apply_theme_colors(demo: &DemoWindow) {
-    let theme = rustwind::SemanticThemeVars::shadcn_neutral();
+    let theme = twill::SemanticThemeVars::shadcn_neutral();
     let is_dark = demo.get_dark_mode();
-    let resolve = |token| theme.resolve(token, is_dark).unwrap_or(rustwind::Color::gray(rustwind::Scale::S500));
-    let to_sl = rustwind::backends::to_slint_color;
+    let resolve = |token| theme.resolve(token, is_dark).unwrap_or(twill::Color::gray(twill::Scale::S500));
+    let to_sl = twill::backends::to_slint_color;
 
-    demo.set_color_text(to_sl(resolve(rustwind::SemanticColor::Foreground)));
-    demo.set_color_muted_text(to_sl(resolve(rustwind::SemanticColor::MutedForeground)));
-    demo.set_color_btn_primary(to_sl(resolve(rustwind::SemanticColor::Primary)));
-    demo.set_color_btn_primary_fg(to_sl(resolve(rustwind::SemanticColor::PrimaryForeground)));
-    demo.set_color_btn_secondary(to_sl(resolve(rustwind::SemanticColor::Secondary)));
-    demo.set_color_btn_secondary_fg(to_sl(resolve(rustwind::SemanticColor::SecondaryForeground)));
-    demo.set_color_tab_active(to_sl(resolve(rustwind::SemanticColor::Primary)));
-    demo.set_color_tab_idle(to_sl(resolve(rustwind::SemanticColor::Muted)));
-    demo.set_color_app_bg(to_sl(resolve(rustwind::SemanticColor::Background)));
-    demo.set_color_semantic_bg(to_sl(resolve(rustwind::SemanticColor::Background)));
-    demo.set_color_semantic_card(to_sl(resolve(rustwind::SemanticColor::Card)));
-    demo.set_color_semantic_accent(to_sl(resolve(rustwind::SemanticColor::Accent)));
-    demo.set_color_semantic_destructive(to_sl(resolve(rustwind::SemanticColor::Destructive)));
-    demo.set_color_token_bar(to_sl(rustwind::Color::blue(rustwind::Scale::S500)));
-    demo.set_color_token_radius(to_sl(rustwind::Color::violet(rustwind::Scale::S500)));
-    demo.set_color_token_1(to_sl(rustwind::Color::slate(rustwind::Scale::S50)));
-    demo.set_color_token_2(to_sl(rustwind::Color::slate(rustwind::Scale::S900)));
-    demo.set_color_token_3(to_sl(rustwind::Color::red(rustwind::Scale::S500)));
-    demo.set_color_token_4(to_sl(rustwind::Color::orange(rustwind::Scale::S500)));
-    demo.set_color_token_5(to_sl(rustwind::Color::amber(rustwind::Scale::S500)));
-    demo.set_color_token_6(to_sl(rustwind::Color::green(rustwind::Scale::S500)));
-    demo.set_color_token_7(to_sl(rustwind::Color::cyan(rustwind::Scale::S500)));
-    demo.set_color_token_8(to_sl(rustwind::Color::blue(rustwind::Scale::S500)));
-    demo.set_color_token_9(to_sl(rustwind::Color::violet(rustwind::Scale::S500)));
-    demo.set_color_token_10(to_sl(rustwind::Color::fuchsia(rustwind::Scale::S500)));
-    demo.set_color_token_11(to_sl(rustwind::Color::rose(rustwind::Scale::S500)));
-    demo.set_color_weight_1(to_sl(rustwind::Color::slate(rustwind::Scale::S900)));
-    demo.set_color_weight_2(to_sl(rustwind::Color::slate(rustwind::Scale::S800)));
-    demo.set_color_weight_3(to_sl(rustwind::Color::slate(rustwind::Scale::S700)));
-    demo.set_color_weight_4(to_sl(rustwind::Color::slate(rustwind::Scale::S500)));
-    demo.set_color_weight_5(to_sl(rustwind::Color::slate(rustwind::Scale::S200)));
-    demo.set_color_weight_5_fg(to_sl(rustwind::Color::slate(rustwind::Scale::S900)));
+    demo.set_color_text(to_sl(resolve(twill::SemanticColor::Foreground)));
+    demo.set_color_muted_text(to_sl(resolve(twill::SemanticColor::MutedForeground)));
+    demo.set_color_btn_primary(to_sl(resolve(twill::SemanticColor::Primary)));
+    demo.set_color_btn_primary_fg(to_sl(resolve(twill::SemanticColor::PrimaryForeground)));
+    demo.set_color_btn_secondary(to_sl(resolve(twill::SemanticColor::Secondary)));
+    demo.set_color_btn_secondary_fg(to_sl(resolve(twill::SemanticColor::SecondaryForeground)));
+    demo.set_color_tab_active(to_sl(resolve(twill::SemanticColor::Primary)));
+    demo.set_color_tab_idle(to_sl(resolve(twill::SemanticColor::Muted)));
+    demo.set_color_app_bg(to_sl(resolve(twill::SemanticColor::Background)));
+    demo.set_color_semantic_bg(to_sl(resolve(twill::SemanticColor::Background)));
+    demo.set_color_semantic_card(to_sl(resolve(twill::SemanticColor::Card)));
+    demo.set_color_semantic_accent(to_sl(resolve(twill::SemanticColor::Accent)));
+    demo.set_color_semantic_destructive(to_sl(resolve(twill::SemanticColor::Destructive)));
+    demo.set_color_token_bar(to_sl(twill::Color::blue(twill::Scale::S500)));
+    demo.set_color_token_radius(to_sl(twill::Color::violet(twill::Scale::S500)));
+    demo.set_color_token_1(to_sl(twill::Color::slate(twill::Scale::S50)));
+    demo.set_color_token_2(to_sl(twill::Color::slate(twill::Scale::S900)));
+    demo.set_color_token_3(to_sl(twill::Color::red(twill::Scale::S500)));
+    demo.set_color_token_4(to_sl(twill::Color::orange(twill::Scale::S500)));
+    demo.set_color_token_5(to_sl(twill::Color::amber(twill::Scale::S500)));
+    demo.set_color_token_6(to_sl(twill::Color::green(twill::Scale::S500)));
+    demo.set_color_token_7(to_sl(twill::Color::cyan(twill::Scale::S500)));
+    demo.set_color_token_8(to_sl(twill::Color::blue(twill::Scale::S500)));
+    demo.set_color_token_9(to_sl(twill::Color::violet(twill::Scale::S500)));
+    demo.set_color_token_10(to_sl(twill::Color::fuchsia(twill::Scale::S500)));
+    demo.set_color_token_11(to_sl(twill::Color::rose(twill::Scale::S500)));
+    demo.set_color_weight_1(to_sl(twill::Color::slate(twill::Scale::S900)));
+    demo.set_color_weight_2(to_sl(twill::Color::slate(twill::Scale::S800)));
+    demo.set_color_weight_3(to_sl(twill::Color::slate(twill::Scale::S700)));
+    demo.set_color_weight_4(to_sl(twill::Color::slate(twill::Scale::S500)));
+    demo.set_color_weight_5(to_sl(twill::Color::slate(twill::Scale::S200)));
+    demo.set_color_weight_5_fg(to_sl(twill::Color::slate(twill::Scale::S900)));
 }
