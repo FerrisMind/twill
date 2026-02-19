@@ -7,7 +7,8 @@
 ---
 
 <p align="center">
-  <h1 align="center">🦀 Twill</h1>
+  <img src="https://raw.githubusercontent.com/FerrisMind/twill/master/assets/icon.svg" width="128" alt="Twill Logo">
+  <h1 align="center">Twill</h1>
 </p>
 
 <p align="center">
