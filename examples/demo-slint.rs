@@ -1,207 +1,246 @@
-//! Slint demo showcasing twill capabilities via tabs.
+//! Slint demo showcasing twill capabilities via a visually identical component showcase.
 
 slint::slint! {
     import { VerticalBox, HorizontalBox, ScrollView } from "std-widgets.slint";
 
+    component StyledButton inherits Rectangle {
+        in property <string> text;
+        in property <color> bg_color;
+        in property <color> text_color;
+        in property <length> r_radius: 6px;
+        in property <length> b_width: 0px;
+        in property <color> b_color: transparent;
+        in property <color> hover_bg;
+        callback clicked();
+
+        min-height: 36px;
+        horizontal-stretch: 0;
+        border-radius: root.r_radius;
+        background: root.bg_color;
+        border-width: root.b_width;
+        border-color: root.b_color;
+
+        t := TouchArea {
+            clicked => { root.clicked(); }
+        }
+
+        hover_overlay := Rectangle {
+            width: 100%;
+            height: 100%;
+            border-radius: root.r_radius;
+            background: t.has-hover ? root.hover_bg : transparent;
+        }
+
+        HorizontalBox {
+            padding-left: 16px;
+            padding-right: 16px;
+            alignment: center;
+            Text {
+                text: root.text;
+                color: root.text_color;
+                font-size: 14px;
+                vertical-alignment: center;
+                horizontal-alignment: center;
+            }
+        }
+    }
+
     export component DemoWindow inherits Window {
-        title: "Twill - Slint Demo";
+        title: "Twill - Universal Design Showcase (Slint)";
         in-out property <bool> dark_mode: true;
-        in-out property <int> active_tab: 0;
         in-out property <color> color_text: black;
         in-out property <color> color_muted_text: black;
-        in-out property <color> color_btn_primary: black;
-        in-out property <color> color_btn_primary_fg: white;
-        in-out property <color> color_btn_secondary: black;
-        in-out property <color> color_btn_secondary_fg: white;
-        in-out property <color> color_tab_active: black;
-        in-out property <color> color_tab_idle: black;
         in-out property <color> color_app_bg: black;
-        in-out property <color> color_semantic_bg: black;
-        in-out property <color> color_semantic_card: black;
-        in-out property <color> color_semantic_accent: black;
-        in-out property <color> color_semantic_destructive: black;
-        in-out property <color> color_token_bar: black;
-        in-out property <color> color_token_radius: black;
-        in-out property <color> color_token_1: black;
-        in-out property <color> color_token_2: black;
-        in-out property <color> color_token_3: black;
-        in-out property <color> color_token_4: black;
-        in-out property <color> color_token_5: black;
-        in-out property <color> color_token_6: black;
-        in-out property <color> color_token_7: black;
-        in-out property <color> color_token_8: black;
-        in-out property <color> color_token_9: black;
-        in-out property <color> color_token_10: black;
-        in-out property <color> color_token_11: black;
-        in-out property <color> color_weight_1: black;
-        in-out property <color> color_weight_2: black;
-        in-out property <color> color_weight_3: black;
-        in-out property <color> color_weight_4: black;
-        in-out property <color> color_weight_5: black;
-        in-out property <color> color_weight_5_fg: white;
+        in-out property <color> color_card_bg: black;
+        in-out property <color> color_card_border: black;
+        
+        in-out property <color> primary_bg: black;
+        in-out property <color> primary_bg_hover: black;
+        in-out property <color> primary_fg: white;
+        in-out property <color> secondary_bg: black;
+        in-out property <color> secondary_bg_hover: black;
+        in-out property <color> secondary_fg: white;
+        in-out property <color> outline_bg: transparent;
+        in-out property <color> outline_bg_hover: transparent;
+        in-out property <color> outline_fg: black;
+        in-out property <color> outline_border: black;
+        in-out property <color> ghost_bg: transparent;
+        in-out property <color> ghost_bg_hover: transparent;
+        in-out property <color> ghost_fg: black;
+        in-out property <color> destructive_bg: red;
+        in-out property <color> destructive_bg_hover: red;
+        in-out property <color> destructive_fg: white;
+        
+        in-out property <color> tw_blue: black;
+        in-out property <color> tw_blue_hover: black;
+        in-out property <color> tw_slate: black;
+        in-out property <color> tw_slate_hover: black;
+        in-out property <color> tw_slate_fg: black;
+        in-out property <color> tw_border: black;
+        in-out property <color> tw_red: black;
+        in-out property <color> tw_red_hover: black;
+        in-out property <color> tw_white: white;
+        in-out property <color> tw_black: black;
+
+        in-out property <bool> shadow_enabled: false;
+
         callback toggle_theme();
-        callback set_tab(int);
 
         background: root.color_app_bg;
-        preferred-width: 1200px;
-        preferred-height: 900px;
+        preferred-width: 800px;
+        preferred-height: 600px;
 
         ScrollView {
             width: 100%;
             height: 100%;
 
             VerticalBox {
-                padding: 24px;
-                spacing: 10px;
+                padding-top: 48px;
+                alignment: start;
+                spacing: 0px;
 
-                HorizontalBox {
-                    spacing: 8px;
-                    Rectangle {
-                        min-width: 240px;
-                        min-height: 36px;
-                        border-radius: 8px;
-                        background: root.color_btn_primary;
-                        t := TouchArea { clicked => { root.toggle_theme(); } }
-                        Text {
-                            text: root.dark_mode ? "Switch to Light (gray-50)" : "Switch to Dark (gray-950)";
-                            color: root.color_btn_primary_fg;
+                VerticalBox {
+                    alignment: center;
+                    spacing: 12px;
+
+                    HorizontalBox {
+                        alignment: center;
+                        spacing: 16px;
+
+                        Image {
+                            source: @image-url("../assets/icon.png");
+                            width: 48px;
+                            height: 48px;
                             horizontal-alignment: center;
-                            vertical-alignment: center;
-                            font-size: 13px;
+                        }
+
+                        VerticalBox {
+                            alignment: center;
+                            Text {
+                                text: "Twill Universal Design";
+                                font-size: 32px;
+                                color: root.color_text;
+                                font-weight: 700;
+                                horizontal-alignment: center;
+                            }
                         }
                     }
-
-                    Rectangle {
-                        min-width: 110px; min-height: 36px; border-radius: 8px;
-                        background: root.active_tab == 0 ? root.color_tab_active : root.color_tab_idle;
-                        TouchArea { clicked => { root.set_tab(0); } }
-                        Text { text: "Tokens"; color: root.color_btn_primary_fg; horizontal-alignment: center; vertical-alignment: center; font-size: 12px; }
-                    }
-                    Rectangle {
-                        min-width: 110px; min-height: 36px; border-radius: 8px;
-                        background: root.active_tab == 1 ? root.color_tab_active : root.color_tab_idle;
-                        TouchArea { clicked => { root.set_tab(1); } }
-                        Text { text: "Typography"; color: root.color_btn_primary_fg; horizontal-alignment: center; vertical-alignment: center; font-size: 12px; }
-                    }
-                    Rectangle {
-                        min-width: 110px; min-height: 36px; border-radius: 8px;
-                        background: root.active_tab == 2 ? root.color_tab_active : root.color_tab_idle;
-                        TouchArea { clicked => { root.set_tab(2); } }
-                        Text { text: "Components"; color: root.color_btn_primary_fg; horizontal-alignment: center; vertical-alignment: center; font-size: 12px; }
-                    }
-                    Rectangle {
-                        min-width: 110px; min-height: 36px; border-radius: 8px;
-                        background: root.active_tab == 3 ? root.color_tab_active : root.color_tab_idle;
-                        TouchArea { clicked => { root.set_tab(3); } }
-                        Text { text: "Motion"; color: root.color_btn_primary_fg; horizontal-alignment: center; vertical-alignment: center; font-size: 12px; }
-                    }
-                    Rectangle {
-                        min-width: 110px; min-height: 36px; border-radius: 8px;
-                        background: root.active_tab == 4 ? root.color_tab_active : root.color_tab_idle;
-                        TouchArea { clicked => { root.set_tab(4); } }
-                        Text { text: "Semantic"; color: root.color_btn_primary_fg; horizontal-alignment: center; vertical-alignment: center; font-size: 12px; }
+                    Text {
+                        text: "Rendered exactly the same across Egui, Iced, and Slint.";
+                        font-size: 16px;
+                        color: root.color_muted_text;
+                        horizontal-alignment: center;
                     }
                 }
 
+                Rectangle { height: 32px; }
+
+                HorizontalBox {
+                    alignment: center;
+                    StyledButton {
+                        text: root.dark_mode ? "Switch to Light Mode" : "Switch to Dark Mode";
+                        bg_color: root.secondary_bg;
+                        hover_bg: root.secondary_bg_hover;
+                        text_color: root.secondary_fg;
+                        clicked => { root.toggle_theme(); }
+                    }
+                }
+
+                Rectangle { height: 48px; }
+
                 Text {
-                    text: "Twill - Slint Demo";
-                    font-size: 28px;
-                    color: root.color_text;
-                    font-weight: 700;
+                    text: "Semantic Palette (shadcn-like)";
+                    font-size: 14px;
+                    color: root.color_muted_text;
                     horizontal-alignment: center;
                 }
 
-                // Tokens tab
-                VerticalBox {
-                    visible: root.active_tab == 0;
-                    spacing: 8px;
-                    Text { text: "Tokens"; font-size: 20px; color: root.color_text; }
-                    Text { text: "Color palettes, spacing, radius, shadows"; font-size: 13px; color: root.color_muted_text; }
-                    HorizontalBox {
-                        spacing: 6px;
-                        for c in [root.color_token_1, root.color_token_2, root.color_token_3, root.color_token_4, root.color_token_5, root.color_token_6, root.color_token_7, root.color_token_8, root.color_token_9, root.color_token_10, root.color_token_11] : Rectangle {
-                            min-width: 22px; min-height: 22px; border-radius: 4px; background: c;
+                Rectangle { height: 12px; }
+
+                HorizontalBox {
+                    alignment: center;
+                    spacing: 12px;
+
+                    StyledButton { text: "Primary"; bg_color: root.primary_bg; hover_bg: root.primary_bg_hover; text_color: root.primary_fg; }
+                    StyledButton { text: "Secondary"; bg_color: root.secondary_bg; hover_bg: root.secondary_bg_hover; text_color: root.secondary_fg; }
+                    StyledButton { text: "Outline"; bg_color: root.outline_bg; hover_bg: root.outline_bg_hover; text_color: root.outline_fg; b_width: 1px; b_color: root.outline_border; }
+                    StyledButton { text: "Ghost"; bg_color: root.ghost_bg; hover_bg: root.ghost_bg_hover; text_color: root.ghost_fg; }
+                    StyledButton { text: "Destructive"; bg_color: root.destructive_bg; hover_bg: root.destructive_bg_hover; text_color: root.destructive_fg; }
+                }
+
+                Rectangle { height: 32px; }
+
+                Text {
+                    text: "Tailwind Palette (direct colors)";
+                    font-size: 14px;
+                    color: root.color_muted_text;
+                    horizontal-alignment: center;
+                }
+
+                Rectangle { height: 12px; }
+
+                HorizontalBox {
+                    alignment: center;
+                    spacing: 12px;
+
+                    StyledButton { text: "Blue"; bg_color: root.tw_blue; hover_bg: root.tw_blue_hover; text_color: root.tw_white; }
+                    StyledButton { text: "Slate"; bg_color: root.tw_slate; hover_bg: root.tw_slate_hover; text_color: root.tw_slate_fg; }
+                    StyledButton { text: "Outline"; bg_color: transparent; hover_bg: root.tw_slate; text_color: root.tw_black; b_width: 1px; b_color: root.tw_border; }
+                    StyledButton { text: "Ghost"; bg_color: transparent; hover_bg: root.tw_slate; text_color: root.tw_black; }
+                    StyledButton { text: "Rose"; bg_color: root.tw_red; hover_bg: root.tw_red_hover; text_color: root.tw_white; }
+                }
+
+                Rectangle { height: 48px; }
+
+                HorizontalBox {
+                    alignment: center;
+                    
+                    Rectangle {
+                        width: 420px;
+                        background: root.color_card_bg;
+                        border-radius: 12px;
+                        border-width: 1px;
+                        border-color: root.color_card_border;
+                        drop-shadow-blur: root.shadow_enabled ? 15px : 0px;
+                        drop-shadow-offset-y: root.shadow_enabled ? 10px : 0px;
+                        drop-shadow-color: root.shadow_enabled ? #00000042 : transparent;
+
+                        VerticalBox {
+                            padding-left: 24px;
+                            padding-right: 24px;
+                            padding-top: 24px;
+                            padding-bottom: 24px;
+                            spacing: 0px;
+                            alignment: center;
+
+                            Rectangle { height: 8px; }
+                            
+                            Text {
+                                text: "Interactive Card";
+                                font-size: 24px;
+                                font-weight: 700;
+                                color: root.color_text;
+                            }
+
+                            Rectangle { height: 12px; }
+
+                            Text {
+                                text: "This card is styled entirely with Twill tokens and its appearance is mathematically mapped to Slint elements.";
+                                font-size: 15px;
+                                color: root.color_muted_text;
+                                horizontal-alignment: center;
+                                wrap: word-wrap;
+                            }
+
+                            Rectangle { height: 32px; }
+
+                            HorizontalBox {
+                                alignment: center;
+                                StyledButton { text: "Action Button"; bg_color: root.primary_bg; hover_bg: root.primary_bg_hover; text_color: root.primary_fg; }
+                            }
+
+                            Rectangle { height: 8px; }
                         }
-                    }
-                    HorizontalBox {
-                        spacing: 8px;
-                        for w in [6px, 10px, 16px, 24px, 32px, 48px, 64px, 96px] : Rectangle {
-                            min-width: w; min-height: 10px; border-radius: 3px; background: root.color_token_bar;
-                        }
-                    }
-                    HorizontalBox {
-                        spacing: 8px;
-                        Rectangle { min-width: 52px; min-height: 30px; border-radius: 0px; background: root.color_token_radius; }
-                        Rectangle { min-width: 52px; min-height: 30px; border-radius: 4px; background: root.color_token_radius; }
-                        Rectangle { min-width: 52px; min-height: 30px; border-radius: 8px; background: root.color_token_radius; }
-                        Rectangle { min-width: 52px; min-height: 30px; border-radius: 12px; background: root.color_token_radius; }
-                        Rectangle { min-width: 52px; min-height: 30px; border-radius: 999px; background: root.color_token_radius; }
-                    }
-                }
-
-                // Typography tab
-                VerticalBox {
-                    visible: root.active_tab == 1;
-                    spacing: 6px;
-                    Text { text: "Typography"; font-size: 20px; color: root.color_text; }
-                    Text { text: "xs (12px)"; font-size: 12px; color: root.color_text; }
-                    Text { text: "sm (14px)"; font-size: 14px; color: root.color_text; }
-                    Text { text: "base (16px)"; font-size: 16px; color: root.color_text; }
-                    Text { text: "lg (18px)"; font-size: 18px; color: root.color_text; }
-                    Text { text: "xl (20px)"; font-size: 20px; color: root.color_text; }
-                    Text { text: "2xl (24px)"; font-size: 24px; color: root.color_text; }
-                    HorizontalBox {
-                        spacing: 6px;
-                        Rectangle { min-width: 88px; min-height: 26px; border-radius: 4px; background: root.color_weight_1; Text { text: "Thin 100"; color: root.color_btn_primary_fg; horizontal-alignment: center; vertical-alignment: center; font-size: 11px; } }
-                        Rectangle { min-width: 88px; min-height: 26px; border-radius: 4px; background: root.color_weight_2; Text { text: "Normal 400"; color: root.color_btn_primary_fg; horizontal-alignment: center; vertical-alignment: center; font-size: 11px; } }
-                        Rectangle { min-width: 88px; min-height: 26px; border-radius: 4px; background: root.color_weight_3; Text { text: "Medium 500"; color: root.color_btn_primary_fg; horizontal-alignment: center; vertical-alignment: center; font-size: 11px; } }
-                        Rectangle { min-width: 88px; min-height: 26px; border-radius: 4px; background: root.color_weight_4; Text { text: "Bold 700"; color: root.color_btn_primary_fg; horizontal-alignment: center; vertical-alignment: center; font-size: 11px; } }
-                        Rectangle { min-width: 88px; min-height: 26px; border-radius: 4px; background: root.color_weight_5; Text { text: "Black 900"; color: root.color_weight_5_fg; horizontal-alignment: center; vertical-alignment: center; font-size: 11px; } }
-                    }
-                }
-
-                // Components tab
-                VerticalBox {
-                    visible: root.active_tab == 2;
-                    spacing: 8px;
-                    Text { text: "Components"; font-size: 20px; color: root.color_text; }
-                    Text { text: "Button variants and builder chains (see demo.rs / README for full CSS output)."; font-size: 13px; color: root.color_muted_text; }
-                    HorizontalBox {
-                        spacing: 10px;
-                        Rectangle { min-width: 110px; min-height: 36px; border-radius: 6px; background: root.color_btn_primary; Text { text: "Primary"; color: root.color_btn_primary_fg; horizontal-alignment: center; vertical-alignment: center; } }
-                        Rectangle { min-width: 110px; min-height: 36px; border-radius: 6px; background: root.color_btn_secondary; Text { text: "Secondary"; color: root.color_btn_secondary_fg; horizontal-alignment: center; vertical-alignment: center; } }
-                        Rectangle { min-width: 110px; min-height: 36px; border-radius: 6px; background: root.color_semantic_bg; border-width: 1px; border-color: root.color_btn_primary; Text { text: "Outline"; color: root.color_btn_primary; horizontal-alignment: center; vertical-alignment: center; } }
-                        Rectangle { min-width: 110px; min-height: 36px; border-radius: 6px; background: root.color_semantic_destructive; Text { text: "Destructive"; color: root.color_btn_primary_fg; horizontal-alignment: center; vertical-alignment: center; } }
-                    }
-                }
-
-                // Motion tab
-                VerticalBox {
-                    visible: root.active_tab == 3;
-                    spacing: 6px;
-                    Text { text: "Motion"; font-size: 20px; color: root.color_text; }
-                    Text { text: "Durations: 0, 75, 100, 150, 200, 300, 500, 700, 1000ms"; font-size: 13px; color: root.color_muted_text; }
-                    Text { text: "Easing: linear, ease-in, ease-out, ease-in-out"; font-size: 13px; color: root.color_muted_text; }
-                    Text { text: "Animations: none, spin, ping, pulse, bounce"; font-size: 13px; color: root.color_muted_text; }
-                }
-
-                // Semantic tab
-                VerticalBox {
-                    visible: root.active_tab == 4;
-                    spacing: 6px;
-                    Text { text: "Semantic"; font-size: 20px; color: root.color_text; }
-                    Text { text: "Supports both CSS vars and direct Color resolve."; font-size: 13px; color: root.color_muted_text; }
-                    HorizontalBox {
-                        spacing: 8px;
-                        Rectangle { min-width: 120px; min-height: 40px; border-radius: 8px; background: root.color_semantic_bg; Text { text: "Background"; color: root.color_text; horizontal-alignment: center; vertical-alignment: center; } }
-                        Rectangle { min-width: 120px; min-height: 40px; border-radius: 8px; background: root.color_semantic_card; Text { text: "Card"; color: root.color_text; horizontal-alignment: center; vertical-alignment: center; } }
-                        Rectangle { min-width: 120px; min-height: 40px; border-radius: 8px; background: root.color_semantic_accent; Text { text: "Accent"; color: root.color_text; horizontal-alignment: center; vertical-alignment: center; } }
-                        Rectangle { min-width: 120px; min-height: 40px; border-radius: 8px; background: root.color_semantic_destructive; Text { text: "Destructive"; color: root.color_btn_primary_fg; horizontal-alignment: center; vertical-alignment: center; } }
-                    }
-                    HorizontalBox {
-                        spacing: 8px;
-                        Rectangle { min-width: 120px; min-height: 36px; border-radius: 6px; background: root.color_btn_primary; Text { text: "Semantic Primary"; color: root.color_btn_primary_fg; horizontal-alignment: center; vertical-alignment: center; } }
-                        Rectangle { min-width: 120px; min-height: 36px; border-radius: 6px; background: root.color_btn_secondary; Text { text: "Semantic Secondary"; color: root.color_btn_secondary_fg; horizontal-alignment: center; vertical-alignment: center; } }
                     }
                 }
             }
@@ -223,53 +262,62 @@ fn main() -> Result<(), slint::PlatformError> {
         });
     }
 
-    {
-        let demo_weak = demo.as_weak();
-        demo.on_set_tab(move |tab| {
-            let demo = demo_weak.upgrade().unwrap();
-            demo.set_active_tab(tab);
-        });
-    }
-
     demo.run()
 }
 
 fn apply_theme_colors(demo: &DemoWindow) {
     let theme = twill::SemanticThemeVars::shadcn_neutral();
     let is_dark = demo.get_dark_mode();
-    let resolve = |token| theme.resolve(token, is_dark).unwrap_or(twill::Color::gray(twill::Scale::S500));
+    let resolve =
+        |token| theme.resolve(token, is_dark).unwrap_or(twill::Color::gray(twill::Scale::S500));
     let to_sl = twill::backends::to_slint_color;
 
+    let accent = resolve(twill::SemanticColor::Accent);
+    let primary_hover = resolve(twill::SemanticColor::Primary);
+    let secondary_hover = resolve(twill::SemanticColor::Secondary);
+    let destructive_hover = resolve(twill::SemanticColor::Destructive);
+
+    demo.set_color_app_bg(to_sl(resolve(twill::SemanticColor::Background)));
     demo.set_color_text(to_sl(resolve(twill::SemanticColor::Foreground)));
     demo.set_color_muted_text(to_sl(resolve(twill::SemanticColor::MutedForeground)));
-    demo.set_color_btn_primary(to_sl(resolve(twill::SemanticColor::Primary)));
-    demo.set_color_btn_primary_fg(to_sl(resolve(twill::SemanticColor::PrimaryForeground)));
-    demo.set_color_btn_secondary(to_sl(resolve(twill::SemanticColor::Secondary)));
-    demo.set_color_btn_secondary_fg(to_sl(resolve(twill::SemanticColor::SecondaryForeground)));
-    demo.set_color_tab_active(to_sl(resolve(twill::SemanticColor::Primary)));
-    demo.set_color_tab_idle(to_sl(resolve(twill::SemanticColor::Muted)));
-    demo.set_color_app_bg(to_sl(resolve(twill::SemanticColor::Background)));
-    demo.set_color_semantic_bg(to_sl(resolve(twill::SemanticColor::Background)));
-    demo.set_color_semantic_card(to_sl(resolve(twill::SemanticColor::Card)));
-    demo.set_color_semantic_accent(to_sl(resolve(twill::SemanticColor::Accent)));
-    demo.set_color_semantic_destructive(to_sl(resolve(twill::SemanticColor::Destructive)));
-    demo.set_color_token_bar(to_sl(twill::Color::blue(twill::Scale::S500)));
-    demo.set_color_token_radius(to_sl(twill::Color::violet(twill::Scale::S500)));
-    demo.set_color_token_1(to_sl(twill::Color::slate(twill::Scale::S50)));
-    demo.set_color_token_2(to_sl(twill::Color::slate(twill::Scale::S900)));
-    demo.set_color_token_3(to_sl(twill::Color::red(twill::Scale::S500)));
-    demo.set_color_token_4(to_sl(twill::Color::orange(twill::Scale::S500)));
-    demo.set_color_token_5(to_sl(twill::Color::amber(twill::Scale::S500)));
-    demo.set_color_token_6(to_sl(twill::Color::green(twill::Scale::S500)));
-    demo.set_color_token_7(to_sl(twill::Color::cyan(twill::Scale::S500)));
-    demo.set_color_token_8(to_sl(twill::Color::blue(twill::Scale::S500)));
-    demo.set_color_token_9(to_sl(twill::Color::violet(twill::Scale::S500)));
-    demo.set_color_token_10(to_sl(twill::Color::fuchsia(twill::Scale::S500)));
-    demo.set_color_token_11(to_sl(twill::Color::rose(twill::Scale::S500)));
-    demo.set_color_weight_1(to_sl(twill::Color::slate(twill::Scale::S900)));
-    demo.set_color_weight_2(to_sl(twill::Color::slate(twill::Scale::S800)));
-    demo.set_color_weight_3(to_sl(twill::Color::slate(twill::Scale::S700)));
-    demo.set_color_weight_4(to_sl(twill::Color::slate(twill::Scale::S500)));
-    demo.set_color_weight_5(to_sl(twill::Color::slate(twill::Scale::S200)));
-    demo.set_color_weight_5_fg(to_sl(twill::Color::slate(twill::Scale::S900)));
+    demo.set_color_card_bg(to_sl(resolve(twill::SemanticColor::Card)));
+    demo.set_color_card_border(to_sl(resolve(twill::SemanticColor::Border)));
+
+    demo.set_primary_bg(to_sl(resolve(twill::SemanticColor::Primary)));
+    demo.set_primary_bg_hover(to_sl(primary_hover).with_alpha(0.85));
+    demo.set_primary_fg(to_sl(resolve(twill::SemanticColor::PrimaryForeground)));
+    
+    demo.set_secondary_bg(to_sl(resolve(twill::SemanticColor::Secondary)));
+    demo.set_secondary_bg_hover(to_sl(secondary_hover).with_alpha(0.85));
+    demo.set_secondary_fg(to_sl(resolve(twill::SemanticColor::SecondaryForeground)));
+
+    demo.set_outline_bg(slint::Color::from_argb_u8(0, 0, 0, 0));
+    demo.set_outline_bg_hover(to_sl(accent));
+    demo.set_outline_fg(to_sl(resolve(twill::SemanticColor::Foreground)));
+    demo.set_outline_border(to_sl(resolve(twill::SemanticColor::Border)));
+
+    demo.set_ghost_bg(slint::Color::from_argb_u8(0, 0, 0, 0));
+    demo.set_ghost_bg_hover(to_sl(accent));
+    demo.set_ghost_fg(to_sl(resolve(twill::SemanticColor::Foreground)));
+
+    demo.set_destructive_bg(to_sl(resolve(twill::SemanticColor::Destructive)));
+    demo.set_destructive_bg_hover(to_sl(destructive_hover).with_alpha(0.85));
+    demo.set_destructive_fg(to_sl(twill::Color::slate(twill::Scale::S50)));
+
+    demo.set_tw_blue(to_sl(twill::Color::blue(twill::Scale::S500)));
+    demo.set_tw_blue_hover(to_sl(twill::Color::blue(twill::Scale::S600)));
+
+    demo.set_tw_slate(to_sl(if is_dark { twill::Color::slate(twill::Scale::S800) } else { twill::Color::slate(twill::Scale::S100) }));
+    demo.set_tw_slate_hover(to_sl(if is_dark { twill::Color::slate(twill::Scale::S700) } else { twill::Color::slate(twill::Scale::S200) }));
+    demo.set_tw_slate_fg(to_sl(if is_dark { twill::Color::slate(twill::Scale::S50) } else { twill::Color::slate(twill::Scale::S900) }));
+
+    demo.set_tw_border(to_sl(if is_dark { twill::Color::slate(twill::Scale::S700) } else { twill::Color::slate(twill::Scale::S200) }));
+
+    demo.set_tw_red(to_sl(twill::Color::red(twill::Scale::S500)));
+    demo.set_tw_red_hover(to_sl(twill::Color::red(twill::Scale::S600)));
+
+    demo.set_tw_white(to_sl(twill::Color::white()));
+    demo.set_tw_black(to_sl(if is_dark { twill::Color::slate(twill::Scale::S50) } else { twill::Color::slate(twill::Scale::S900) }));
+
+    demo.set_shadow_enabled(!is_dark);
 }

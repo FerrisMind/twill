@@ -1,69 +1,40 @@
-//! Iced demo showcasing twill capabilities via tabs.
+//! Iced demo showcasing twill capabilities via a visually identical component showcase.
 
-use iced::widget::{button, column, container, row, scrollable, text};
-use iced::{Background, Border, Element, Length, Task, Theme};
-use twill::backends::to_color;
-use twill::{
-    AnimationToken, BorderRadius, BorderWidth, Button, ButtonSize, ButtonVariant, Color, Easing,
-    FontSize, FontWeight, Scale, SemanticColor, SemanticThemeVars, Shadow, Spacing, Style, ToCss,
-    TransitionDuration,
-};
+use iced::widget::{button, column, container, row, text, Space, image};
+use iced::{alignment, Background, Border, Element, Length, Task, Theme};
+use twill::backends::iced::{to_color, to_color_value, to_shadow};
+use twill::{Color, Scale, SemanticColor, SemanticThemeVars, Shadow};
 
-type PaletteFn = fn(Scale) -> Color;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Tab {
-    Tokens,
-    Typography,
-    Components,
-    Motion,
-    Semantic,
-}
-
-impl Tab {
-    fn all() -> &'static [(Tab, &'static str)] {
-        &[
-            (Tab::Tokens, "Tokens"),
-            (Tab::Typography, "Typography"),
-            (Tab::Components, "Components"),
-            (Tab::Motion, "Motion"),
-            (Tab::Semantic, "Semantic"),
-        ]
-    }
+pub fn main() -> iced::Result {
+    iced::application(DemoApp::default, DemoApp::update, DemoApp::view)
+        .title("Twill - Universal Design Showcase (Iced)")
+        .theme(DemoApp::theme)
+        .window_size(iced::Size::new(800.0, 600.0))
+        .run()
 }
 
 struct DemoApp {
     dark_mode: bool,
-    tab: Tab,
 }
 
 #[derive(Debug, Clone, Copy)]
 enum Message {
     ToggleTheme,
-    SetTab(Tab),
+    ActionPressed,
 }
 
-pub fn main() -> iced::Result {
-    iced::application(DemoApp::new, DemoApp::update, DemoApp::view)
-        .theme(DemoApp::theme)
-        .run()
+impl Default for DemoApp {
+    fn default() -> Self {
+        Self { dark_mode: true }
+    }
 }
 
 impl DemoApp {
-    fn new() -> (Self, Task<Message>) {
-        (
-            Self {
-                dark_mode: true,
-                tab: Tab::Tokens,
-            },
-            Task::none(),
-        )
-    }
 
     fn update(&mut self, msg: Message) -> Task<Message> {
         match msg {
             Message::ToggleTheme => self.dark_mode = !self.dark_mode,
-            Message::SetTab(tab) => self.tab = tab,
+            Message::ActionPressed => {}
         }
         Task::none()
     }
@@ -77,438 +48,237 @@ impl DemoApp {
     }
 
     fn view(&self) -> Element<'_, Message> {
-        let app_bg = if self.dark_mode {
-            Color::gray(Scale::S950)
-        } else {
-            Color::gray(Scale::S50)
-        };
-        let fg = if self.dark_mode {
-            Color::gray(Scale::S50)
-        } else {
-            Color::gray(Scale::S900)
-        };
+        let theme = SemanticThemeVars::shadcn_neutral();
+        let bg = theme
+            .resolve(SemanticColor::Background, self.dark_mode)
+            .unwrap_or(Color::gray(Scale::S50));
+        let fg = theme
+            .resolve(SemanticColor::Foreground, self.dark_mode)
+            .unwrap_or(Color::gray(Scale::S900));
+        let muted_fg = theme
+            .resolve(SemanticColor::MutedForeground, self.dark_mode)
+            .unwrap();
 
-        let mut tabs = row![];
-        for (tab, label) in Tab::all() {
-            let active = self.tab == *tab;
-            let btn = if active {
-                Button::primary()
-            } else {
-                Button::secondary().sm()
-            };
-            tabs = tabs.push(styled_button(label, btn, Message::SetTab(*tab)));
-        }
+        let header = column![
+            row![
+                image("assets/icon.png").width(Length::Fixed(48.0)).height(Length::Fixed(48.0)),
+                text("Twill Universal Design")
+                    .size(32)
+                    .color(to_color(fg))
+                    .font(iced::Font {
+                        weight: iced::font::Weight::Bold,
+                        ..Default::default()
+                    }),
+            ]
+            .spacing(16)
+            .align_y(alignment::Vertical::Center),
+            text("Rendered exactly the same across Egui, Iced, and Slint.")
+                .size(16)
+                .color(to_color(muted_fg))
+        ]
+        .spacing(12)
+        .align_x(alignment::Horizontal::Center);
+
+        let primary_bg = to_color(theme.resolve(SemanticColor::Primary, self.dark_mode).unwrap());
+        let primary_fg = to_color(theme.resolve(SemanticColor::PrimaryForeground, self.dark_mode).unwrap());
+        let secondary_bg = to_color(theme.resolve(SemanticColor::Secondary, self.dark_mode).unwrap());
+        let secondary_fg = to_color(theme.resolve(SemanticColor::SecondaryForeground, self.dark_mode).unwrap());
+        let destructive_bg = to_color(theme.resolve(SemanticColor::Destructive, self.dark_mode).unwrap());
+        let destructive_fg = to_color(Color::slate(Scale::S50));
+        let fg_color = to_color(fg);
+        let border_c = to_color(theme.resolve(SemanticColor::Border, self.dark_mode).unwrap());
+        let transparent = to_color_value(twill::tokens::ColorValue::TRANSPARENT);
+
+        let mut primary_hover = primary_bg;
+        primary_hover.a = 0.9;
+        let mut secondary_hover = secondary_bg;
+        secondary_hover.a = 0.8;
+        let mut destructive_hover = destructive_bg;
+        destructive_hover.a = 0.9;
+
+        let toggle_btn = styled_button(
+            if self.dark_mode { "Switch to Light Mode" } else { "Switch to Dark Mode" },
+            secondary_bg, secondary_fg, 0.0, transparent, 
+            Some(secondary_hover), Some(secondary_fg),
+            Message::ToggleTheme
+        );
+
+        let semantic_label = text("Semantic Palette (shadcn-like)")
+            .size(14)
+            .color(to_color(muted_fg));
+
+        let buttons_row = row![
+            styled_button("Primary", primary_bg, primary_fg, 0.0, transparent, Some(primary_hover), Some(primary_fg), Message::ActionPressed),
+            styled_button("Secondary", secondary_bg, secondary_fg, 0.0, transparent, Some(secondary_hover), Some(secondary_fg), Message::ActionPressed),
+            styled_button("Outline", transparent, fg_color, 1.0, border_c, Some(to_color(theme.resolve(SemanticColor::Accent, self.dark_mode).unwrap())), Some(to_color(theme.resolve(SemanticColor::AccentForeground, self.dark_mode).unwrap())), Message::ActionPressed),
+            styled_button("Ghost", transparent, fg_color, 0.0, transparent, Some(to_color(theme.resolve(SemanticColor::Accent, self.dark_mode).unwrap())), Some(to_color(theme.resolve(SemanticColor::AccentForeground, self.dark_mode).unwrap())), Message::ActionPressed),
+            styled_button("Destructive", destructive_bg, destructive_fg, 0.0, transparent, Some(destructive_hover), Some(destructive_fg), Message::ActionPressed),
+        ]
+        .spacing(12)
+        .align_y(alignment::Vertical::Center);
+
+        let tailwind_label = text("Tailwind Palette (direct colors)")
+            .size(14)
+            .color(to_color(muted_fg));
+
+        let tw_blue = to_color(Color::blue(Scale::S500));
+        let tw_blue_hover = to_color(Color::blue(Scale::S600));
+        
+        let tw_slate = to_color(if self.dark_mode { Color::slate(Scale::S800) } else { Color::slate(Scale::S100) });
+        let tw_slate_hover = to_color(if self.dark_mode { Color::slate(Scale::S700) } else { Color::slate(Scale::S200) });
+        let tw_slate_fg = to_color(if self.dark_mode { Color::slate(Scale::S50) } else { Color::slate(Scale::S900) });
+
+        let tw_border = to_color(if self.dark_mode { Color::slate(Scale::S700) } else { Color::slate(Scale::S200) });
+
+        let tw_red = to_color(Color::red(Scale::S500));
+        let tw_red_hover = to_color(Color::red(Scale::S600));
+        
+        let tw_white = to_color(Color::white());
+        let tw_black = to_color(if self.dark_mode { Color::slate(Scale::S50) } else { Color::slate(Scale::S900) });
+
+        let tailwind_row = row![
+            styled_button("Blue", tw_blue, tw_white, 0.0, transparent, Some(tw_blue_hover), Some(tw_white), Message::ActionPressed),
+            styled_button("Slate", tw_slate, tw_slate_fg, 0.0, transparent, Some(tw_slate_hover), Some(tw_slate_fg), Message::ActionPressed),
+            styled_button("Outline", transparent, tw_black, 1.0, tw_border, Some(tw_slate), Some(tw_slate_fg), Message::ActionPressed),
+            styled_button("Ghost", transparent, tw_black, 0.0, transparent, Some(tw_slate), Some(tw_slate_fg), Message::ActionPressed),
+            styled_button("Rose", tw_red, tw_white, 0.0, transparent, Some(tw_red_hover), Some(tw_white), Message::ActionPressed),
+        ]
+        .spacing(12)
+        .align_y(alignment::Vertical::Center);
+
+        let card_bg = theme.resolve(SemanticColor::Card, self.dark_mode).unwrap();
+        let card_border = theme
+            .resolve(SemanticColor::Border, self.dark_mode)
+            .unwrap();
+        
+        let card_content = column![
+            Space::new().height(Length::Fixed(8.0)),
+            text("Interactive Card")
+                .size(24)
+                .font(iced::Font {
+                    weight: iced::font::Weight::Bold,
+                    ..Default::default()
+                })
+                .color(to_color(fg)),
+            Space::new().height(Length::Fixed(12.0)),
+            text("This card is styled entirely with Twill tokens and its appearance is mathematically mapped to Iced elements.")
+                .size(15)
+                .color(to_color(muted_fg))
+                .width(Length::Fill)
+                .align_x(alignment::Horizontal::Center),
+            Space::new().height(Length::Fixed(32.0)),
+            styled_button("Action Button", primary_bg, primary_fg, 0.0, transparent, Some(primary_hover), Some(primary_fg), Message::ActionPressed),
+            Space::new().height(Length::Fixed(8.0)),
+        ]
+        .spacing(0)
+        .align_x(alignment::Horizontal::Center);
+
+        let card = container(card_content)
+            .width(Length::Fixed(420.0))
+            .padding(24)
+            .style(move |_| container::Style {
+                background: Some(Background::Color(to_color(card_bg))),
+                border: Border {
+                    radius: 12.0.into(),
+                    width: 1.0,
+                    color: to_color(card_border),
+                },
+                shadow: if self.dark_mode { iced::Shadow::default() } else { to_shadow(Shadow::Lg, Color::black()) },
+                ..Default::default()
+            });
 
         let content = column![
-            row![
-                styled_button(if self.dark_mode {
-                    "Switch to Light (gray-50)"
-                } else {
-                    "Switch to Dark (gray-950)"
-                }, Button::primary(), Message::ToggleTheme),
-                tabs.spacing(6)
-            ]
-            .spacing(10),
-            text("Twill - Iced Demo").size(30).color(to_color(fg)),
-            render_tab(self.tab, fg)
+            Space::new().height(Length::Fixed(48.0)),
+            header,
+            Space::new().height(Length::Fixed(32.0)),
+            toggle_btn,
+            Space::new().height(Length::Fixed(48.0)),
+            semantic_label,
+            Space::new().height(Length::Fixed(12.0)),
+            buttons_row,
+            Space::new().height(Length::Fixed(32.0)),
+            tailwind_label,
+            Space::new().height(Length::Fixed(12.0)),
+            tailwind_row,
+            Space::new().height(Length::Fixed(48.0)),
+            card
         ]
-        .spacing(10)
-        .padding(24);
-
-        scrollable(
-            container(content).width(Length::Fill).style(move |_| container::Style {
-                background: Some(Background::Color(to_color(app_bg))),
-                ..Default::default()
-            }),
-        )
         .width(Length::Fill)
-        .height(Length::Fill)
-        .into()
-    }
-}
+        .align_x(alignment::Horizontal::Center);
 
-fn render_tab(tab: Tab, fg: Color) -> Element<'static, Message> {
-    match tab {
-        Tab::Tokens => render_tokens(fg),
-        Tab::Typography => render_typography(fg),
-        Tab::Components => render_components(fg),
-        Tab::Motion => render_motion(fg),
-        Tab::Semantic => render_semantic(fg),
-    }
-}
-
-fn section(title: &'static str, fg: Color) -> Element<'static, Message> {
-    text(title).size(18).color(to_color(fg)).into()
-}
-
-fn render_tokens(fg: Color) -> Element<'static, Message> {
-    let palettes: [(&str, PaletteFn); 22] = [
-        ("Slate", Color::slate),
-        ("Gray", Color::gray),
-        ("Zinc", Color::zinc),
-        ("Neutral", Color::neutral),
-        ("Stone", Color::stone),
-        ("Red", Color::red),
-        ("Orange", Color::orange),
-        ("Amber", Color::amber),
-        ("Yellow", Color::yellow),
-        ("Lime", Color::lime),
-        ("Green", Color::green),
-        ("Emerald", Color::emerald),
-        ("Teal", Color::teal),
-        ("Cyan", Color::cyan),
-        ("Sky", Color::sky),
-        ("Blue", Color::blue),
-        ("Indigo", Color::indigo),
-        ("Violet", Color::violet),
-        ("Purple", Color::purple),
-        ("Fuchsia", Color::fuchsia),
-        ("Pink", Color::pink),
-        ("Rose", Color::rose),
-    ];
-
-    let mut color_rows = column![];
-    for (name, f) in palettes {
-        let swatches = [
-            Scale::S50,
-            Scale::S100,
-            Scale::S200,
-            Scale::S300,
-            Scale::S400,
-            Scale::S500,
-            Scale::S600,
-            Scale::S700,
-            Scale::S800,
-            Scale::S900,
-            Scale::S950,
-        ]
-        .iter()
-        .fold(row![], |r, s| r.push(swatch(f(*s))))
-        .spacing(4)
-        .wrap();
-        color_rows = color_rows.push(column![text(name).color(to_color(fg)), swatches].spacing(4));
-    }
-
-    let spacing_list = [
-        Spacing::S0,
-        Spacing::S1,
-        Spacing::S2,
-        Spacing::S3,
-        Spacing::S4,
-        Spacing::S5,
-        Spacing::S6,
-        Spacing::S8,
-        Spacing::S10,
-        Spacing::S12,
-        Spacing::S16,
-        Spacing::S20,
-        Spacing::S24,
-        Spacing::S32,
-        Spacing::S40,
-        Spacing::S48,
-        Spacing::S56,
-        Spacing::S64,
-        Spacing::S72,
-        Spacing::S80,
-        Spacing::S96,
-        Spacing::Px,
-        Spacing::Auto,
-    ]
-    .iter()
-    .fold(row![], |r, s| r.push(text(s.to_css()).size(11)))
-    .spacing(8)
-    .wrap();
-
-    column![
-        section("Tokens: Colors", fg),
-        color_rows.spacing(6),
-        section("Spacing", fg),
-        spacing_list,
-        section("Radius + Shadow", fg),
-        text(format!(
-            "radius: {:?}, {:?}, {:?}, {:?}, {:?}, {:?}, {:?}, {:?}, {:?}, {:?}",
-            BorderRadius::None,
-            BorderRadius::Xs,
-            BorderRadius::Sm,
-            BorderRadius::Md,
-            BorderRadius::Lg,
-            BorderRadius::Xl,
-            BorderRadius::S2xl,
-            BorderRadius::S3xl,
-            BorderRadius::S4xl,
-            BorderRadius::Full
-        )),
-        text(format!(
-            "shadow: {}, {}, {}, {}, {}, {}, {}, {}",
-            Shadow::Xs2.to_css(),
-            Shadow::Xs.to_css(),
-            Shadow::Sm.to_css(),
-            Shadow::Md.to_css(),
-            Shadow::Lg.to_css(),
-            Shadow::Xl.to_css(),
-            Shadow::S2xl.to_css(),
-            Shadow::None.to_css()
-        )),
-    ]
-    .spacing(8)
-    .into()
-}
-
-fn render_typography(fg: Color) -> Element<'static, Message> {
-    let mut col = column![section("Font Sizes", fg)].spacing(6);
-    for (name, size) in [
-        ("xs", FontSize::Xs),
-        ("sm", FontSize::Sm),
-        ("base", FontSize::Base),
-        ("lg", FontSize::Lg),
-        ("xl", FontSize::Xl),
-        ("2xl", FontSize::S2xl),
-        ("3xl", FontSize::S3xl),
-        ("4xl", FontSize::S4xl),
-        ("5xl", FontSize::S5xl),
-        ("6xl", FontSize::S6xl),
-        ("7xl", FontSize::S7xl),
-        ("8xl", FontSize::S8xl),
-        ("9xl", FontSize::S9xl),
-    ] {
-        col = col.push(text(format!("{name}: {}", size.to_css())).color(to_color(fg)));
-    }
-    col = col.push(section("Font Weights", fg));
-    for weight in [
-        FontWeight::Thin,
-        FontWeight::ExtraLight,
-        FontWeight::Light,
-        FontWeight::Normal,
-        FontWeight::Medium,
-        FontWeight::SemiBold,
-        FontWeight::Bold,
-        FontWeight::ExtraBold,
-        FontWeight::Black,
-    ] {
-        col = col.push(text(format!("{weight:?}: {}", weight.value())).color(to_color(fg)));
-    }
-    col.into()
-}
-
-fn render_components(fg: Color) -> Element<'static, Message> {
-    column![
-        section("Button API", fg),
-        text(Button::primary().to_css()),
-        text(Button::secondary().to_css()),
-        text(Button::outline().to_css()),
-        text(Button::ghost().to_css()),
-        text(Button::destructive().to_css()),
-        text(Button::new(ButtonVariant::Link, ButtonSize::Md).to_css()),
-        text(Button::primary().sm().to_css()),
-        text(Button::primary().lg().to_css()),
-        text(Button::primary().icon().to_css()),
-        text(Button::primary().disabled().to_css()),
-        text(Button::primary().full_width().to_css()),
-        section("Style Builder + CSS", fg),
-        text(
-            Style::centered_col()
-                .gap(Spacing::S4)
-                .bg(Color::blue(Scale::S500))
-                .rounded(BorderRadius::Md)
-                .to_css()
-        ),
-    ]
-    .spacing(6)
-    .into()
-}
-
-fn render_motion(fg: Color) -> Element<'static, Message> {
-    column![
-        section("Durations", fg),
-        text(TransitionDuration::Ms0.to_css()),
-        text(TransitionDuration::Ms75.to_css()),
-        text(TransitionDuration::Ms100.to_css()),
-        text(TransitionDuration::Ms150.to_css()),
-        text(TransitionDuration::Ms200.to_css()),
-        text(TransitionDuration::Ms300.to_css()),
-        text(TransitionDuration::Ms500.to_css()),
-        text(TransitionDuration::Ms700.to_css()),
-        text(TransitionDuration::Ms1000.to_css()),
-        text(TransitionDuration::CustomMs(350).to_css()),
-        section("Easing", fg),
-        text(Easing::Linear.to_css()),
-        text(Easing::In.to_css()),
-        text(Easing::Out.to_css()),
-        text(Easing::InOut.to_css()),
-        section("Animation tokens", fg),
-        text(AnimationToken::None.to_css()),
-        text(AnimationToken::Spin.to_css()),
-        text(AnimationToken::Ping.to_css()),
-        text(AnimationToken::Pulse.to_css()),
-        text(AnimationToken::Bounce.to_css()),
-    ]
-    .spacing(6)
-    .into()
-}
-
-fn render_semantic(fg: Color) -> Element<'static, Message> {
-    let theme = SemanticThemeVars::shadcn_neutral();
-    let primary = theme
-        .resolve_light(SemanticColor::Primary)
-        .unwrap_or(Color::blue(Scale::S600));
-    let primary_fg = theme
-        .resolve_light(SemanticColor::PrimaryForeground)
-        .unwrap_or(Color::white());
-    let secondary = theme
-        .resolve_light(SemanticColor::Secondary)
-        .unwrap_or(Color::gray(Scale::S200));
-    let secondary_fg = theme
-        .resolve_light(SemanticColor::SecondaryForeground)
-        .unwrap_or(Color::gray(Scale::S900));
-    column![
-        section("Semantic vars (CSS)", fg),
-        text(format!("{:?} => {}", SemanticColor::Background, SemanticColor::Background.to_css())),
-        text(format!("{:?} => {}", SemanticColor::Foreground, SemanticColor::Foreground.to_css())),
-        text(format!("{:?} => {}", SemanticColor::Primary, SemanticColor::Primary.to_css())),
-        text(format!("{:?} => {}", SemanticColor::Border, SemanticColor::Border.to_css())),
-        section("Direct resolve (no CSS)", fg),
-        text(format!(
-            "light background: {}",
-            theme.resolve_light(SemanticColor::Background).map(|c| c.to_css()).unwrap_or_default()
-        )),
-        text(format!(
-            "dark background: {}",
-            theme.resolve_dark(SemanticColor::Background).map(|c| c.to_css()).unwrap_or_default()
-        )),
-        section("Semantic visual demo", fg),
-        row![
-            semantic_chip("Background", theme.resolve_light(SemanticColor::Background).unwrap_or(Color::gray(Scale::S50)), fg),
-            semantic_chip("Card", theme.resolve_light(SemanticColor::Card).unwrap_or(Color::white()), fg),
-            semantic_chip("Accent", theme.resolve_light(SemanticColor::Accent).unwrap_or(Color::gray(Scale::S100)), fg),
-            semantic_chip("Destructive", theme.resolve_light(SemanticColor::Destructive).unwrap_or(Color::red(Scale::S600)), primary_fg),
-        ].spacing(8).wrap(),
-        row![
-            semantic_button("Primary", primary, primary_fg),
-            semantic_button("Secondary", secondary, secondary_fg),
-            semantic_button(
-                "Destructive",
-                theme.resolve_light(SemanticColor::Destructive).unwrap_or(Color::red(Scale::S600)),
-                primary_fg,
-            ),
-        ].spacing(8).wrap(),
-        row![
-            semantic_button("Tab: Active", primary, primary_fg),
-            semantic_button("Tab: Idle", secondary, secondary_fg),
-        ].spacing(8),
-        text("Generated variable block:"),
-        container(text(theme.to_css_variables()).size(11)).padding(8).style(|_| container::Style {
-            background: Some(Background::Color(to_color(Color::slate(Scale::S950)))),
-            border: Border {
-                radius: 6.0.into(),
-                ..Default::default()
-            },
-            ..Default::default()
-        }),
-    ]
-    .spacing(6)
-    .into()
-}
-
-fn swatch(color: Color) -> Element<'static, Message> {
-    container(text(""))
-        .width(18)
-        .height(18)
-        .style(move |_| container::Style {
-            background: Some(Background::Color(to_color(color))),
-            border: Border {
-                radius: 3.0.into(),
-                ..Default::default()
-            },
-            ..Default::default()
-        })
-        .into()
-}
-
-fn styled_button<'a>(label: &'a str, spec: Button, msg: Message) -> Element<'a, Message> {
-    let s = spec.style();
-    let bg = s
-        .background_color
-        .map(to_color)
-        .unwrap_or_else(|| to_color(Color::gray(Scale::S200)));
-    let fg = s
-        .text_color
-        .map(to_color)
-        .unwrap_or_else(|| to_color(Color::gray(Scale::S900)));
-    let border_radius = s.border_radius.map(radius_to_px).unwrap_or(6.0);
-    let border_width = s
-        .border_width
-        .map(|w| match w {
-            BorderWidth::S0 => 0.0,
-            BorderWidth::S1 => 1.0,
-            BorderWidth::S2 => 2.0,
-            BorderWidth::S4 => 4.0,
-            BorderWidth::S8 => 8.0,
-        })
-        .unwrap_or(0.0);
-    let border_color = s.border_color.map(to_color).unwrap_or(bg);
-
-    button(text(label).color(fg))
-        .padding(8)
-        .on_press(msg)
-        .style(move |_theme, _status| {
-            button::Style {
-                background: Some(Background::Color(bg)),
-                text_color: fg,
-                border: Border {
-                    radius: border_radius.into(),
-                    width: border_width,
-                    color: border_color,
-                },
-                ..button::Style::default()
-            }
-        })
-        .into()
-}
-
-fn semantic_button<'a>(label: &'a str, bg: Color, fg: Color) -> Element<'a, Message> {
-    button(text(label).color(to_color(fg)))
-        .padding(8)
-        .style(move |_theme, _status| {
-            button::Style {
+        container(content)
+            .width(Length::Fill)
+            .height(Length::Fill)
+            .style(move |_| container::Style {
                 background: Some(Background::Color(to_color(bg))),
-                text_color: to_color(fg),
-                border: Border {
-                    radius: 6.0.into(),
-                    width: 0.0,
-                    color: to_color(bg),
-                },
-                ..button::Style::default()
-            }
-        })
-        .into()
-}
-
-fn semantic_chip<'a>(label: &'a str, bg: Color, fg: Color) -> Element<'a, Message> {
-    container(text(label).size(11).color(to_color(fg)))
-        .padding([6, 10])
-        .style(move |_| container::Style {
-            background: Some(Background::Color(to_color(bg))),
-            border: Border {
-                radius: 6.0.into(),
-                width: 1.0,
-                color: to_color(Color::gray(Scale::S300)),
-            },
-            ..Default::default()
-        })
-        .into()
-}
-
-fn radius_to_px(radius: BorderRadius) -> f32 {
-    match radius {
-        BorderRadius::None => 0.0,
-        BorderRadius::Xs => 2.0,
-        BorderRadius::Sm => 4.0,
-        BorderRadius::Md => 6.0,
-        BorderRadius::Lg => 8.0,
-        BorderRadius::Xl => 12.0,
-        BorderRadius::S2xl => 16.0,
-        BorderRadius::S3xl => 24.0,
-        BorderRadius::S4xl => 32.0,
-        BorderRadius::Full => 9999.0,
+                ..Default::default()
+            })
+            .into()
     }
 }
+
+#[allow(clippy::too_many_arguments)]
+fn styled_button<'a>(
+    label: &'a str,
+    bg: iced::Color,
+    fg: iced::Color,
+    border_width: f32,
+    border_color: iced::Color,
+    hover_bg: Option<iced::Color>,
+    hover_fg: Option<iced::Color>,
+    msg: Message,
+) -> Element<'a, Message> {
+    button(
+        text(label)
+            .color(fg)
+            .size(14)
+            .align_x(alignment::Horizontal::Center)
+            .align_y(alignment::Vertical::Center),
+    )
+    .padding([8, 16])
+    .height(Length::Fixed(36.0))
+    .on_press(msg)
+    .style(move |_theme, status| {
+        let is_ghost_or_outline = bg == iced::Color::TRANSPARENT;
+        let mut current_bg = bg;
+        let mut current_fg = fg;
+
+        match status {
+            button::Status::Hovered => {
+                if let Some(hbg) = hover_bg {
+                    current_bg = hbg;
+                }
+                if let Some(hfg) = hover_fg {
+                    current_fg = hfg;
+                }
+            }
+            button::Status::Pressed => {
+                if let Some(mut hbg) = hover_bg {
+                    if !is_ghost_or_outline {
+                        hbg.a *= 0.8;
+                    } else {
+                        hbg.a *= 1.2;
+                    }
+                    current_bg = hbg;
+                }
+                if let Some(hfg) = hover_fg {
+                    current_fg = hfg;
+                }
+            }
+            _ => {}
+        }
+
+        button::Style {
+            background: Some(Background::Color(current_bg)),
+            text_color: current_fg,
+            border: Border {
+                radius: 6.0.into(),
+                width: border_width,
+                color: border_color,
+            },
+            ..button::Style::default()
+        }
+    })
+    .into()
+}
+

@@ -2,7 +2,7 @@
 //!
 //! Provides color constants and utilities for Slint UI.
 
-use crate::tokens::{BorderRadius, Color, Scale, Spacing};
+use crate::tokens::{BorderRadius, Color, Scale, Spacing, Cursor, Blur, AspectRatio, Shadow, FontSize, FontWeight, TransitionDuration, SemanticColor, SemanticThemeVars};
 use crate::traits::ToCss;
 
 /// Convert twill Color to Slint-compatible hex string.
@@ -38,6 +38,116 @@ pub fn to_radius(radius: BorderRadius) -> f32 {
         BorderRadius::S4xl => 32.0,
         BorderRadius::Full => 9999.0,
     }
+}
+
+/// Convert twill Blur to Slint blur radius.
+pub fn to_blur_radius(blur: Blur) -> f32 {
+    match blur {
+        Blur::None => 0.0,
+        Blur::Sm => 4.0,
+        Blur::Base => 8.0,
+        Blur::Md => 12.0,
+        Blur::Lg => 16.0,
+        Blur::Xl => 24.0,
+        Blur::S2xl => 40.0,
+        Blur::S3xl => 64.0,
+        Blur::Custom(px) => px as f32,
+    }
+}
+
+/// Convert twill Cursor to Slint MouseCursor.
+pub fn to_cursor_icon(cursor: Cursor) -> slint::private_unstable_api::re_exports::MouseCursor {
+    use slint::private_unstable_api::re_exports::MouseCursor;
+    match cursor {
+        Cursor::Auto | Cursor::Default => MouseCursor::Default,
+        Cursor::Pointer => MouseCursor::Pointer,
+        Cursor::Wait => MouseCursor::Wait,
+        Cursor::Progress => MouseCursor::Progress,
+        Cursor::Text | Cursor::VerticalText => MouseCursor::Text,
+        Cursor::Move | Cursor::AllScroll => MouseCursor::Move,
+        Cursor::Help => MouseCursor::Help,
+        Cursor::NotAllowed => MouseCursor::NotAllowed,
+        Cursor::NoDrop => MouseCursor::NoDrop,
+        Cursor::None => MouseCursor::None,
+        Cursor::ContextMenu => MouseCursor::Default,
+        Cursor::Cell => MouseCursor::Default,
+        Cursor::Crosshair => MouseCursor::Crosshair,
+        Cursor::Alias => MouseCursor::Alias,
+        Cursor::Copy => MouseCursor::Copy,
+        Cursor::Grab => MouseCursor::Grab,
+        Cursor::Grabbing => MouseCursor::Grabbing,
+        Cursor::ColResize => MouseCursor::ColResize,
+        Cursor::RowResize => MouseCursor::RowResize,
+        Cursor::NResize => MouseCursor::NResize,
+        Cursor::EResize => MouseCursor::EResize,
+        Cursor::SResize => MouseCursor::SResize,
+        Cursor::WResize => MouseCursor::WResize,
+        Cursor::NeResize => MouseCursor::NeResize,
+        Cursor::NwResize => MouseCursor::NwResize,
+        Cursor::SeResize => MouseCursor::SeResize,
+        Cursor::SwResize => MouseCursor::SwResize,
+        Cursor::EwResize => MouseCursor::EwResize,
+        Cursor::NsResize => MouseCursor::NsResize,
+        Cursor::NeswResize => MouseCursor::NeswResize,
+        Cursor::NwseResize => MouseCursor::NwseResize,
+        Cursor::ZoomIn => MouseCursor::Default,
+        Cursor::ZoomOut => MouseCursor::Default,
+    }
+}
+
+/// Convert twill AspectRatio to Option<f32>.
+pub fn to_aspect_ratio(ratio: AspectRatio) -> Option<f32> {
+    match ratio {
+        AspectRatio::Auto => None,
+        AspectRatio::Square => Some(1.0),
+        AspectRatio::Video => Some(16.0 / 9.0),
+        AspectRatio::Custom(w, h) => Some(w as f32 / h as f32),
+    }
+}
+
+/// Convert twill Shadow to Slint shadow values (offset_y, blur_radius).
+pub fn to_shadow(shadow: Shadow) -> (f32, f32) {
+    match shadow {
+        Shadow::None => (0.0, 0.0),
+        Shadow::Xs2 => (1.0, 0.0),
+        Shadow::Xs => (1.0, 2.0),
+        Shadow::Sm => (1.0, 3.0),
+        Shadow::Md => (4.0, 6.0),
+        Shadow::Lg => (10.0, 15.0),
+        Shadow::Xl => (20.0, 25.0),
+        Shadow::S2xl => (25.0, 50.0),
+    }
+}
+
+/// Convert twill FontSize to f32.
+pub fn to_font_size(size: FontSize) -> f32 {
+    size.size_rem() * 16.0
+}
+
+/// Convert twill FontWeight to Slint weight integer via Tailwind scale.
+pub fn to_font_weight(weight: FontWeight) -> i32 {
+    match weight {
+        FontWeight::Thin => 100,
+        FontWeight::ExtraLight => 200,
+        FontWeight::Light => 300,
+        FontWeight::Normal => 400,
+        FontWeight::Medium => 500,
+        FontWeight::SemiBold => 600,
+        FontWeight::Bold => 700,
+        FontWeight::ExtraBold => 800,
+        FontWeight::Black => 900,
+    }
+}
+
+/// Convert twill SemanticColor to Slint Color based on the theme variant.
+pub fn to_semantic_color(semantic: SemanticColor, is_dark: bool) -> slint::Color {
+    let color = SemanticThemeVars::shadcn_neutral().resolve(semantic, is_dark).unwrap_or(Color::black());
+    to_slint_color(color)
+}
+
+/// Convert twill TransitionDuration to i32 milliseconds for Slint.
+pub fn to_duration(duration: TransitionDuration) -> i32 {
+    duration.as_millis() as i32
 }
 
 /// Pre-defined Slint color palette from twill.

@@ -311,6 +311,12 @@ Twill supports multiple GUI frameworks through feature flags:
 | iced | `iced` | ✅ | Cross-platform GUI |
 | slint | `slint` | ✅ | Declarative UI toolkit |
 
+### Iced Demo (Dark & Light mode)
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/FerrisMind/twill/master/assets/twill_iced.png" alt="Twill Iced Demo — Dark and Light mode" width="900">
+</p>
+
 ### Using with egui
 
 ```rust

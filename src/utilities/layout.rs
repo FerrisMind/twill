@@ -474,6 +474,118 @@ impl ToCss for ZIndex {
     }
 }
 
+/// Visibility.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Visibility {
+    Visible,
+    Hidden,
+    Collapse,
+}
+
+impl ToCss for Visibility {
+    fn to_css(&self) -> String {
+        match self {
+            Visibility::Visible => "visible".to_string(),
+            Visibility::Hidden => "hidden".to_string(),
+            Visibility::Collapse => "collapse".to_string(),
+        }
+    }
+}
+
+/// Place content.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum PlaceContent {
+    Center,
+    Start,
+    End,
+    Between,
+    Around,
+    Evenly,
+    Baseline,
+    Stretch,
+}
+
+impl ToCss for PlaceContent {
+    fn to_css(&self) -> String {
+        match self {
+            PlaceContent::Center => "center".to_string(),
+            PlaceContent::Start => "start".to_string(),
+            PlaceContent::End => "end".to_string(),
+            PlaceContent::Between => "space-between".to_string(),
+            PlaceContent::Around => "space-around".to_string(),
+            PlaceContent::Evenly => "space-evenly".to_string(),
+            PlaceContent::Baseline => "baseline".to_string(),
+            PlaceContent::Stretch => "stretch".to_string(),
+        }
+    }
+}
+
+/// Place items.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum PlaceItems {
+    Center,
+    Start,
+    End,
+    Baseline,
+    Stretch,
+}
+
+impl ToCss for PlaceItems {
+    fn to_css(&self) -> String {
+        match self {
+            PlaceItems::Center => "center".to_string(),
+            PlaceItems::Start => "start".to_string(),
+            PlaceItems::End => "end".to_string(),
+            PlaceItems::Baseline => "baseline".to_string(),
+            PlaceItems::Stretch => "stretch".to_string(),
+        }
+    }
+}
+
+/// Justify items.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum JustifyItems {
+    Normal,
+    Center,
+    Start,
+    End,
+    Stretch,
+}
+
+impl ToCss for JustifyItems {
+    fn to_css(&self) -> String {
+        match self {
+            JustifyItems::Normal => "normal".to_string(),
+            JustifyItems::Center => "center".to_string(),
+            JustifyItems::Start => "start".to_string(),
+            JustifyItems::End => "end".to_string(),
+            JustifyItems::Stretch => "stretch".to_string(),
+        }
+    }
+}
+
+/// Justify self.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum JustifySelf {
+    Auto,
+    Start,
+    End,
+    Center,
+    Stretch,
+}
+
+impl ToCss for JustifySelf {
+    fn to_css(&self) -> String {
+        match self {
+            JustifySelf::Auto => "auto".to_string(),
+            JustifySelf::Start => "start".to_string(),
+            JustifySelf::End => "end".to_string(),
+            JustifySelf::Center => "center".to_string(),
+            JustifySelf::Stretch => "stretch".to_string(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

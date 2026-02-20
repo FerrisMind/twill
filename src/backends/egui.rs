@@ -1,7 +1,7 @@
 //! Egui backend for twill.
 
 use crate::style::Style;
-use crate::tokens::{BorderRadius, Color, Spacing};
+use crate::tokens::{BorderRadius, Color, Spacing, Cursor, Blur, AspectRatio, Shadow, FontSize, FontWeight, TransitionDuration, SemanticColor, SemanticThemeVars};
 use crate::traits::ToCss;
 
 /// Convert twill Color to egui Color32.
@@ -16,6 +16,16 @@ pub fn to_color32(color: Color) -> egui::Color32 {
     } else {
         egui::Color32::WHITE
     }
+}
+
+/// Convert twill ColorValue to egui Color32.
+pub fn to_color32_value(value: crate::tokens::ColorValue) -> egui::Color32 {
+    egui::Color32::from_rgba_premultiplied(
+        (value.r as f32 * value.a) as u8,
+        (value.g as f32 * value.a) as u8,
+        (value.b as f32 * value.a) as u8,
+        (255.0 * value.a) as u8,
+    )
 }
 
 /// Convert twill Spacing to egui Vec2 (in points).
@@ -38,6 +48,102 @@ pub fn to_corner_radius(radius: BorderRadius) -> f32 {
         BorderRadius::S3xl => 24.0,
         BorderRadius::S4xl => 32.0,
         BorderRadius::Full => 9999.0,
+    }
+}
+
+/// Convert twill Blur to egui blur radius (f32).
+pub fn to_blur_radius(blur: Blur) -> f32 {
+    match blur {
+        Blur::None => 0.0,
+        Blur::Sm => 4.0,
+        Blur::Base => 8.0,
+        Blur::Md => 12.0,
+        Blur::Lg => 16.0,
+        Blur::Xl => 24.0,
+        Blur::S2xl => 40.0,
+        Blur::S3xl => 64.0,
+        Blur::Custom(px) => px as f32,
+    }
+}
+
+/// Convert twill AspectRatio to Option<f32> for egui.
+pub fn to_aspect_ratio(ratio: AspectRatio) -> Option<f32> {
+    match ratio {
+        AspectRatio::Auto => None,
+        AspectRatio::Square => Some(1.0),
+        AspectRatio::Video => Some(16.0 / 9.0),
+        AspectRatio::Custom(w, h) => Some(w as f32 / h as f32),
+    }
+}
+
+/// Convert twill Shadow to egui Shadow.
+pub fn to_shadow(shadow: Shadow) -> Option<egui::epaint::Shadow> {
+    match shadow {
+        Shadow::None => None,
+        Shadow::Xs2 => Some(egui::epaint::Shadow { offset: [0, 1], blur: 0, spread: 0, color: egui::Color32::from_black_alpha(13) }),
+        Shadow::Xs => Some(egui::epaint::Shadow { offset: [0, 1], blur: 2, spread: 0, color: egui::Color32::from_black_alpha(13) }),
+        Shadow::Sm => Some(egui::epaint::Shadow { offset: [0, 1], blur: 3, spread: 0, color: egui::Color32::from_black_alpha(26) }),
+        Shadow::Md => Some(egui::epaint::Shadow { offset: [0, 4], blur: 6, spread: 0, color: egui::Color32::from_black_alpha(26) }),
+        Shadow::Lg => Some(egui::epaint::Shadow { offset: [0, 10], blur: 15, spread: 0, color: egui::Color32::from_black_alpha(26) }),
+        Shadow::Xl => Some(egui::epaint::Shadow { offset: [0, 20], blur: 25, spread: 0, color: egui::Color32::from_black_alpha(26) }),
+        Shadow::S2xl => Some(egui::epaint::Shadow { offset: [0, 25], blur: 50, spread: 0, color: egui::Color32::from_black_alpha(63) }),
+    }
+}
+
+/// Convert twill FontSize to f32.
+pub fn to_font_size(size: FontSize) -> f32 {
+    size.size_rem() * 16.0
+}
+
+/// Convert twill FontWeight to egui FontFamily (fallback).
+pub fn to_font_weight(_weight: FontWeight) -> egui::FontFamily {
+    egui::FontFamily::Proportional
+}
+
+/// Convert twill SemanticColor to egui Color32 based on the theme variant.
+pub fn to_semantic_color32(semantic: SemanticColor, is_dark: bool) -> egui::Color32 {
+    let color = SemanticThemeVars::shadcn_neutral().resolve(semantic, is_dark).unwrap_or(Color::black());
+    to_color32(color)
+}
+
+/// Convert twill TransitionDuration to std::time::Duration.
+pub fn to_duration(duration: TransitionDuration) -> std::time::Duration {
+    std::time::Duration::from_millis(duration.as_millis() as u64)
+}
+
+/// Convert twill Cursor to egui CursorIcon.
+pub fn to_cursor_icon(cursor: Cursor) -> egui::CursorIcon {
+    match cursor {
+        Cursor::Auto | Cursor::Default => egui::CursorIcon::Default,
+        Cursor::Pointer => egui::CursorIcon::PointingHand,
+        Cursor::Wait | Cursor::Progress => egui::CursorIcon::Progress,
+        Cursor::Text | Cursor::VerticalText => egui::CursorIcon::Text,
+        Cursor::Move => egui::CursorIcon::AllScroll,
+        Cursor::Help => egui::CursorIcon::Help,
+        Cursor::NotAllowed | Cursor::NoDrop => egui::CursorIcon::NotAllowed,
+        Cursor::None => egui::CursorIcon::None,
+        Cursor::ContextMenu => egui::CursorIcon::ContextMenu,
+        Cursor::Cell => egui::CursorIcon::Cell,
+        Cursor::Crosshair => egui::CursorIcon::Crosshair,
+        Cursor::Alias => egui::CursorIcon::Alias,
+        Cursor::Copy => egui::CursorIcon::Copy,
+        Cursor::Grab => egui::CursorIcon::Grab,
+        Cursor::Grabbing => egui::CursorIcon::Grabbing,
+        Cursor::AllScroll => egui::CursorIcon::AllScroll,
+        Cursor::ColResize | Cursor::EwResize => egui::CursorIcon::ResizeColumn,
+        Cursor::RowResize | Cursor::NsResize => egui::CursorIcon::ResizeRow,
+        Cursor::NResize => egui::CursorIcon::ResizeNorth,
+        Cursor::EResize => egui::CursorIcon::ResizeEast,
+        Cursor::SResize => egui::CursorIcon::ResizeSouth,
+        Cursor::WResize => egui::CursorIcon::ResizeWest,
+        Cursor::NeResize => egui::CursorIcon::ResizeNorthEast,
+        Cursor::NwResize => egui::CursorIcon::ResizeNorthWest,
+        Cursor::SeResize => egui::CursorIcon::ResizeSouthEast,
+        Cursor::SwResize => egui::CursorIcon::ResizeSouthWest,
+        Cursor::NeswResize => egui::CursorIcon::ResizeNeSw,
+        Cursor::NwseResize => egui::CursorIcon::ResizeNwSe,
+        Cursor::ZoomIn => egui::CursorIcon::ZoomIn,
+        Cursor::ZoomOut => egui::CursorIcon::ZoomOut,
     }
 }
 
@@ -93,14 +199,11 @@ pub fn to_frame(style: &Style) -> egui::Frame {
         frame = frame.stroke(egui::Stroke::new(w, to_color32(*color)));
     }
 
-    // Shadow (simplified for newer egui API)
-    if let Some(_s) = &style.box_shadow {
-        frame = frame.shadow(egui::epaint::Shadow {
-            offset: [0, 4],
-            blur: 8,
-            spread: 0,
-            color: egui::Color32::from_black_alpha(30),
-        });
+    // Shadow
+    if let Some(s) = &style.box_shadow
+        && let Some(egui_shadow) = to_shadow(*s)
+    {
+        frame = frame.shadow(egui_shadow);
     }
 
     frame

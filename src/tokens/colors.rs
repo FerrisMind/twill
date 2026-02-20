@@ -178,11 +178,18 @@ pub struct ColorValue {
 }
 
 impl ColorValue {
+    pub const TRANSPARENT: Self = Self::new(0, 0, 0, 0.0);
+
     pub const fn new(r: u8, g: u8, b: u8, a: f32) -> Self {
         Self { r, g, b, a }
     }
     pub const fn from_rgb(r: u8, g: u8, b: u8) -> Self {
         Self::new(r, g, b, 1.0)
+    }
+
+    pub fn with_alpha(mut self, a: f32) -> Self {
+        self.a = a;
+        self
     }
 
     pub fn from_hex(hex: &str) -> Option<Self> {
@@ -209,6 +216,13 @@ impl ColorValue {
     pub fn from_color(color: Color) -> Self {
         let (r, g, b) = get_palette_rgb(color.family, color.scale);
         Self::from_rgb(r, g, b)
+    }
+}
+
+impl ComputeValue for ColorValue {
+    type Output = ColorValue;
+    fn compute(&self) -> Self::Output {
+        *self
     }
 }
 

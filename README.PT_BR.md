@@ -286,6 +286,12 @@ Twill suporta múltiplos frameworks GUI através de feature flags:
 | iced | `iced` | ✅ | GUI multiplataforma |
 | slint | `slint` | ✅ | Toolkit de UI declarativo |
 
+### Demo Iced (Modo Escuro e Claro)
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/FerrisMind/twill/master/assets/twill_iced.png" alt="Twill Iced Demo — Modo Escuro e Claro" width="900">
+</p>
+
 ### Usando com egui
 
 ```rust

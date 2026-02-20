@@ -286,6 +286,12 @@ Twill поддерживает несколько GUI-фреймворков ч�
 | iced | `iced` | ✅ | Кроссплатформенный GUI |
 | slint | `slint` | ✅ | Декларативный UI-тулкит |
 
+### Демо Iced (Тёмная и Светлая тема)
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/FerrisMind/twill/master/assets/twill_iced.png" alt="Twill Iced Demo — Тёмная и Светлая тема" width="900">
+</p>
+
 ### Использование с egui
 
 ```rust

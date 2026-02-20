@@ -29,12 +29,13 @@ strip = true
 [dependencies]
 # Optional UI framework backends
 egui = { version = "0.33", optional = true }
-iced = { version = "0.14", optional = true, features = ["advanced"] }
+iced = { version = "0.14", optional = true, features = ["advanced", "image"] }
 slint = { version = "1.15", optional = true }
 
 [dev-dependencies]
 eframe = { version = "0.33", default-features = false, features = ["glow"] }
 image = { version = "0.25", default-features = false, features = ["png"] }
+regex = "1.12.3"
 
 [features]
 default = []
@@ -54,5 +55,3 @@ required-features = ["iced"]
 name = "demo-slint"
 required-features = ["slint"]
 
-[[example]]
-name = "demo"

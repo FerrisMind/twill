@@ -98,6 +98,34 @@ impl Default for MotionDefaults {
     }
 }
 
+/// Transition property tokens (`transition-*` in Tailwind).
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum TransitionProperty {
+    None,
+    All,
+    Default,
+    Colors,
+    Opacity,
+    Shadow,
+    Transform,
+    Custom(String),
+}
+
+impl ToCss for TransitionProperty {
+    fn to_css(&self) -> String {
+        match self {
+            Self::None => "none".to_string(),
+            Self::All => "all".to_string(),
+            Self::Default => "color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter".to_string(),
+            Self::Colors => "color, background-color, border-color, text-decoration-color, fill, stroke".to_string(),
+            Self::Opacity => "opacity".to_string(),
+            Self::Shadow => "box-shadow".to_string(),
+            Self::Transform => "transform".to_string(),
+            Self::Custom(val) => val.clone(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

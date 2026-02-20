@@ -3,12 +3,12 @@
 use crate::tokens::{
     AnimationToken, BorderRadius, BorderStyle, BorderWidth, Color, Easing, FontFamily, FontSize,
     FontWeight, LetterSpacing, LineHeight, Shadow, Spacing, TextAlign, TextDecoration,
-    TextTransform, TransitionDuration,
+    TextTransform, TransitionDuration, Blur, AspectRatio, Cursor
 };
 use crate::traits::{Merge, ToCss};
 use crate::utilities::{
     Display, FlexContainer, GridContainer, Height, Margin, Overflow, Padding, Position,
-    SizeConstraints, Width, ZIndex,
+    SizeConstraints, Width, ZIndex, Visibility, PlaceContent, PlaceItems, JustifyItems, JustifySelf
 };
 
 /// A comprehensive style builder for composing CSS styles.
@@ -16,15 +16,21 @@ use crate::utilities::{
 pub struct Style {
     // Layout
     pub display: Option<Display>,
+    pub visibility: Option<Visibility>,
     pub position: Option<Position>,
     pub z_index: Option<ZIndex>,
     pub overflow: Option<Overflow>,
     pub overflow_x: Option<Overflow>,
     pub overflow_y: Option<Overflow>,
+    pub aspect_ratio: Option<AspectRatio>,
 
     // Flex/Grid
     pub flex: Option<FlexContainer>,
     pub grid: Option<GridContainer>,
+    pub place_content: Option<PlaceContent>,
+    pub place_items: Option<PlaceItems>,
+    pub justify_items: Option<JustifyItems>,
+    pub justify_self: Option<JustifySelf>,
 
     // Spacing
     pub padding: Option<Padding>,
@@ -38,6 +44,9 @@ pub struct Style {
     // Background
     pub background_color: Option<Color>,
     pub opacity: Option<f32>,
+
+    // Effects
+    pub blur: Option<Blur>,
 
     // Border
     pub border_radius: Option<BorderRadius>,
@@ -65,6 +74,8 @@ pub struct Style {
     pub transition_timing_function: Option<Easing>,
     pub transition_delay: Option<TransitionDuration>,
     pub animation: Option<AnimationToken>,
+    // Interactivity
+    pub cursor: Option<Cursor>,
 }
 
 impl Style {
@@ -78,6 +89,12 @@ impl Style {
     /// Set display type.
     pub fn display(mut self, display: Display) -> Self {
         self.display = Some(display);
+        self
+    }
+
+    /// Set visibility.
+    pub fn visibility(mut self, visibility: Visibility) -> Self {
+        self.visibility = Some(visibility);
         self
     }
 
@@ -96,6 +113,12 @@ impl Style {
     /// Set overflow.
     pub fn overflow(mut self, overflow: Overflow) -> Self {
         self.overflow = Some(overflow);
+        self
+    }
+
+    /// Set aspect ratio.
+    pub fn aspect_ratio(mut self, ratio: AspectRatio) -> Self {
+        self.aspect_ratio = Some(ratio);
         self
     }
 
@@ -121,6 +144,30 @@ impl Style {
         } else {
             self.flex = Some(FlexContainer::new().gap(spacing));
         }
+        self
+    }
+
+    /// Set place content.
+    pub fn place_content(mut self, content: PlaceContent) -> Self {
+        self.place_content = Some(content);
+        self
+    }
+
+    /// Set place items.
+    pub fn place_items(mut self, items: PlaceItems) -> Self {
+        self.place_items = Some(items);
+        self
+    }
+
+    /// Set justify items.
+    pub fn justify_items(mut self, items: JustifyItems) -> Self {
+        self.justify_items = Some(items);
+        self
+    }
+
+    /// Set justify self.
+    pub fn justify_self(mut self, self_align: JustifySelf) -> Self {
+        self.justify_self = Some(self_align);
         self
     }
 
@@ -174,6 +221,14 @@ impl Style {
     /// Set opacity (0.0 - 1.0).
     pub fn opacity(mut self, opacity: f32) -> Self {
         self.opacity = Some(opacity);
+        self
+    }
+
+    // === Effects ===
+
+    /// Set blur.
+    pub fn blur(mut self, blur: Blur) -> Self {
+        self.blur = Some(blur);
         self
     }
 
@@ -294,6 +349,14 @@ impl Style {
         self
     }
 
+    // === Interactivity ===
+    
+    /// Set cursor.
+    pub fn cursor(mut self, cursor: Cursor) -> Self {
+        self.cursor = Some(cursor);
+        self
+    }
+
     // === Convenience methods ===
 
     /// Create a flex container with default settings.
@@ -349,13 +412,19 @@ impl Merge<Self> for Style {
     fn merge(&self, other: Self) -> Self {
         Self {
             display: other.display.or(self.display),
+            visibility: other.visibility.or(self.visibility),
             position: other.position.or(self.position),
             z_index: other.z_index.or(self.z_index),
             overflow: other.overflow.or(self.overflow),
             overflow_x: other.overflow_x.or(self.overflow_x),
             overflow_y: other.overflow_y.or(self.overflow_y),
+            aspect_ratio: other.aspect_ratio.or(self.aspect_ratio),
             flex: other.flex.or(self.flex.clone()),
             grid: other.grid.or(self.grid.clone()),
+            place_content: other.place_content.or(self.place_content),
+            place_items: other.place_items.or(self.place_items),
+            justify_items: other.justify_items.or(self.justify_items),
+            justify_self: other.justify_self.or(self.justify_self),
             padding: other.padding.or(self.padding),
             margin: other.margin.or(self.margin),
             width: other.width.or(self.width),
@@ -363,6 +432,7 @@ impl Merge<Self> for Style {
             constraints: other.constraints.or(self.constraints),
             background_color: other.background_color.or(self.background_color),
             opacity: other.opacity.or(self.opacity),
+            blur: other.blur.or(self.blur),
             border_radius: other.border_radius.or(self.border_radius),
             border_width: other.border_width.or(self.border_width),
             border_style: other.border_style.or(self.border_style),
@@ -386,6 +456,7 @@ impl Merge<Self> for Style {
                 .or(self.transition_timing_function),
             transition_delay: other.transition_delay.or(self.transition_delay),
             animation: other.animation.or(self.animation),
+            cursor: other.cursor.or(self.cursor),
         }
     }
 }
@@ -397,6 +468,9 @@ impl ToCss for Style {
         // Layout
         if let Some(v) = &self.display {
             props.push(format!("display: {}", v.to_css()));
+        }
+        if let Some(v) = &self.visibility {
+            props.push(format!("visibility: {}", v.to_css()));
         }
         if let Some(v) = &self.position {
             props.push(format!("position: {}", v.to_css()));
@@ -413,6 +487,9 @@ impl ToCss for Style {
         if let Some(v) = &self.overflow_y {
             props.push(format!("overflow-y: {}", v.to_css()));
         }
+        if let Some(v) = &self.aspect_ratio {
+            props.push(format!("aspect-ratio: {}", v.to_css()));
+        }
 
         // Flex/Grid
         if let Some(v) = &self.flex {
@@ -420,6 +497,18 @@ impl ToCss for Style {
         }
         if let Some(v) = &self.grid {
             props.push(v.to_css());
+        }
+        if let Some(v) = &self.place_content {
+            props.push(format!("place-content: {}", v.to_css()));
+        }
+        if let Some(v) = &self.place_items {
+            props.push(format!("place-items: {}", v.to_css()));
+        }
+        if let Some(v) = &self.justify_items {
+            props.push(format!("justify-items: {}", v.to_css()));
+        }
+        if let Some(v) = &self.justify_self {
+            props.push(format!("justify-self: {}", v.to_css()));
         }
 
         // Spacing
@@ -447,6 +536,9 @@ impl ToCss for Style {
         }
         if let Some(v) = &self.opacity {
             props.push(format!("opacity: {}", v));
+        }
+        if let Some(v) = &self.blur {
+            props.push(format!("filter: blur({})", v.to_css()));
         }
 
         // Border
@@ -512,6 +604,9 @@ impl ToCss for Style {
         }
         if let Some(v) = &self.animation {
             props.push(format!("animation: {}", v.to_css()));
+        }
+        if let Some(v) = &self.cursor {
+            props.push(format!("cursor: {}", v.to_css()));
         }
 
         props.join("; ")
