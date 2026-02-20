@@ -1,6 +1,4 @@
-//! Border design tokens following Tailwind CSS border scale.
-
-use crate::traits::ToCss;
+//! Border design tokens for native UI frameworks.
 
 /// Border radius tokens.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -28,19 +26,24 @@ pub enum BorderRadius {
     Full,
 }
 
-impl ToCss for BorderRadius {
-    fn to_css(&self) -> String {
+impl BorderRadius {
+    /// Tailwind `--radius` default token.
+    pub const DEFAULT: BorderRadius = BorderRadius::Sm;
+}
+
+impl BorderRadius {
+    pub fn px_value(&self) -> f32 {
         match self {
-            BorderRadius::None => "0".to_string(),
-            BorderRadius::Xs => "0.125rem".to_string(),
-            BorderRadius::Sm => "0.25rem".to_string(),
-            BorderRadius::Md => "0.375rem".to_string(),
-            BorderRadius::Lg => "0.5rem".to_string(),
-            BorderRadius::Xl => "0.75rem".to_string(),
-            BorderRadius::S2xl => "1rem".to_string(),
-            BorderRadius::S3xl => "1.5rem".to_string(),
-            BorderRadius::S4xl => "2rem".to_string(),
-            BorderRadius::Full => "9999px".to_string(),
+            BorderRadius::None => 0.0,
+            BorderRadius::Xs => 2.0,
+            BorderRadius::Sm => 4.0,
+            BorderRadius::Md => 6.0,
+            BorderRadius::Lg => 8.0,
+            BorderRadius::Xl => 12.0,
+            BorderRadius::S2xl => 16.0,
+            BorderRadius::S3xl => 24.0,
+            BorderRadius::S4xl => 32.0,
+            BorderRadius::Full => 9999.0,
         }
     }
 }
@@ -60,14 +63,14 @@ pub enum BorderWidth {
     S8,
 }
 
-impl ToCss for BorderWidth {
-    fn to_css(&self) -> String {
+impl BorderWidth {
+    pub fn px_value(&self) -> u8 {
         match self {
-            BorderWidth::S0 => "0".to_string(),
-            BorderWidth::S1 => "1px".to_string(),
-            BorderWidth::S2 => "2px".to_string(),
-            BorderWidth::S4 => "4px".to_string(),
-            BorderWidth::S8 => "8px".to_string(),
+            BorderWidth::S0 => 0,
+            BorderWidth::S1 => 1,
+            BorderWidth::S2 => 2,
+            BorderWidth::S4 => 4,
+            BorderWidth::S8 => 8,
         }
     }
 }
@@ -83,15 +86,15 @@ pub enum BorderStyle {
     None,
 }
 
-impl ToCss for BorderStyle {
-    fn to_css(&self) -> String {
+impl BorderStyle {
+    pub fn keyword(&self) -> &'static str {
         match self {
-            BorderStyle::Solid => "solid".to_string(),
-            BorderStyle::Dashed => "dashed".to_string(),
-            BorderStyle::Dotted => "dotted".to_string(),
-            BorderStyle::Double => "double".to_string(),
-            BorderStyle::Hidden => "hidden".to_string(),
-            BorderStyle::None => "none".to_string(),
+            BorderStyle::Solid => "solid",
+            BorderStyle::Dashed => "dashed",
+            BorderStyle::Dotted => "dotted",
+            BorderStyle::Double => "double",
+            BorderStyle::Hidden => "hidden",
+            BorderStyle::None => "none",
         }
     }
 }
@@ -107,15 +110,15 @@ pub enum OutlineStyle {
     Hidden,
 }
 
-impl ToCss for OutlineStyle {
-    fn to_css(&self) -> String {
+impl OutlineStyle {
+    pub fn keyword(&self) -> &'static str {
         match self {
-            OutlineStyle::None => "none".to_string(),
-            OutlineStyle::Solid => "solid".to_string(),
-            OutlineStyle::Dashed => "dashed".to_string(),
-            OutlineStyle::Dotted => "dotted".to_string(),
-            OutlineStyle::Double => "double".to_string(),
-            OutlineStyle::Hidden => "hidden".to_string(),
+            OutlineStyle::None => "none",
+            OutlineStyle::Solid => "solid",
+            OutlineStyle::Dashed => "dashed",
+            OutlineStyle::Dotted => "dotted",
+            OutlineStyle::Double => "double",
+            OutlineStyle::Hidden => "hidden",
         }
     }
 }
@@ -137,15 +140,15 @@ pub enum RingWidth {
     Inset,
 }
 
-impl ToCss for RingWidth {
-    fn to_css(&self) -> String {
+impl RingWidth {
+    pub fn px_value(&self) -> Option<u8> {
         match self {
-            RingWidth::None => "0".to_string(),
-            RingWidth::S1 => "1px".to_string(),
-            RingWidth::S2 => "2px".to_string(),
-            RingWidth::S4 => "4px".to_string(),
-            RingWidth::S8 => "8px".to_string(),
-            RingWidth::Inset => "inset".to_string(),
+            RingWidth::None => Some(0),
+            RingWidth::S1 => Some(1),
+            RingWidth::S2 => Some(2),
+            RingWidth::S4 => Some(4),
+            RingWidth::S8 => Some(8),
+            RingWidth::Inset => None,
         }
     }
 }
@@ -165,14 +168,14 @@ pub enum DivideWidth {
     S8,
 }
 
-impl ToCss for DivideWidth {
-    fn to_css(&self) -> String {
+impl DivideWidth {
+    pub fn px_value(&self) -> u8 {
         match self {
-            DivideWidth::S0 => "0".to_string(),
-            DivideWidth::S1 => "1px".to_string(),
-            DivideWidth::S2 => "2px".to_string(),
-            DivideWidth::S4 => "4px".to_string(),
-            DivideWidth::S8 => "8px".to_string(),
+            DivideWidth::S0 => 0,
+            DivideWidth::S1 => 1,
+            DivideWidth::S2 => 2,
+            DivideWidth::S4 => 4,
+            DivideWidth::S8 => 8,
         }
     }
 }
@@ -183,12 +186,12 @@ mod tests {
 
     #[test]
     fn test_border_radius() {
-        assert_eq!(BorderRadius::Md.to_css(), "0.375rem");
-        assert_eq!(BorderRadius::Full.to_css(), "9999px");
+        assert_eq!(BorderRadius::Md.px_value(), 6.0);
+        assert_eq!(BorderRadius::Full.px_value(), 9999.0);
     }
 
     #[test]
     fn test_border_width() {
-        assert_eq!(BorderWidth::S2.to_css(), "2px");
+        assert_eq!(BorderWidth::S2.px_value(), 2);
     }
 }

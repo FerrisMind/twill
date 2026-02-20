@@ -2,8 +2,8 @@
 //!
 //! These tokens are opt-in: you can ignore them and continue using raw color tokens.
 
-use crate::tokens::{Color, Scale};
-use crate::traits::ToCss;
+use crate::tokens::{Color, ColorValue, Scale, SpecialColor};
+use crate::traits::ComputeValue;
 
 /// shadcn-style semantic color variable names.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -76,16 +76,6 @@ impl SemanticColor {
             Self::SidebarBorder => "sidebar-border",
             Self::SidebarRing => "sidebar-ring",
         }
-    }
-
-    pub fn as_css_var(&self) -> String {
-        format!("var(--{})", self.var_name())
-    }
-}
-
-impl ToCss for SemanticColor {
-    fn to_css(&self) -> String {
-        self.as_css_var()
     }
 }
 
@@ -186,21 +176,6 @@ impl SemanticThemeVars {
         }
     }
 
-    pub fn to_css_variables(&self) -> String {
-        let mut out = String::new();
-        out.push_str(":root {\n");
-        out.push_str(&format!("  --radius: {};\n", self.radius));
-        for (token, color) in self.light {
-            out.push_str(&format!("  --{}: {};\n", token.var_name(), color.to_css()));
-        }
-        out.push_str("}\n\n.dark {\n");
-        for (token, color) in self.dark {
-            out.push_str(&format!("  --{}: {};\n", token.var_name(), color.to_css()));
-        }
-        out.push_str("}\n");
-        out
-    }
-
     /// Resolve a semantic token to a concrete `Color`.
     ///
     /// `is_dark = false` resolves from light values, `true` from dark values.
@@ -223,20 +198,263 @@ impl SemanticThemeVars {
     }
 }
 
+/// Dynamic semantic theme generated from an arbitrary brand color using OKLCH.
+#[derive(Debug, Clone)]
+pub struct DynamicSemanticTheme {
+    pub light: Vec<(SemanticColor, ColorValue)>,
+    pub dark: Vec<(SemanticColor, ColorValue)>,
+}
+
+impl DynamicSemanticTheme {
+    fn scale_value(scale: &[(Scale, ColorValue); 11], target: Scale) -> ColorValue {
+        scale
+            .iter()
+            .find(|(s, _)| *s == target)
+            .map(|(_, v)| *v)
+            .expect("Scale::ALL must contain all 11 scale entries")
+    }
+
+    fn readable_text_for(bg: ColorValue) -> ColorValue {
+        match bg.preferred_text_color() {
+            SpecialColor::Black => Color::black().compute(),
+            SpecialColor::White => Color::white().compute(),
+            SpecialColor::Transparent | SpecialColor::Current => Color::white().compute(),
+        }
+    }
+
+    /// Builds light/dark semantic palettes from any brand HEX color (e.g. `#ff0000`).
+    pub fn from_brand_hex(hex: &str) -> Option<Self> {
+        let brand = ColorValue::from_hex(hex)?;
+        let scale = brand.generate_scale_map_oklch();
+
+        let light_primary = Self::scale_value(&scale, Scale::S500);
+        let dark_primary = Self::scale_value(&scale, Scale::S400);
+        let light_primary_fg = Self::readable_text_for(light_primary);
+        let dark_primary_fg = Self::readable_text_for(dark_primary);
+
+        let light = vec![
+            (SemanticColor::Background, Color::gray(Scale::S50).compute()),
+            (
+                SemanticColor::Foreground,
+                Color::gray(Scale::S900).compute(),
+            ),
+            (SemanticColor::Card, Color::white().compute()),
+            (
+                SemanticColor::CardForeground,
+                Color::gray(Scale::S900).compute(),
+            ),
+            (SemanticColor::Popover, Color::white().compute()),
+            (
+                SemanticColor::PopoverForeground,
+                Color::gray(Scale::S900).compute(),
+            ),
+            (SemanticColor::Primary, light_primary),
+            (SemanticColor::PrimaryForeground, light_primary_fg),
+            (SemanticColor::Secondary, Color::gray(Scale::S100).compute()),
+            (
+                SemanticColor::SecondaryForeground,
+                Color::gray(Scale::S900).compute(),
+            ),
+            (SemanticColor::Muted, Color::gray(Scale::S100).compute()),
+            (
+                SemanticColor::MutedForeground,
+                Color::gray(Scale::S500).compute(),
+            ),
+            (
+                SemanticColor::Accent,
+                Self::scale_value(&scale, Scale::S100),
+            ),
+            (
+                SemanticColor::AccentForeground,
+                Self::readable_text_for(Self::scale_value(&scale, Scale::S100)),
+            ),
+            (
+                SemanticColor::Destructive,
+                Color::red(Scale::S600).compute(),
+            ),
+            (SemanticColor::Border, Color::gray(Scale::S200).compute()),
+            (SemanticColor::Input, Color::gray(Scale::S200).compute()),
+            (SemanticColor::Ring, Self::scale_value(&scale, Scale::S500)),
+            (
+                SemanticColor::Chart1,
+                Self::scale_value(&scale, Scale::S500),
+            ),
+            (
+                SemanticColor::Chart2,
+                Self::scale_value(&scale, Scale::S600),
+            ),
+            (
+                SemanticColor::Chart3,
+                Self::scale_value(&scale, Scale::S700),
+            ),
+            (
+                SemanticColor::Chart4,
+                Self::scale_value(&scale, Scale::S400),
+            ),
+            (
+                SemanticColor::Chart5,
+                Self::scale_value(&scale, Scale::S300),
+            ),
+            (SemanticColor::Sidebar, Color::gray(Scale::S50).compute()),
+            (
+                SemanticColor::SidebarForeground,
+                Color::gray(Scale::S900).compute(),
+            ),
+            (
+                SemanticColor::SidebarPrimary,
+                Self::scale_value(&scale, Scale::S600),
+            ),
+            (
+                SemanticColor::SidebarPrimaryForeground,
+                Self::readable_text_for(Self::scale_value(&scale, Scale::S600)),
+            ),
+            (
+                SemanticColor::SidebarAccent,
+                Self::scale_value(&scale, Scale::S100),
+            ),
+            (
+                SemanticColor::SidebarAccentForeground,
+                Self::readable_text_for(Self::scale_value(&scale, Scale::S100)),
+            ),
+            (
+                SemanticColor::SidebarBorder,
+                Color::gray(Scale::S200).compute(),
+            ),
+            (
+                SemanticColor::SidebarRing,
+                Self::scale_value(&scale, Scale::S500),
+            ),
+        ];
+
+        let dark = vec![
+            (
+                SemanticColor::Background,
+                Color::gray(Scale::S950).compute(),
+            ),
+            (SemanticColor::Foreground, Color::gray(Scale::S50).compute()),
+            (SemanticColor::Card, Color::gray(Scale::S900).compute()),
+            (
+                SemanticColor::CardForeground,
+                Color::gray(Scale::S50).compute(),
+            ),
+            (SemanticColor::Popover, Color::gray(Scale::S800).compute()),
+            (
+                SemanticColor::PopoverForeground,
+                Color::gray(Scale::S50).compute(),
+            ),
+            (SemanticColor::Primary, dark_primary),
+            (SemanticColor::PrimaryForeground, dark_primary_fg),
+            (SemanticColor::Secondary, Color::gray(Scale::S800).compute()),
+            (
+                SemanticColor::SecondaryForeground,
+                Color::gray(Scale::S50).compute(),
+            ),
+            (SemanticColor::Muted, Color::gray(Scale::S800).compute()),
+            (
+                SemanticColor::MutedForeground,
+                Color::gray(Scale::S400).compute(),
+            ),
+            (
+                SemanticColor::Accent,
+                Self::scale_value(&scale, Scale::S700),
+            ),
+            (
+                SemanticColor::AccentForeground,
+                Self::readable_text_for(Self::scale_value(&scale, Scale::S700)),
+            ),
+            (
+                SemanticColor::Destructive,
+                Color::red(Scale::S500).compute(),
+            ),
+            (SemanticColor::Border, Color::gray(Scale::S700).compute()),
+            (SemanticColor::Input, Color::gray(Scale::S700).compute()),
+            (SemanticColor::Ring, Self::scale_value(&scale, Scale::S400)),
+            (
+                SemanticColor::Chart1,
+                Self::scale_value(&scale, Scale::S400),
+            ),
+            (
+                SemanticColor::Chart2,
+                Self::scale_value(&scale, Scale::S500),
+            ),
+            (
+                SemanticColor::Chart3,
+                Self::scale_value(&scale, Scale::S600),
+            ),
+            (
+                SemanticColor::Chart4,
+                Self::scale_value(&scale, Scale::S300),
+            ),
+            (
+                SemanticColor::Chart5,
+                Self::scale_value(&scale, Scale::S200),
+            ),
+            (SemanticColor::Sidebar, Color::gray(Scale::S900).compute()),
+            (
+                SemanticColor::SidebarForeground,
+                Color::gray(Scale::S50).compute(),
+            ),
+            (
+                SemanticColor::SidebarPrimary,
+                Self::scale_value(&scale, Scale::S500),
+            ),
+            (
+                SemanticColor::SidebarPrimaryForeground,
+                Self::readable_text_for(Self::scale_value(&scale, Scale::S500)),
+            ),
+            (
+                SemanticColor::SidebarAccent,
+                Color::gray(Scale::S800).compute(),
+            ),
+            (
+                SemanticColor::SidebarAccentForeground,
+                Color::gray(Scale::S50).compute(),
+            ),
+            (
+                SemanticColor::SidebarBorder,
+                Color::gray(Scale::S700).compute(),
+            ),
+            (
+                SemanticColor::SidebarRing,
+                Self::scale_value(&scale, Scale::S400),
+            ),
+        ];
+
+        Some(Self { light, dark })
+    }
+
+    /// Resolve a semantic token to concrete RGBA color.
+    pub fn resolve(&self, token: SemanticColor, is_dark: bool) -> Option<ColorValue> {
+        let source = if is_dark { &self.dark } else { &self.light };
+        source
+            .iter()
+            .find(|(t, _)| *t == token)
+            .map(|(_, color)| *color)
+    }
+
+    pub fn resolve_light(&self, token: SemanticColor) -> Option<ColorValue> {
+        self.resolve(token, false)
+    }
+
+    pub fn resolve_dark(&self, token: SemanticColor) -> Option<ColorValue> {
+        self.resolve(token, true)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_semantic_var_css() {
-        assert_eq!(SemanticColor::Primary.to_css(), "var(--primary)");
+    fn test_semantic_var_name() {
+        assert_eq!(SemanticColor::Primary.var_name(), "primary");
     }
 
     #[test]
-    fn test_semantic_theme_generation() {
-        let css = SemanticThemeVars::shadcn_neutral().to_css_variables();
-        assert!(css.contains("--background: #"));
-        assert!(css.contains(".dark"));
+    fn test_semantic_theme_has_palettes() {
+        let theme = SemanticThemeVars::shadcn_neutral();
+        assert!(!theme.light.is_empty());
+        assert!(!theme.dark.is_empty());
     }
 
     #[test]
@@ -246,5 +464,17 @@ mod tests {
         let dark_bg = theme.resolve_dark(SemanticColor::Background).unwrap();
         assert_eq!(light_bg, Color::gray(Scale::S50));
         assert_eq!(dark_bg, Color::gray(Scale::S950));
+    }
+
+    #[test]
+    fn test_dynamic_theme_from_brand_hex() {
+        let theme = DynamicSemanticTheme::from_brand_hex("#ff0000").expect("valid hex");
+        let light_primary = theme
+            .resolve_light(SemanticColor::Primary)
+            .expect("primary in light theme");
+        let dark_primary = theme
+            .resolve_dark(SemanticColor::Primary)
+            .expect("primary in dark theme");
+        assert_ne!(light_primary, dark_primary);
     }
 }

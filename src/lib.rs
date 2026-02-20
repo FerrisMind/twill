@@ -1,15 +1,15 @@
 //! # Twill
 //!
-//! Idiomatic Rust styling library inspired by Tailwind CSS.
+//! Idiomatic Rust styling library inspired by Tailwind concepts.
 //!
 //! ## Philosophy
 //!
-//! Takes the best ideas from Tailwind CSS:
+//! Takes the best ideas from Tailwind:
 //! - **Design Tokens** - type-safe base values (colors, spacing, sizes)
 //! - **Utility-first** - composable atomic styles
 //! - **Component Variants** - pre-built component variants
 //!
-//! But implements them through Rust types instead of CSS classes.
+//! But implements them through Rust types for native GUI backends.
 //!
 //! ## Features
 //!
@@ -17,34 +17,31 @@
 //! - **Autocomplete** - IDE suggests all available options
 //! - **Compile-time checks** - style errors caught at compile time
 //! - **Composable** - styles can be combined and reused
-//! - **Multi-backend** - CSS, egui, iced, slint support
+//! - **Multi-backend** - egui, iced, slint support
 //!
 //! ## Quick Start
 //!
 //! ```rust
-//! use twill::{Style, Color, Scale, Spacing, Padding, BorderRadius, ToCss};
+//! use twill::{Style, Color, Scale, Spacing, Padding, BorderRadius};
 //!
 //! // Create a button style
 //! let button_style = Style::new()
 //!     .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
 //!     .bg(Color::blue(Scale::S500))
 //!     .text_color(Color::slate(Scale::S50))
-//!     .rounded(BorderRadius::Md)
-//!     .to_css();
-//!
-//! // Result: "padding: 0.5rem 1rem; background-color: #3b82f6; color: #f8fafc; border-radius: 0.375rem"
+//!     .rounded(BorderRadius::Md);
 //! ```
 //!
 //! ## Components
 //!
 //! ```rust
-//! use twill::{Button, ToCss};
+//! use twill::Button;
 //!
 //! // Create a primary button
-//! let btn = Button::primary().lg().to_css();
+//! let btn = Button::primary().lg();
 //!
 //! // Create an outline button
-//! let btn = Button::outline().sm().to_css();
+//! let btn = Button::outline().sm();
 //! ```
 
 pub mod backends;
@@ -55,23 +52,23 @@ pub mod traits;
 pub mod utilities;
 
 // Re-export commonly used types
-pub use traits::{ComputeValue, Merge, ToCss};
+pub use traits::{ComputeValue, Merge};
 
 // Tokens
 pub use tokens::{
-    AnimationToken, BorderRadius, BorderStyle, BorderWidth, Color, ColorFamily, ColorValue,
-    Container, DivideWidth, DropShadow, Easing, FontFamily, FontSize, FontWeight, InsetShadow,
-    LetterSpacing, LineHeight, MotionDefaults, OutlineStyle, Percentage, RingWidth, Scale,
-    SemanticColor, SemanticThemeVars, Shadow, Spacing, SpecialColor, TextAlign, TextDecoration,
-    TextOverflow, TextShadow as TextShadowToken, TextTransform, TransitionDuration, WhiteSpace,
-    WordBreak,
+    AnimationToken, BorderRadius, BorderStyle, BorderWidth, Breakpoint, Color, ColorFamily,
+    ColorValue, Container, DivideWidth, DropShadow, DynamicSemanticTheme, Easing, FontFamily,
+    FontSize, FontWeight, InsetShadow, LetterSpacing, LineHeight, MotionDefaults, OutlineStyle,
+    Percentage, Perspective, RingWidth, Scale, SemanticColor, SemanticThemeVars, Shadow, Spacing,
+    SpecialColor, TextAlign, TextDecoration, TextOverflow, TextShadow as TextShadowToken,
+    TextTransform, TransitionDuration, TransitionProperty, WhiteSpace, WordBreak,
 };
 
 // Utilities
 pub use utilities::{
-    AlignItems, AlignSelf, Display, FlexContainer, FlexDirection, FlexWrap, GridContainer,
-    GridTemplate, Height, JustifyContent, Margin, Overflow, Padding, Position, SizeConstraints,
-    Width, ZIndex,
+    AlignItems, AlignSelf, Columns, Display, Flex, FlexContainer, FlexDirection, FlexWrap,
+    GridContainer, GridTemplate, Height, JustifyContent, Margin, Overflow, Padding, Position,
+    SizeConstraints, Width, ZIndex,
 };
 
 // Style
@@ -101,6 +98,24 @@ pub mod colors {
     }
     pub fn zinc(s: Scale) -> Color {
         Color::zinc(s)
+    }
+    pub fn neutral(s: Scale) -> Color {
+        Color::neutral(s)
+    }
+    pub fn stone(s: Scale) -> Color {
+        Color::stone(s)
+    }
+    pub fn mauve(s: Scale) -> Color {
+        Color::mauve(s)
+    }
+    pub fn olive(s: Scale) -> Color {
+        Color::olive(s)
+    }
+    pub fn mist(s: Scale) -> Color {
+        Color::mist(s)
+    }
+    pub fn taupe(s: Scale) -> Color {
+        Color::taupe(s)
     }
     pub fn red(s: Scale) -> Color {
         Color::red(s)
@@ -193,26 +208,26 @@ mod tests {
             .bg(Color::blue(Scale::S500))
             .rounded(BorderRadius::Md);
 
-        let css = style.to_css();
-        assert!(css.contains("padding: 1rem"));
-        assert!(css.contains("background-color: #3b82f6"));
-        assert!(css.contains("border-radius: 0.375rem"));
+        assert_eq!(style.padding, Some(Padding::all(Spacing::S4)));
+        assert_eq!(style.background_color, Some(Color::blue(Scale::S500)));
+        assert_eq!(style.border_radius, Some(BorderRadius::Md));
     }
 
     #[test]
     fn test_flex_layout() {
         let style = Style::centered_col().gap(Spacing::S4);
 
-        let css = style.to_css();
-        assert!(css.contains("flex-direction: column"));
-        assert!(css.contains("justify-content: center"));
-        assert!(css.contains("align-items: center"));
+        let flex = style.flex.expect("flex container should be present");
+        assert_eq!(flex.direction, Some(FlexDirection::Col));
+        assert_eq!(flex.justify, Some(JustifyContent::Center));
+        assert_eq!(flex.align, Some(AlignItems::Center));
+        assert_eq!(flex.gap, Some(Spacing::S4));
     }
 
     #[test]
     fn test_button_component() {
         let btn = Button::primary();
-        let css = btn.to_css();
-        assert!(css.contains("background-color: #3b82f6"));
+        let style = btn.style();
+        assert_eq!(style.background_color, Some(Color::blue(Scale::S500)));
     }
 }

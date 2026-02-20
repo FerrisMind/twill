@@ -1,17 +1,21 @@
 //! Style builder for composing styles fluently.
 
+use std::num::NonZeroU8;
+
 use crate::tokens::{
-    AnimationToken, AspectRatio, Blur, BorderRadius, BorderStyle, BorderWidth, Color, Cursor,
-    Easing, FontFamily, FontSize, FontWeight, LetterSpacing, LineHeight, Shadow, Spacing,
-    TextAlign, TextDecoration, TextTransform, TransitionDuration,
+    AnimationToken, AspectRatio, Blur, BorderRadius, BorderStyle, BorderWidth, Color, Container,
+    Cursor, DropShadow, Easing, FontFamily, FontSize, FontWeight, InsetShadow, LetterSpacing,
+    LineHeight, MotionDefaults, OutlineStyle, Perspective, RingWidth, Shadow, Spacing, TextAlign,
+    TextDecoration, TextShadow, TextTransform, TransitionDuration, TransitionProperty,
 };
-use crate::traits::{Merge, ToCss};
+use crate::traits::Merge;
 use crate::utilities::{
-    Display, FlexContainer, GridContainer, Height, JustifyItems, JustifySelf, Margin, Overflow,
-    Padding, PlaceContent, PlaceItems, Position, SizeConstraints, Visibility, Width, ZIndex,
+    Columns, Display, Flex, FlexContainer, FlexDirection, GridContainer, Height, JustifyItems,
+    JustifySelf, Margin, ObjectFit, Overflow, Padding, PlaceContent, PlaceItems, Position, Size,
+    SizeConstraints, Visibility, Width, ZIndex,
 };
 
-/// A comprehensive style builder for composing CSS styles.
+/// A comprehensive style builder for composing native UI styles.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Style {
     // Layout
@@ -23,9 +27,14 @@ pub struct Style {
     pub overflow_x: Option<Overflow>,
     pub overflow_y: Option<Overflow>,
     pub aspect_ratio: Option<AspectRatio>,
+    pub object_fit: Option<ObjectFit>,
+    pub columns: Option<Columns>,
+    pub column_gap: Option<Spacing>,
+    pub columns_max_count: Option<NonZeroU8>,
 
     // Flex/Grid
     pub flex: Option<FlexContainer>,
+    pub flex_item: Option<Flex>,
     pub grid: Option<GridContainer>,
     pub place_content: Option<PlaceContent>,
     pub place_items: Option<PlaceItems>,
@@ -47,15 +56,23 @@ pub struct Style {
 
     // Effects
     pub blur: Option<Blur>,
+    pub drop_shadow: Option<DropShadow>,
+    pub perspective: Option<Perspective>,
 
     // Border
     pub border_radius: Option<BorderRadius>,
     pub border_width: Option<BorderWidth>,
     pub border_style: Option<BorderStyle>,
     pub border_color: Option<Color>,
+    pub outline_width: Option<BorderWidth>,
+    pub outline_style: Option<OutlineStyle>,
+    pub outline_color: Option<Color>,
+    pub ring_width: Option<RingWidth>,
+    pub ring_color: Option<Color>,
 
     // Shadow
     pub box_shadow: Option<Shadow>,
+    pub inset_shadow: Option<InsetShadow>,
     pub shadow_color: Option<Color>,
 
     // Typography
@@ -68,6 +85,7 @@ pub struct Style {
     pub text_decoration: Option<TextDecoration>,
     pub text_transform: Option<TextTransform>,
     pub text_color: Option<Color>,
+    pub text_shadow: Option<TextShadow>,
 
     // Motion (optional)
     pub transition_property: Option<String>,
@@ -123,10 +141,115 @@ impl Style {
         self
     }
 
+    /// Set object fit.
+    pub fn object_fit(mut self, fit: ObjectFit) -> Self {
+        self.object_fit = Some(fit);
+        self
+    }
+
+    /// Set columns layout utility.
+    pub fn columns(mut self, columns: Columns) -> Self {
+        self.columns = Some(columns);
+        self
+    }
+
+    /// Set columns by explicit count (`columns-<number>`).
+    pub fn columns_count(self, count: u8) -> Self {
+        self.columns(Columns::count(count))
+    }
+
+    /// Set columns by ideal width token (`columns-3xs` ... `columns-7xl`).
+    pub fn columns_width(self, width: Container) -> Self {
+        self.columns(Columns::width(width))
+    }
+
+    /// Set columns by custom ideal width in logical pixels.
+    pub fn columns_width_px(self, width: f32) -> Self {
+        self.columns(Columns::width_px(width))
+    }
+
+    /// Set `columns-auto`.
+    pub fn columns_auto(self) -> Self {
+        self.columns(Columns::auto())
+    }
+
+    /// Set column gap for multi-column layout.
+    pub fn column_gap(mut self, gap: Spacing) -> Self {
+        self.column_gap = Some(gap);
+        self
+    }
+
+    /// Set maximum number of columns the backend may create for `columns-*`.
+    pub fn columns_max_count(mut self, max_count: u8) -> Self {
+        let max_count = max_count.max(1);
+        self.columns_max_count =
+            Some(NonZeroU8::new(max_count).expect("max_count is clamped to at least 1"));
+        self
+    }
+
     /// Set flex container properties.
     pub fn flex(mut self, flex: FlexContainer) -> Self {
         self.flex = Some(flex);
         self
+    }
+
+    /// Set flex direction utility class (`flex-row`, `flex-row-reverse`, `flex-col`, `flex-col-reverse`).
+    pub fn flex_direction(mut self, direction: FlexDirection) -> Self {
+        if let Some(ref mut flex) = self.flex {
+            self.flex = Some(FlexContainer {
+                direction: Some(direction),
+                ..flex.clone()
+            });
+        } else {
+            self.flex = Some(FlexContainer::new().direction(direction));
+        }
+        self
+    }
+
+    /// Set flex item shorthand (`flex-*`).
+    pub fn flex_item(mut self, flex: Flex) -> Self {
+        self.flex_item = Some(flex);
+        self
+    }
+
+    /// Set `flex-<number>`.
+    pub fn flex_number(self, number: u16) -> Self {
+        self.flex_item(Flex::number(number))
+    }
+
+    /// Set `flex-<fraction>`.
+    pub fn flex_fraction(self, numerator: u16, denominator: u16) -> Self {
+        self.flex_item(Flex::fraction(numerator, denominator))
+    }
+
+    /// Set `flex-1`.
+    pub fn flex_1(self) -> Self {
+        self.flex_number(1)
+    }
+
+    /// Set `flex-auto`.
+    pub fn flex_auto(self) -> Self {
+        self.flex_item(Flex::Auto)
+    }
+
+    /// Set `flex-initial`.
+    pub fn flex_initial(self) -> Self {
+        self.flex_item(Flex::Initial)
+    }
+
+    /// Set `flex-none`.
+    pub fn flex_none(self) -> Self {
+        self.flex_item(Flex::None)
+    }
+
+    /// Set `flex-(<custom-property>)`.
+    pub fn flex_custom_property(self, name: impl Into<String>) -> Self {
+        self.flex_item(Flex::custom_property(name))
+    }
+
+    /// Set `flex-[<value>]`.
+    pub fn flex_arbitrary(self, value: impl Into<String>) -> Self {
+        self.flex_item(Flex::arbitrary(value))
     }
 
     /// Set grid container properties.
@@ -206,6 +329,20 @@ impl Style {
         self
     }
 
+    /// Set max-width to Tailwind prose measure (`65ch`).
+    pub fn max_w_prose(mut self) -> Self {
+        let constraints = self.constraints.unwrap_or_default().max_width(Size::Prose);
+        self.constraints = Some(constraints);
+        self
+    }
+
+    /// Set max-width.
+    pub fn max_w(mut self, size: Size) -> Self {
+        let constraints = self.constraints.unwrap_or_default().max_width(size);
+        self.constraints = Some(constraints);
+        self
+    }
+
     // === Background ===
 
     /// Set background color.
@@ -233,6 +370,18 @@ impl Style {
         self
     }
 
+    /// Set drop shadow (filter).
+    pub fn drop_shadow(mut self, shadow: DropShadow) -> Self {
+        self.drop_shadow = Some(shadow);
+        self
+    }
+
+    /// Set perspective (3D transforms).
+    pub fn perspective(mut self, perspective: Perspective) -> Self {
+        self.perspective = Some(perspective);
+        self
+    }
+
     // === Border ===
 
     /// Set border radius.
@@ -249,11 +398,32 @@ impl Style {
         self
     }
 
+    /// Set outline style.
+    pub fn outline(mut self, width: BorderWidth, style: OutlineStyle, color: Color) -> Self {
+        self.outline_width = Some(width);
+        self.outline_style = Some(style);
+        self.outline_color = Some(color);
+        self
+    }
+
+    /// Set ring (focus-ring-like box shadow).
+    pub fn ring(mut self, width: RingWidth, color: Color) -> Self {
+        self.ring_width = Some(width);
+        self.ring_color = Some(color);
+        self
+    }
+
     // === Shadow ===
 
     /// Set box shadow.
     pub fn shadow(mut self, shadow: Shadow) -> Self {
         self.box_shadow = Some(shadow);
+        self
+    }
+
+    /// Set inset shadow.
+    pub fn inset_shadow(mut self, shadow: InsetShadow) -> Self {
+        self.inset_shadow = Some(shadow);
         self
     }
 
@@ -326,6 +496,12 @@ impl Style {
         self
     }
 
+    /// Set text shadow.
+    pub fn text_shadow(mut self, shadow: TextShadow) -> Self {
+        self.text_shadow = Some(shadow);
+        self
+    }
+
     /// Set text color (alias).
     pub fn text(self, color: Color) -> Self {
         self.text_color(color)
@@ -336,6 +512,21 @@ impl Style {
     /// Set transition property (e.g. "all", "opacity", "transform").
     pub fn transition_property(mut self, property: impl Into<String>) -> Self {
         self.transition_property = Some(property.into());
+        self
+    }
+
+    /// Set transition property using Tailwind token.
+    pub fn transition(mut self, property: TransitionProperty) -> Self {
+        self.transition_property = Some(property.value().to_string());
+        self
+    }
+
+    /// Apply Tailwind default transition preset.
+    pub fn transition_default(mut self) -> Self {
+        let defaults = MotionDefaults::default();
+        self.transition_property = Some(TransitionProperty::Default.value().to_string());
+        self.transition_duration = Some(defaults.duration);
+        self.transition_timing_function = Some(defaults.easing);
         self
     }
 
@@ -387,6 +578,20 @@ impl Style {
             .flex(FlexContainer::col())
     }
 
+    /// Create a flex row reverse with default settings.
+    pub fn flex_row_reverse() -> Self {
+        Self::new()
+            .display(Display::Flex)
+            .flex(FlexContainer::row_reverse())
+    }
+
+    /// Create a flex column reverse with default settings.
+    pub fn flex_col_reverse() -> Self {
+        Self::new()
+            .display(Display::Flex)
+            .flex(FlexContainer::col_reverse())
+    }
+
     /// Create a centered flex row.
     pub fn centered_row() -> Self {
         Self::new()
@@ -404,6 +609,18 @@ impl Style {
     /// Hide element.
     pub fn hidden() -> Self {
         Self::new().display(Display::Hidden)
+    }
+
+    /// Hidden overflow.
+    pub fn overflow_hidden(mut self) -> Self {
+        self.overflow = Some(Overflow::Hidden);
+        self
+    }
+
+    /// Auto overflow.
+    pub fn overflow_auto(mut self) -> Self {
+        self.overflow = Some(Overflow::Auto);
+        self
     }
 
     /// Full width.
@@ -433,7 +650,12 @@ impl Merge<Self> for Style {
             overflow_x: other.overflow_x.or(self.overflow_x),
             overflow_y: other.overflow_y.or(self.overflow_y),
             aspect_ratio: other.aspect_ratio.or(self.aspect_ratio),
+            object_fit: other.object_fit.or(self.object_fit),
+            columns: other.columns.or(self.columns),
+            column_gap: other.column_gap.or(self.column_gap),
+            columns_max_count: other.columns_max_count.or(self.columns_max_count),
             flex: other.flex.or(self.flex.clone()),
+            flex_item: other.flex_item.or(self.flex_item.clone()),
             grid: other.grid.or(self.grid.clone()),
             place_content: other.place_content.or(self.place_content),
             place_items: other.place_items.or(self.place_items),
@@ -447,11 +669,19 @@ impl Merge<Self> for Style {
             background_color: other.background_color.or(self.background_color),
             opacity: other.opacity.or(self.opacity),
             blur: other.blur.or(self.blur),
+            drop_shadow: other.drop_shadow.or(self.drop_shadow),
+            perspective: other.perspective.or(self.perspective),
             border_radius: other.border_radius.or(self.border_radius),
             border_width: other.border_width.or(self.border_width),
             border_style: other.border_style.or(self.border_style),
             border_color: other.border_color.or(self.border_color),
+            outline_width: other.outline_width.or(self.outline_width),
+            outline_style: other.outline_style.or(self.outline_style),
+            outline_color: other.outline_color.or(self.outline_color),
+            ring_width: other.ring_width.or(self.ring_width),
+            ring_color: other.ring_color.or(self.ring_color),
             box_shadow: other.box_shadow.or(self.box_shadow),
+            inset_shadow: other.inset_shadow.or(self.inset_shadow),
             shadow_color: other.shadow_color.or(self.shadow_color),
             font_family: other.font_family.or(self.font_family),
             font_size: other.font_size.or(self.font_size),
@@ -462,6 +692,7 @@ impl Merge<Self> for Style {
             text_decoration: other.text_decoration.or(self.text_decoration),
             text_transform: other.text_transform.or(self.text_transform),
             text_color: other.text_color.or(self.text_color),
+            text_shadow: other.text_shadow.or(self.text_shadow),
             transition_property: other
                 .transition_property
                 .or(self.transition_property.clone()),
@@ -476,272 +707,86 @@ impl Merge<Self> for Style {
     }
 }
 
-impl ToCss for Style {
-    fn to_css(&self) -> String {
-        use std::fmt::Write;
-
-        fn push_rule(out: &mut String, name: &str, value: &str) {
-            if !out.is_empty() {
-                out.push_str("; ");
-            }
-            out.push_str(name);
-            out.push_str(": ");
-            out.push_str(value);
-        }
-
-        fn push_raw(out: &mut String, rule: &str) {
-            if !out.is_empty() {
-                out.push_str("; ");
-            }
-            out.push_str(rule);
-        }
-
-        let mut css = String::with_capacity(256);
-
-        // Layout
-        if let Some(v) = &self.display {
-            let val = v.to_css();
-            push_rule(&mut css, "display", &val);
-        }
-        if let Some(v) = &self.visibility {
-            let val = v.to_css();
-            push_rule(&mut css, "visibility", &val);
-        }
-        if let Some(v) = &self.position {
-            let val = v.to_css();
-            push_rule(&mut css, "position", &val);
-        }
-        if let Some(v) = &self.z_index {
-            let val = v.to_css();
-            push_rule(&mut css, "z-index", &val);
-        }
-        if let Some(v) = &self.overflow {
-            let val = v.to_css();
-            push_rule(&mut css, "overflow", &val);
-        }
-        if let Some(v) = &self.overflow_x {
-            let val = v.to_css();
-            push_rule(&mut css, "overflow-x", &val);
-        }
-        if let Some(v) = &self.overflow_y {
-            let val = v.to_css();
-            push_rule(&mut css, "overflow-y", &val);
-        }
-        if let Some(v) = &self.aspect_ratio {
-            let val = v.to_css();
-            push_rule(&mut css, "aspect-ratio", &val);
-        }
-
-        // Flex/Grid
-        if let Some(v) = &self.flex {
-            let val = v.to_css();
-            push_raw(&mut css, &val);
-        }
-        if let Some(v) = &self.grid {
-            let val = v.to_css();
-            push_raw(&mut css, &val);
-        }
-        if let Some(v) = &self.place_content {
-            let val = v.to_css();
-            push_rule(&mut css, "place-content", &val);
-        }
-        if let Some(v) = &self.place_items {
-            let val = v.to_css();
-            push_rule(&mut css, "place-items", &val);
-        }
-        if let Some(v) = &self.justify_items {
-            let val = v.to_css();
-            push_rule(&mut css, "justify-items", &val);
-        }
-        if let Some(v) = &self.justify_self {
-            let val = v.to_css();
-            push_rule(&mut css, "justify-self", &val);
-        }
-
-        // Spacing
-        if let Some(v) = &self.padding {
-            let val = v.to_css();
-            push_raw(&mut css, &val);
-        }
-        if let Some(v) = &self.margin {
-            let val = v.to_css();
-            push_raw(&mut css, &val);
-        }
-
-        // Size
-        if let Some(v) = &self.width {
-            let val = v.to_css();
-            push_raw(&mut css, &val);
-        }
-        if let Some(v) = &self.height {
-            let val = v.to_css();
-            push_raw(&mut css, &val);
-        }
-        if let Some(v) = &self.constraints {
-            let val = v.to_css();
-            push_raw(&mut css, &val);
-        }
-
-        // Background
-        if let Some(v) = &self.background_color {
-            let val = v.to_css();
-            push_rule(&mut css, "background-color", &val);
-        }
-        if let Some(v) = &self.opacity {
-            if !css.is_empty() {
-                css.push_str("; ");
-            }
-            let _ = write!(&mut css, "opacity: {v}");
-        }
-        if let Some(v) = &self.blur {
-            if !css.is_empty() {
-                css.push_str("; ");
-            }
-            let _ = write!(&mut css, "filter: blur({})", v.to_css());
-        }
-
-        // Border
-        if let Some(v) = &self.border_radius {
-            let val = v.to_css();
-            push_rule(&mut css, "border-radius", &val);
-        }
-        if let Some(v) = &self.border_width {
-            let val = v.to_css();
-            push_rule(&mut css, "border-width", &val);
-        }
-        if let Some(v) = &self.border_style {
-            let val = v.to_css();
-            push_rule(&mut css, "border-style", &val);
-        }
-        if let Some(v) = &self.border_color {
-            let val = v.to_css();
-            push_rule(&mut css, "border-color", &val);
-        }
-
-        // Shadow
-        if let Some(v) = &self.box_shadow {
-            let val = v.to_css();
-            push_rule(&mut css, "box-shadow", &val);
-        }
-
-        // Typography
-        if let Some(v) = &self.font_family {
-            let val = v.to_css();
-            push_rule(&mut css, "font-family", &val);
-        }
-        if let Some(v) = &self.font_size {
-            let val = v.to_css();
-            push_rule(&mut css, "font-size", &val);
-        }
-        if let Some(v) = &self.font_weight {
-            let val = v.to_css();
-            push_rule(&mut css, "font-weight", &val);
-        }
-        if let Some(v) = &self.letter_spacing {
-            let val = v.to_css();
-            push_rule(&mut css, "letter-spacing", &val);
-        }
-        if let Some(v) = &self.line_height {
-            let val = v.to_css();
-            push_rule(&mut css, "line-height", &val);
-        }
-        if let Some(v) = &self.text_align {
-            let val = v.to_css();
-            push_rule(&mut css, "text-align", &val);
-        }
-        if let Some(v) = &self.text_decoration {
-            let val = v.to_css();
-            push_rule(&mut css, "text-decoration", &val);
-        }
-        if let Some(v) = &self.text_transform {
-            let val = v.to_css();
-            push_rule(&mut css, "text-transform", &val);
-        }
-        if let Some(v) = &self.text_color {
-            let val = v.to_css();
-            push_rule(&mut css, "color", &val);
-        }
-
-        // Motion
-        if let Some(v) = &self.transition_property {
-            push_rule(&mut css, "transition-property", v);
-        }
-        if let Some(v) = &self.transition_duration {
-            let val = v.to_css();
-            push_rule(&mut css, "transition-duration", &val);
-        }
-        if let Some(v) = &self.transition_timing_function {
-            let val = v.to_css();
-            push_rule(&mut css, "transition-timing-function", &val);
-        }
-        if let Some(v) = &self.transition_delay {
-            let val = v.to_css();
-            push_rule(&mut css, "transition-delay", &val);
-        }
-        if let Some(v) = &self.animation {
-            let val = v.to_css();
-            push_rule(&mut css, "animation", &val);
-        }
-        if let Some(v) = &self.cursor {
-            let val = v.to_css();
-            push_rule(&mut css, "cursor", &val);
-        }
-
-        css
-    }
-}
-
-impl Style {
-    /// Generate inline style string for HTML.
-    pub fn to_inline_style(&self) -> String {
-        format!("style=\"{}\"", self.to_css())
-    }
-
-    /// Generate CSS class content.
-    pub fn to_class_content(&self) -> String {
-        format!("{{ {} }}", self.to_css())
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::tokens::{AnimationToken, Easing, Scale, TransitionDuration};
 
     #[test]
-    fn test_style_builder() {
+    fn test_style_builder_fields() {
         let style = Style::new()
             .padding(Padding::all(Spacing::S4))
             .bg(Color::blue(Scale::S500))
             .rounded(BorderRadius::Md)
             .text_color(Color::slate(Scale::S50));
 
-        let css = style.to_css();
-        assert!(css.contains("padding: 1rem"));
-        assert!(css.contains("background-color: #3b82f6"));
-        assert!(css.contains("border-radius: 0.375rem"));
+        assert_eq!(style.padding, Some(Padding::all(Spacing::S4)));
+        assert_eq!(style.background_color, Some(Color::blue(Scale::S500)));
+        assert_eq!(style.border_radius, Some(BorderRadius::Md));
     }
 
     #[test]
-    fn test_flex_center() {
+    fn test_flex_center_fields() {
         let style = Style::centered_col().gap(Spacing::S2);
-        let css = style.to_css();
-        assert!(css.contains("flex-direction: column"));
-        assert!(css.contains("justify-content: center"));
+        assert_eq!(style.display, Some(Display::Flex));
+        assert!(style.flex.is_some());
+    }
+
+    #[test]
+    fn test_flex_reverse_direction_helpers() {
+        let row_reverse = Style::flex_row_reverse();
+        assert_eq!(row_reverse.display, Some(Display::Flex));
+        assert_eq!(
+            row_reverse.flex.and_then(|flex| flex.direction),
+            Some(FlexDirection::RowReverse)
+        );
+
+        let col_reverse = Style::flex_col_reverse();
+        assert_eq!(col_reverse.display, Some(Display::Flex));
+        assert_eq!(
+            col_reverse.flex.and_then(|flex| flex.direction),
+            Some(FlexDirection::ColReverse)
+        );
+    }
+
+    #[test]
+    fn test_flex_item_builder_fields() {
+        let style = Style::new().flex_1();
+        assert_eq!(style.flex_item, Some(Flex::number(1)));
+
+        let style = Style::new().flex_number(2);
+        assert_eq!(style.flex_item, Some(Flex::number(2)));
+
+        let style = Style::new().flex_fraction(1, 2);
+        assert_eq!(style.flex_item, Some(Flex::fraction(1, 2)));
+
+        let style = Style::new().flex_auto();
+        assert_eq!(style.flex_item, Some(Flex::Auto));
+
+        let style = Style::new().flex_initial();
+        assert_eq!(style.flex_item, Some(Flex::Initial));
+
+        let style = Style::new().flex_none();
+        assert_eq!(style.flex_item, Some(Flex::None));
+
+        let style = Style::new().flex_custom_property("--my-flex");
+        assert_eq!(style.flex_item, Some(Flex::custom_property("--my-flex")));
+
+        let style = Style::new().flex_arbitrary("3_1_auto");
+        assert_eq!(style.flex_item, Some(Flex::arbitrary("3_1_auto")));
     }
 
     #[test]
     fn test_motion_tokens() {
         let style = Style::new()
-            .transition_property("opacity")
+            .transition(TransitionProperty::Opacity)
             .transition_duration(TransitionDuration::Ms300)
             .transition_ease(Easing::InOut)
             .animate(AnimationToken::Pulse);
-        let css = style.to_css();
-        assert!(css.contains("transition-property: opacity"));
-        assert!(css.contains("transition-duration: 300ms"));
-        assert!(css.contains("transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1)"));
-        assert!(css.contains("animation: pulse 2s"));
+        assert_eq!(style.transition_property, Some("opacity".to_string()));
+        assert_eq!(style.transition_duration, Some(TransitionDuration::Ms300));
+        assert_eq!(style.transition_timing_function, Some(Easing::InOut));
+        assert_eq!(style.animation, Some(AnimationToken::Pulse));
     }
 
     #[test]
@@ -751,5 +796,19 @@ mod tests {
         let merged = base.merge(override_style);
         assert_eq!(merged.box_shadow, Some(Shadow::Sm));
         assert_eq!(merged.shadow_color, Some(Color::red(Scale::S500)));
+    }
+
+    #[test]
+    fn test_columns_builder_fields() {
+        let style = Style::new()
+            .columns_count(3)
+            .column_gap(Spacing::S4)
+            .columns_width(Container::S3xs)
+            .columns_width_px(280.0)
+            .columns_max_count(4);
+
+        assert_eq!(style.columns, Some(Columns::width_px(280.0)));
+        assert_eq!(style.column_gap, Some(Spacing::S4));
+        assert_eq!(style.columns_max_count.map(NonZeroU8::get), Some(4));
     }
 }

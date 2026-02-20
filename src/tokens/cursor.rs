@@ -1,5 +1,3 @@
-use crate::traits::ToCss;
-
 /// Cursor token.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Cursor {
@@ -41,9 +39,9 @@ pub enum Cursor {
     ZoomOut,
 }
 
-impl ToCss for Cursor {
-    fn to_css(&self) -> String {
-        let s = match self {
+impl Cursor {
+    pub fn value(&self) -> &'static str {
+        match self {
             Cursor::Auto => "auto",
             Cursor::Default => "default",
             Cursor::Pointer => "pointer",
@@ -80,7 +78,6 @@ impl ToCss for Cursor {
             Cursor::NwseResize => "nwse-resize",
             Cursor::ZoomIn => "zoom-in",
             Cursor::ZoomOut => "zoom-out",
-        };
-        s.to_string()
+        }
     }
 }

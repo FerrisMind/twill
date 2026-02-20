@@ -1,14 +1,16 @@
-use iced::widget::{column, row, text, Space};
-use iced::{Element, Length};
-use crate::components::Snippet;
 use crate::Message;
-use twill::tokens::{BorderRadius, BorderWidth, BorderStyle, Color, Scale, FontWeight};
-use twill::iced::{to_color, to_font_weight, styled_container};
-use twill::traits::ToCss;
+use crate::components::Snippet;
+use iced::widget::{Space, column, row, text};
+use iced::{Element, Length};
+use twill::iced::{styled_container, to_color, to_font_weight};
+use twill::tokens::{BorderRadius, BorderStyle, BorderWidth, Color, FontWeight, Scale};
 
 pub fn view<'a>(is_dark: bool) -> Element<'a, Message> {
     column![
-        text("Borders").size(32).font(iced::Font { weight: to_font_weight(FontWeight::Bold), ..Default::default() }),
+        text("Borders").size(32).font(iced::Font {
+            weight: to_font_weight(FontWeight::Bold),
+            ..Default::default()
+        }),
         text("Standard web token borders map cleanly to iced elements.").size(16),
         border_radius_section(is_dark),
         border_width_section(is_dark),
@@ -50,18 +52,21 @@ styled_container(content, &twill::Style::new()
             text(label).size(14).color(to_color(Color::white())).into(),
             &twill::Style::new()
                 .bg(Color::blue(Scale::S500))
-                .rounded(radius)
+                .rounded(radius),
         )
-            .width(Length::Fixed(100.0))
-            .height(Length::Fixed(100.0))
-            .center_x(Length::Fill)
-            .center_y(Length::Fill);
+        .width(Length::Fixed(100.0))
+        .height(Length::Fixed(100.0))
+        .align_x(iced::alignment::Horizontal::Center)
+        .align_y(iced::alignment::Vertical::Center);
 
         let info = column![
             c,
-            Space::new().width(Length::Shrink).height(Length::Fixed(8.0)),
+            Space::new()
+                .width(Length::Shrink)
+                .height(Length::Fixed(8.0)),
             text(format!("{} ({}px)", label, r_val)).size(12)
-        ].align_x(iced::Alignment::Center);
+        ]
+        .align_x(iced::Alignment::Center);
 
         current_row = current_row.push(info);
         count += 1;
@@ -102,9 +107,15 @@ styled_container(content, &twill::Style::new()
         to_color(Color::blue(Scale::S500))
     };
 
-    let text_col = if is_dark { to_color(Color::white()) } else { to_color(Color::black()) };
+    let text_col = if is_dark {
+        to_color(Color::white())
+    } else {
+        to_color(Color::black())
+    };
 
-    let mut row_content = row![].spacing(24);
+    let mut blocks = column![].spacing(16);
+    let mut row_content = row![].spacing(16);
+    let mut count = 0;
     for (width, label) in widths {
         let _w_px: f32 = match width {
             BorderWidth::S0 => 0.0,
@@ -114,29 +125,48 @@ styled_container(content, &twill::Style::new()
             BorderWidth::S8 => 8.0,
         };
 
-        let border_col_token = if is_dark { Color::blue(Scale::S400) } else { Color::blue(Scale::S500) };
+        let border_col_token = if is_dark {
+            Color::blue(Scale::S400)
+        } else {
+            Color::blue(Scale::S500)
+        };
         let c = styled_container(
             text(label).size(14).color(text_col).into(),
             &twill::Style::new()
+                .bg(if is_dark {
+                    Color::gray(Scale::S900)
+                } else {
+                    Color::white()
+                })
                 .border(width, BorderStyle::Solid, border_col_token)
-                .rounded(BorderRadius::Lg)
+                .rounded(BorderRadius::Lg),
         )
-            .width(Length::Fixed(120.0))
-            .height(Length::Fixed(80.0))
-            .center_x(Length::Fill)
-            .center_y(Length::Fill);
+        .width(Length::Fixed(120.0))
+        .height(Length::Fixed(80.0))
+        .align_x(iced::alignment::Horizontal::Center)
+        .align_y(iced::alignment::Vertical::Center);
 
         row_content = row_content.push(c);
+        count += 1;
+        if count == 3 {
+            blocks = blocks.push(row_content);
+            row_content = row![].spacing(16);
+            count = 0;
+        }
     }
 
-    Snippet::new("Border Width", code, row_content).view(is_dark)
+    if count > 0 {
+        blocks = blocks.push(row_content);
+    }
+
+    Snippet::new("Border Width", code, blocks).view(is_dark)
 }
 
 // ── Border Style ────────────────────────────────────────────────────
 
 fn border_style_section<'a>(is_dark: bool) -> Element<'a, Message> {
-    let code = r#"// BorderStyle: Solid, Dashed, Dotted, Double, Hidden, None
-// Displayed using twill::Style natively."#;
+    let code = r#"// BorderStyle now rendered by twill::iced::styled_container
+// using custom backend drawing when iced lacks native support."#;
 
     let styles = [
         (BorderStyle::Solid, "Solid"),
@@ -147,31 +177,58 @@ fn border_style_section<'a>(is_dark: bool) -> Element<'a, Message> {
         (BorderStyle::None, "None"),
     ];
 
-    let text_col = if is_dark { to_color(Color::white()) } else { to_color(Color::black()) };
+    let text_col = if is_dark {
+        to_color(Color::white())
+    } else {
+        to_color(Color::black())
+    };
 
+    let mut blocks = column![].spacing(16);
     let mut row_content = row![].spacing(16);
+    let mut count = 0;
     for (style, label) in styles {
-        let border_col = if is_dark { Color::blue(Scale::S400) } else { Color::blue(Scale::S500) };
+        let border_col = if is_dark {
+            Color::blue(Scale::S400)
+        } else {
+            Color::blue(Scale::S500)
+        };
 
         let content = styled_container(
             text(label).size(13).color(text_col).into(),
             &twill::Style::new()
+                .bg(if is_dark {
+                    Color::gray(Scale::S900)
+                } else {
+                    Color::white()
+                })
                 .border(BorderWidth::S2, style, border_col)
-                .rounded(BorderRadius::Md)
+                .rounded(BorderRadius::Md),
         )
-            .width(Length::Fixed(100.0))
-            .height(Length::Fixed(70.0))
-            .center_x(Length::Fill)
-            .center_y(Length::Fill);
+        .width(Length::Fixed(100.0))
+        .height(Length::Fixed(70.0))
+        .align_x(iced::alignment::Horizontal::Center)
+        .align_y(iced::alignment::Vertical::Center);
 
         let info = column![
             content,
-            Space::new().width(Length::Shrink).height(Length::Fixed(4.0)),
-            text(format!("{} — CSS: {}", label, style.to_css())).size(11),
+            Space::new()
+                .width(Length::Shrink)
+                .height(Length::Fixed(4.0)),
+            text(format!("{} — {}", label, style.keyword())).size(11),
         ];
 
         row_content = row_content.push(info);
+        count += 1;
+        if count == 3 {
+            blocks = blocks.push(row_content);
+            row_content = row![].spacing(16);
+            count = 0;
+        }
     }
 
-    Snippet::new("Border Style", code, row_content).view(is_dark)
+    if count > 0 {
+        blocks = blocks.push(row_content);
+    }
+
+    Snippet::new("Border Style", code, blocks).view(is_dark)
 }

@@ -1,8 +1,8 @@
-//! Spacing design tokens following Tailwind CSS spacing scale.
+//! Spacing design tokens following Tailwind spacing scale.
 //!
 //! The spacing scale is based on a 4px (0.25rem) base unit.
 
-use crate::traits::{ComputeValue, ToCss};
+use crate::traits::ComputeValue;
 
 /// Spacing values based on Tailwind's spacing scale.
 /// Base unit is 0.25rem (4px in most browsers).
@@ -83,6 +83,9 @@ pub enum Spacing {
 }
 
 impl Spacing {
+    /// Tailwind `--spacing` base token (0.25rem).
+    pub const BASE: Spacing = Spacing::S1;
+
     /// Get the rem value of this spacing.
     pub fn to_rem(&self) -> Option<f32> {
         match self {
@@ -187,12 +190,6 @@ impl ComputeValue for Spacing {
     }
 }
 
-impl ToCss for Spacing {
-    fn to_css(&self) -> String {
-        self.compute()
-    }
-}
-
 /// Percentage-based spacing for widths/heights.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Percentage {
@@ -238,29 +235,29 @@ pub enum Percentage {
     Fit,
 }
 
-impl ToCss for Percentage {
-    fn to_css(&self) -> String {
+impl Percentage {
+    pub fn value(&self) -> &'static str {
         match self {
-            Percentage::S0 => "0%".to_string(),
-            Percentage::S1_2 => "50%".to_string(),
-            Percentage::S1_3 => "33.333333%".to_string(),
-            Percentage::S2_3 => "66.666667%".to_string(),
-            Percentage::S1_4 => "25%".to_string(),
-            Percentage::S2_4 => "50%".to_string(),
-            Percentage::S3_4 => "75%".to_string(),
-            Percentage::S1_5 => "20%".to_string(),
-            Percentage::S2_5 => "40%".to_string(),
-            Percentage::S3_5 => "60%".to_string(),
-            Percentage::S4_5 => "80%".to_string(),
-            Percentage::S1_6 => "16.666667%".to_string(),
-            Percentage::S2_6 => "33.333333%".to_string(),
-            Percentage::S3_6 => "50%".to_string(),
-            Percentage::S4_6 => "66.666667%".to_string(),
-            Percentage::S5_6 => "83.333333%".to_string(),
-            Percentage::Full => "100%".to_string(),
-            Percentage::Min => "min-content".to_string(),
-            Percentage::Max => "max-content".to_string(),
-            Percentage::Fit => "fit-content".to_string(),
+            Percentage::S0 => "0%",
+            Percentage::S1_2 => "50%",
+            Percentage::S1_3 => "33.333333%",
+            Percentage::S2_3 => "66.666667%",
+            Percentage::S1_4 => "25%",
+            Percentage::S2_4 => "50%",
+            Percentage::S3_4 => "75%",
+            Percentage::S1_5 => "20%",
+            Percentage::S2_5 => "40%",
+            Percentage::S3_5 => "60%",
+            Percentage::S4_5 => "80%",
+            Percentage::S1_6 => "16.666667%",
+            Percentage::S2_6 => "33.333333%",
+            Percentage::S3_6 => "50%",
+            Percentage::S4_6 => "66.666667%",
+            Percentage::S5_6 => "83.333333%",
+            Percentage::Full => "100%",
+            Percentage::Min => "min-content",
+            Percentage::Max => "max-content",
+            Percentage::Fit => "fit-content",
         }
     }
 }
@@ -296,23 +293,57 @@ pub enum Container {
     S7xl,
 }
 
-impl ToCss for Container {
-    fn to_css(&self) -> String {
+impl Container {
+    pub fn value(&self) -> &'static str {
         match self {
-            Container::S3xs => "16rem".to_string(),
-            Container::S2xs => "18rem".to_string(),
-            Container::Xs => "20rem".to_string(),
-            Container::Sm => "24rem".to_string(),
-            Container::Md => "28rem".to_string(),
-            Container::Lg => "32rem".to_string(),
-            Container::Xl => "36rem".to_string(),
-            Container::S2xl => "42rem".to_string(),
-            Container::S3xl => "48rem".to_string(),
-            Container::S4xl => "56rem".to_string(),
-            Container::S5xl => "64rem".to_string(),
-            Container::S6xl => "72rem".to_string(),
-            Container::S7xl => "80rem".to_string(),
+            Container::S3xs => "16rem",
+            Container::S2xs => "18rem",
+            Container::Xs => "20rem",
+            Container::Sm => "24rem",
+            Container::Md => "28rem",
+            Container::Lg => "32rem",
+            Container::Xl => "36rem",
+            Container::S2xl => "42rem",
+            Container::S3xl => "48rem",
+            Container::S4xl => "56rem",
+            Container::S5xl => "64rem",
+            Container::S6xl => "72rem",
+            Container::S7xl => "80rem",
         }
+    }
+}
+
+/// Breakpoint tokens (`--breakpoint-*` in Tailwind v4 theme).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Breakpoint {
+    Sm,
+    Md,
+    Lg,
+    Xl,
+    S2xl,
+}
+
+impl Breakpoint {
+    /// Value in rem.
+    pub fn to_rem(&self) -> f32 {
+        match self {
+            Breakpoint::Sm => 40.0,
+            Breakpoint::Md => 48.0,
+            Breakpoint::Lg => 64.0,
+            Breakpoint::Xl => 80.0,
+            Breakpoint::S2xl => 96.0,
+        }
+    }
+
+    /// Value in px assuming 16px root font-size.
+    pub fn to_px(&self) -> u16 {
+        (self.to_rem() * 16.0) as u16
+    }
+}
+
+impl Breakpoint {
+    pub fn value(&self) -> String {
+        format!("{}rem", self.to_rem())
     }
 }
 
@@ -334,9 +365,9 @@ mod tests {
     }
 
     #[test]
-    fn test_spacing_css() {
-        assert_eq!(Spacing::S4.to_css(), "1rem");
-        assert_eq!(Spacing::Px.to_css(), "1px");
-        assert_eq!(Spacing::Auto.to_css(), "auto");
+    fn test_spacing_compute() {
+        assert_eq!(Spacing::S4.compute(), "1rem");
+        assert_eq!(Spacing::Px.compute(), "1px");
+        assert_eq!(Spacing::Auto.compute(), "auto");
     }
 }

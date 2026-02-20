@@ -1,6 +1,4 @@
-//! Motion design tokens adapted from Tailwind CSS.
-
-use crate::traits::ToCss;
+//! Motion design tokens adapted from Tailwind.
 
 /// Transition duration tokens.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -32,10 +30,8 @@ impl TransitionDuration {
             Self::CustomMs(v) => *v,
         }
     }
-}
 
-impl ToCss for TransitionDuration {
-    fn to_css(&self) -> String {
+    pub fn value(&self) -> String {
         format!("{}ms", self.as_millis())
     }
 }
@@ -49,13 +45,13 @@ pub enum Easing {
     InOut,
 }
 
-impl ToCss for Easing {
-    fn to_css(&self) -> String {
+impl Easing {
+    pub fn value(&self) -> &'static str {
         match self {
-            Self::Linear => "linear".to_string(),
-            Self::In => "cubic-bezier(0.4, 0, 1, 1)".to_string(),
-            Self::Out => "cubic-bezier(0, 0, 0.2, 1)".to_string(),
-            Self::InOut => "cubic-bezier(0.4, 0, 0.2, 1)".to_string(),
+            Self::Linear => "linear",
+            Self::In => "cubic-bezier(0.4, 0, 1, 1)",
+            Self::Out => "cubic-bezier(0, 0, 0.2, 1)",
+            Self::InOut => "cubic-bezier(0.4, 0, 0.2, 1)",
         }
     }
 }
@@ -70,14 +66,14 @@ pub enum AnimationToken {
     Bounce,
 }
 
-impl ToCss for AnimationToken {
-    fn to_css(&self) -> String {
+impl AnimationToken {
+    pub fn value(&self) -> &'static str {
         match self {
-            Self::None => "none".to_string(),
-            Self::Spin => "spin 1s linear infinite".to_string(),
-            Self::Ping => "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite".to_string(),
-            Self::Pulse => "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite".to_string(),
-            Self::Bounce => "bounce 1s infinite".to_string(),
+            Self::None => "none",
+            Self::Spin => "spin 1s linear infinite",
+            Self::Ping => "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite",
+            Self::Pulse => "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+            Self::Bounce => "bounce 1s infinite",
         }
     }
 }
@@ -111,17 +107,21 @@ pub enum TransitionProperty {
     Custom(String),
 }
 
-impl ToCss for TransitionProperty {
-    fn to_css(&self) -> String {
+impl TransitionProperty {
+    pub fn value(&self) -> &str {
         match self {
-            Self::None => "none".to_string(),
-            Self::All => "all".to_string(),
-            Self::Default => "color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter".to_string(),
-            Self::Colors => "color, background-color, border-color, text-decoration-color, fill, stroke".to_string(),
-            Self::Opacity => "opacity".to_string(),
-            Self::Shadow => "box-shadow".to_string(),
-            Self::Transform => "transform".to_string(),
-            Self::Custom(val) => val.clone(),
+            Self::None => "none",
+            Self::All => "all",
+            Self::Default => {
+                "color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter"
+            }
+            Self::Colors => {
+                "color, background-color, border-color, text-decoration-color, fill, stroke"
+            }
+            Self::Opacity => "opacity",
+            Self::Shadow => "box-shadow",
+            Self::Transform => "transform",
+            Self::Custom(val) => val.as_str(),
         }
     }
 }
@@ -131,13 +131,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_duration_css() {
-        assert_eq!(TransitionDuration::Ms150.to_css(), "150ms");
-        assert_eq!(TransitionDuration::CustomMs(350).to_css(), "350ms");
+    fn test_duration_value() {
+        assert_eq!(TransitionDuration::Ms150.value(), "150ms");
+        assert_eq!(TransitionDuration::CustomMs(350).value(), "350ms");
     }
 
     #[test]
-    fn test_easing_css() {
-        assert_eq!(Easing::In.to_css(), "cubic-bezier(0.4, 0, 1, 1)");
+    fn test_easing_value() {
+        assert_eq!(Easing::In.value(), "cubic-bezier(0.4, 0, 1, 1)");
     }
 }

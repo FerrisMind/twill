@@ -1,6 +1,6 @@
 # Demo Applications
 
-Twill ships three GUI demos plus a generic CSS-style demo:
+Twill ships three GUI demos plus a generic style data demo:
 
 - `examples/demo-egui.rs`
 - `examples/demo-iced.rs`
@@ -21,4 +21,3 @@ cargo run --example demo-slint --features slint
 - Typography and component variants
 - Motion token references
 - Semantic token behavior in light/dark mode
-

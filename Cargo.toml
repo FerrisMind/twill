@@ -3,7 +3,7 @@ name = "twill"
 version = "0.2.0"
 edition = "2024"
 rust-version = "1.93"
-description = "Idiomatic Rust styling library inspired by Tailwind CSS for GUI"
+description = "Idiomatic Rust styling library inspired by Tailwind for native GUI"
 license = "MIT"
 authors = ["FerrisMind"]
 repository = "https://github.com/FerrisMind/twill"
@@ -29,7 +29,8 @@ strip = true
 [dependencies]
 # Optional UI framework backends
 egui = { version = "0.33", optional = true }
-iced = { version = "0.14", optional = true, features = ["advanced", "image", "tokio"] }
+iced = { version = "0.14", optional = true, features = ["advanced", "image", "tokio", "canvas"] }
+palette = { version = "0.7.6", features = ["std"] }
 slint = { version = "1.15", optional = true }
 
 [dev-dependencies]

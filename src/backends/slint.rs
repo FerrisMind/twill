@@ -44,17 +44,7 @@ pub fn to_radius(radius: BorderRadius) -> f32 {
 
 /// Convert twill Blur to Slint blur radius.
 pub fn to_blur_radius(blur: Blur) -> f32 {
-    match blur {
-        Blur::None => 0.0,
-        Blur::Sm => 4.0,
-        Blur::Base => 8.0,
-        Blur::Md => 12.0,
-        Blur::Lg => 16.0,
-        Blur::Xl => 24.0,
-        Blur::S2xl => 40.0,
-        Blur::S3xl => 64.0,
-        Blur::Custom(px) => px as f32,
-    }
+    blur.radius_px() as f32
 }
 
 /// Convert twill Cursor to Slint MouseCursor.

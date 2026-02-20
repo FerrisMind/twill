@@ -2,17 +2,6 @@
 
 use crate::Style;
 
-/// Trait for converting types to CSS string representation.
-pub trait ToCss {
-    /// Convert to CSS property string (e.g., "padding: 1rem").
-    fn to_css(&self) -> String;
-
-    /// Convert to CSS property name and value pair.
-    fn to_css_pair(&self) -> Option<(String, String)> {
-        None
-    }
-}
-
 /// Trait for merging styles together.
 pub trait Merge<T> {
     /// Merge another style into this one, with other taking precedence.

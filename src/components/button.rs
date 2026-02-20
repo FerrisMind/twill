@@ -2,7 +2,7 @@
 
 use crate::style::Style;
 use crate::tokens::{BorderRadius, Color, FontSize, FontWeight, Scale, Shadow, Spacing};
-use crate::traits::{Merge, ToCss};
+use crate::traits::Merge;
 
 /// Button variant.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -172,12 +172,6 @@ impl Button {
     }
 }
 
-impl ToCss for Button {
-    fn to_css(&self) -> String {
-        self.style().to_css()
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -185,15 +179,14 @@ mod tests {
     #[test]
     fn test_primary_button() {
         let btn = Button::primary();
-        let css = btn.to_css();
-        assert!(css.contains("background-color: #3b82f6"));
+        let style = btn.style();
+        assert_eq!(style.background_color, Some(Color::blue(Scale::S500)));
     }
 
     #[test]
     fn test_button_sizes() {
-        let sm = Button::primary().sm().to_css();
-        let lg = Button::primary().lg().to_css();
-        assert!(sm.contains("padding: 0.25rem 0.75rem"));
-        assert!(lg.contains("padding: 0.75rem 1.5rem"));
+        let sm = Button::primary().sm().style();
+        let lg = Button::primary().lg().style();
+        assert_ne!(sm.padding, lg.padding);
     }
 }

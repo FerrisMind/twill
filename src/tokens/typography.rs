@@ -1,6 +1,4 @@
-//! Typography design tokens following Tailwind CSS typography scale.
-
-use crate::traits::ToCss;
+//! Typography design tokens following Tailwind typography scale.
 
 /// Font family tokens.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -13,12 +11,16 @@ pub enum FontFamily {
     Mono,
 }
 
-impl ToCss for FontFamily {
-    fn to_css(&self) -> String {
+impl FontFamily {
+    pub fn stack(&self) -> &'static str {
         match self {
-            FontFamily::Sans => "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\"".to_string(),
-            FontFamily::Serif => "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif".to_string(),
-            FontFamily::Mono => "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace".to_string(),
+            FontFamily::Sans => {
+                "ui-sans-serif, system-ui, sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\""
+            }
+            FontFamily::Serif => "ui-serif, Georgia, Cambria, \"Times New Roman\", Times, serif",
+            FontFamily::Mono => {
+                "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace"
+            }
         }
     }
 }
@@ -94,8 +96,8 @@ impl FontSize {
     }
 }
 
-impl ToCss for FontSize {
-    fn to_css(&self) -> String {
+impl FontSize {
+    pub fn value(&self) -> String {
         format!("{}rem", self.size_rem())
     }
 }
@@ -140,8 +142,8 @@ impl FontWeight {
     }
 }
 
-impl ToCss for FontWeight {
-    fn to_css(&self) -> String {
+impl FontWeight {
+    pub fn value_str(&self) -> String {
         self.value().to_string()
     }
 }
@@ -163,15 +165,15 @@ pub enum LetterSpacing {
     Widest,
 }
 
-impl ToCss for LetterSpacing {
-    fn to_css(&self) -> String {
+impl LetterSpacing {
+    pub fn value(&self) -> &'static str {
         match self {
-            LetterSpacing::Tighter => "-0.05em".to_string(),
-            LetterSpacing::Tight => "-0.025em".to_string(),
-            LetterSpacing::Normal => "0em".to_string(),
-            LetterSpacing::Wide => "0.025em".to_string(),
-            LetterSpacing::Wider => "0.05em".to_string(),
-            LetterSpacing::Widest => "0.1em".to_string(),
+            LetterSpacing::Tighter => "-0.05em",
+            LetterSpacing::Tight => "-0.025em",
+            LetterSpacing::Normal => "0em",
+            LetterSpacing::Wide => "0.025em",
+            LetterSpacing::Wider => "0.05em",
+            LetterSpacing::Widest => "0.1em",
         }
     }
 }
@@ -193,8 +195,8 @@ pub enum LineHeight {
     Numeric(u8),
 }
 
-impl ToCss for LineHeight {
-    fn to_css(&self) -> String {
+impl LineHeight {
+    pub fn value(&self) -> String {
         match self {
             LineHeight::Tight => "1.25".to_string(),
             LineHeight::Snug => "1.375".to_string(),
@@ -217,15 +219,15 @@ pub enum TextAlign {
     End,
 }
 
-impl ToCss for TextAlign {
-    fn to_css(&self) -> String {
+impl TextAlign {
+    pub fn value(&self) -> &'static str {
         match self {
-            TextAlign::Left => "left".to_string(),
-            TextAlign::Center => "center".to_string(),
-            TextAlign::Right => "right".to_string(),
-            TextAlign::Justify => "justify".to_string(),
-            TextAlign::Start => "start".to_string(),
-            TextAlign::End => "end".to_string(),
+            TextAlign::Left => "left",
+            TextAlign::Center => "center",
+            TextAlign::Right => "right",
+            TextAlign::Justify => "justify",
+            TextAlign::Start => "start",
+            TextAlign::End => "end",
         }
     }
 }
@@ -239,13 +241,13 @@ pub enum TextDecoration {
     LineThrough,
 }
 
-impl ToCss for TextDecoration {
-    fn to_css(&self) -> String {
+impl TextDecoration {
+    pub fn value(&self) -> &'static str {
         match self {
-            TextDecoration::None => "none".to_string(),
-            TextDecoration::Underline => "underline".to_string(),
-            TextDecoration::Overline => "overline".to_string(),
-            TextDecoration::LineThrough => "line-through".to_string(),
+            TextDecoration::None => "none",
+            TextDecoration::Underline => "underline",
+            TextDecoration::Overline => "overline",
+            TextDecoration::LineThrough => "line-through",
         }
     }
 }
@@ -259,13 +261,13 @@ pub enum TextTransform {
     Capitalize,
 }
 
-impl ToCss for TextTransform {
-    fn to_css(&self) -> String {
+impl TextTransform {
+    pub fn value(&self) -> &'static str {
         match self {
-            TextTransform::None => "none".to_string(),
-            TextTransform::Uppercase => "uppercase".to_string(),
-            TextTransform::Lowercase => "lowercase".to_string(),
-            TextTransform::Capitalize => "capitalize".to_string(),
+            TextTransform::None => "none",
+            TextTransform::Uppercase => "uppercase",
+            TextTransform::Lowercase => "lowercase",
+            TextTransform::Capitalize => "capitalize",
         }
     }
 }
@@ -277,11 +279,11 @@ pub enum TextOverflow {
     Ellipsis,
 }
 
-impl ToCss for TextOverflow {
-    fn to_css(&self) -> String {
+impl TextOverflow {
+    pub fn value(&self) -> &'static str {
         match self {
-            TextOverflow::Clip => "clip".to_string(),
-            TextOverflow::Ellipsis => "ellipsis".to_string(),
+            TextOverflow::Clip => "clip",
+            TextOverflow::Ellipsis => "ellipsis",
         }
     }
 }
@@ -296,14 +298,14 @@ pub enum WhiteSpace {
     PreWrap,
 }
 
-impl ToCss for WhiteSpace {
-    fn to_css(&self) -> String {
+impl WhiteSpace {
+    pub fn value(&self) -> &'static str {
         match self {
-            WhiteSpace::Normal => "normal".to_string(),
-            WhiteSpace::NoWrap => "nowrap".to_string(),
-            WhiteSpace::Pre => "pre".to_string(),
-            WhiteSpace::PreLine => "pre-line".to_string(),
-            WhiteSpace::PreWrap => "pre-wrap".to_string(),
+            WhiteSpace::Normal => "normal",
+            WhiteSpace::NoWrap => "nowrap",
+            WhiteSpace::Pre => "pre",
+            WhiteSpace::PreLine => "pre-line",
+            WhiteSpace::PreWrap => "pre-wrap",
         }
     }
 }
@@ -317,13 +319,13 @@ pub enum WordBreak {
     BreakWord,
 }
 
-impl ToCss for WordBreak {
-    fn to_css(&self) -> String {
+impl WordBreak {
+    pub fn value(&self) -> &'static str {
         match self {
-            WordBreak::Normal => "normal".to_string(),
-            WordBreak::BreakAll => "break-all".to_string(),
-            WordBreak::KeepAll => "keep-all".to_string(),
-            WordBreak::BreakWord => "break-word".to_string(),
+            WordBreak::Normal => "normal",
+            WordBreak::BreakAll => "break-all",
+            WordBreak::KeepAll => "keep-all",
+            WordBreak::BreakWord => "break-word",
         }
     }
 }
@@ -346,6 +348,6 @@ mod tests {
 
     #[test]
     fn test_letter_spacing() {
-        assert_eq!(LetterSpacing::Tight.to_css(), "-0.025em");
+        assert_eq!(LetterSpacing::Tight.value(), "-0.025em");
     }
 }

@@ -1,13 +1,16 @@
+use crate::Message;
+use crate::components::Snippet;
 use iced::widget::{column, text};
 use iced::{Element, Length};
-use crate::components::Snippet;
-use crate::Message;
-use twill::tokens::{Shadow, Color, Scale, FontWeight, BorderRadius};
-use twill::iced::{to_color, to_font_weight, styled_container};
+use twill::iced::{styled_container, to_color, to_font_weight};
+use twill::tokens::{BorderRadius, Color, FontWeight, Scale, Shadow};
 
 pub fn view<'a>(is_dark: bool) -> Element<'a, Message> {
     column![
-        text("Shadows").size(32).font(iced::Font { weight: to_font_weight(FontWeight::Bold), ..Default::default() }),
+        text("Shadows").size(32).font(iced::Font {
+            weight: to_font_weight(FontWeight::Bold),
+            ..Default::default()
+        }),
         text("Box shadows from Twill, rendered with iced native shadow support.").size(16),
         box_shadow_section(is_dark),
     ]
@@ -40,16 +43,28 @@ styled_container(text("Card").into(), &twill::Style::new()
     } else {
         to_color(Color::white())
     };
-    let shadow_col = if is_dark { Color::black() } else { Color::gray(Scale::S900) };
-    let text_col = if is_dark { to_color(Color::white()) } else { to_color(Color::black()) };
+    let shadow_col = if is_dark {
+        Color::black()
+    } else {
+        Color::gray(Scale::S900)
+    };
+    let text_col = if is_dark {
+        to_color(Color::white())
+    } else {
+        to_color(Color::black())
+    };
 
     let mut blocks = column![].spacing(32).padding(32);
 
-    let mut current_row = iced::widget::row![].spacing(32);
+    let mut current_row = iced::widget::row![].spacing(20);
     let mut count = 0;
 
     for (shadow, label) in shadows {
-        let bg_color = if is_dark { Color::gray(Scale::S800) } else { Color::white() };
+        let bg_color = if is_dark {
+            Color::gray(Scale::S800)
+        } else {
+            Color::white()
+        };
 
         let c = styled_container(
             text(label).size(14).color(text_col).into(),
@@ -57,19 +72,19 @@ styled_container(text("Card").into(), &twill::Style::new()
                 .bg(bg_color)
                 .rounded(BorderRadius::Lg)
                 .shadow(shadow)
-                .shadow_color(shadow_col)
+                .shadow_color(shadow_col),
         )
-            .width(Length::Fixed(160.0))
-            .height(Length::Fixed(90.0))
-            .center_x(Length::Fill)
-            .center_y(Length::Fill);
+        .width(Length::Fixed(160.0))
+        .height(Length::Fixed(90.0))
+        .align_x(iced::alignment::Horizontal::Center)
+        .align_y(iced::alignment::Vertical::Center);
 
         current_row = current_row.push(c);
         count += 1;
 
-        if count == 4 {
+        if count == 3 {
             blocks = blocks.push(current_row);
-            current_row = iced::widget::row![].spacing(32);
+            current_row = iced::widget::row![].spacing(20);
             count = 0;
         }
     }

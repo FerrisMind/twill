@@ -1,39 +1,13 @@
 # Components
 
-Twill currently provides a `Button` component abstraction.
-
-## Button variants
-- `Primary`
-- `Secondary`
-- `Outline`
-- `Ghost`
-- `Destructive`
-- `Link`
-
-## Button sizes
-- `Sm`
-- `Md`
-- `Lg`
-- `Icon`
-
-## Usage
-
-```rust
-use twill::{Button, ToCss};
-
-let primary = Button::primary().to_css();
-let large = Button::primary().lg().to_css();
-let outline = Button::outline().sm().to_css();
-let danger = Button::destructive().full_width().to_css();
-let disabled = Button::secondary().disabled().to_css();
-```
-
-## Extracting `Style`
-If you need to adapt style per backend:
+Component helpers expose common variants and sizes while returning strongly typed `Style` data.
 
 ```rust
 use twill::Button;
 
-let style = Button::primary().lg().style();
+let primary = Button::primary();
+let large = Button::primary().lg();
+let outline = Button::outline().sm();
+let danger = Button::destructive().full_width();
+let disabled = Button::secondary().disabled();
 ```
-

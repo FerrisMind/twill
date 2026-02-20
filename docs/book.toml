@@ -1,6 +1,6 @@
 [book]
 title = "Twill Documentation"
-description = "Type-safe styling library for Rust GUI apps inspired by Tailwind CSS."
+description = "Type-safe styling library for Rust GUI apps inspired by Tailwind."
 authors = ["Twill Contributors"]
 language = "en"
 src = "."

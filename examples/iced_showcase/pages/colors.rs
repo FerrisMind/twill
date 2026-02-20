@@ -1,10 +1,10 @@
-use iced::widget::{column, row, text, Space};
-use iced::{Element, Length};
-use crate::components::Snippet;
 use crate::Message;
-use twill::tokens::{Color, ColorFamily, Scale, FontWeight, BorderRadius};
+use crate::components::Snippet;
+use iced::widget::{Space, column, row, text};
+use iced::{Element, Length};
+use twill::iced::{styled_container, to_color, to_font_weight};
+use twill::tokens::{BorderRadius, Color, ColorFamily, FontWeight, Scale};
 use twill::traits::ComputeValue;
-use twill::iced::{to_color, to_font_weight, styled_container};
 
 pub fn view<'a>(is_dark: bool) -> Element<'a, Message> {
     let code = r#"// Using Twill tokens to generate all palettes
@@ -18,6 +18,10 @@ let bg_color = to_color(blue_500);
         (ColorFamily::Zinc, "Zinc"),
         (ColorFamily::Neutral, "Neutral"),
         (ColorFamily::Stone, "Stone"),
+        (ColorFamily::Mauve, "Mauve"),
+        (ColorFamily::Olive, "Olive"),
+        (ColorFamily::Mist, "Mist"),
+        (ColorFamily::Taupe, "Taupe"),
         (ColorFamily::Red, "Red"),
         (ColorFamily::Orange, "Orange"),
         (ColorFamily::Amber, "Amber"),
@@ -58,42 +62,66 @@ let bg_color = to_color(blue_500);
 
         for (scale, label) in scales.iter() {
             let col = Color::new(*family, *scale);
-            row_content = row_content.push(color_box(col, label));
+            row_content = row_content.push(color_box(col, label, is_dark));
         }
 
-        all_palettes = all_palettes.push(
-            column![
-                text(*name).size(20).font(iced::Font { weight: to_font_weight(FontWeight::Bold), ..Default::default() }),
-                Space::new().width(Length::Shrink).height(Length::Fixed(8.0)),
-                row_content
-            ]
-        );
+        all_palettes = all_palettes.push(column![
+            text(*name).size(20).font(iced::Font {
+                weight: to_font_weight(FontWeight::Bold),
+                ..Default::default()
+            }),
+            Space::new()
+                .width(Length::Shrink)
+                .height(Length::Fixed(8.0)),
+            row_content
+        ]);
     }
 
     let snippet = Snippet::new("Tailwind Color Palettes (All)", code, all_palettes);
 
     column![
-        text("Colors").size(32).font(iced::Font { weight: to_font_weight(FontWeight::Bold), ..Default::default() }),
+        text("Colors").size(32).font(iced::Font {
+            weight: to_font_weight(FontWeight::Bold),
+            ..Default::default()
+        }),
         snippet.view(is_dark),
     ]
     .spacing(32)
     .into()
 }
 
-fn color_box<'a>(color: Color, label: &'a str) -> Element<'a, crate::Message> {
-    let text_col = if (color.compute().r as u16 + color.compute().g as u16 + (color.compute().b as u16)) < 382 {
-        to_color(Color::white())
+fn color_box<'a>(color: Color, label: &'a str, is_dark: bool) -> Element<'a, crate::Message> {
+    let chip_text_color = if is_light_color(color) {
+        to_color(Color::slate(Scale::S900))
     } else {
-        to_color(Color::black())
+        to_color(Color::white())
+    };
+    let label_text_color = if is_dark {
+        to_color(Color::gray(Scale::S200))
+    } else {
+        to_color(Color::gray(Scale::S700))
     };
 
     column![
-        styled_container(Space::new().width(Length::Fill).height(Length::Fill).into(), &twill::Style::new().bg(color).rounded(BorderRadius::Md))
-            .width(Length::Fixed(48.0))
-            .height(Length::Fixed(48.0)),
-        Space::new().width(Length::Shrink).height(Length::Fixed(4.0)),
-        text(label).size(12).color(text_col), // Fallback text col, but label is outside standard visual layout?
+        styled_container(
+            text(label).size(11).color(chip_text_color).into(),
+            &twill::Style::new().bg(color).rounded(BorderRadius::Md)
+        )
+        .width(Length::Fixed(48.0))
+        .height(Length::Fixed(48.0))
+        .align_x(iced::alignment::Horizontal::Center)
+        .align_y(iced::alignment::Vertical::Center),
+        Space::new()
+            .width(Length::Shrink)
+            .height(Length::Fixed(4.0)),
+        text(label).size(12).color(label_text_color),
     ]
     .align_x(iced::Alignment::Center)
     .into()
+}
+
+fn is_light_color(color: Color) -> bool {
+    let c = color.compute();
+    let luminance = (0.299 * c.r as f32) + (0.587 * c.g as f32) + (0.114 * c.b as f32);
+    luminance > 150.0
 }

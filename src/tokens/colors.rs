@@ -1,8 +1,8 @@
-//! Color design tokens following Tailwind CSS / shadcn color palette.
+//! Color design tokens following Tailwind / shadcn color palettes.
 //!
 //! Provides type-safe color values with exact RGB from shadcn-svelte.
 
-use crate::traits::{ComputeValue, ToCss};
+use crate::traits::ComputeValue;
 
 /// Color scale values (50-950).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -21,6 +21,20 @@ pub enum Scale {
 }
 
 impl Scale {
+    pub const ALL: [Scale; 11] = [
+        Scale::S50,
+        Scale::S100,
+        Scale::S200,
+        Scale::S300,
+        Scale::S400,
+        Scale::S500,
+        Scale::S600,
+        Scale::S700,
+        Scale::S800,
+        Scale::S900,
+        Scale::S950,
+    ];
+
     pub fn value(&self) -> u16 {
         match self {
             Scale::S50 => 50,
@@ -41,11 +55,17 @@ impl Scale {
 /// Tailwind color palette families.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ColorFamily {
+    Black,
+    White,
     Slate,
     Gray,
     Zinc,
     Neutral,
     Stone,
+    Mauve,
+    Olive,
+    Mist,
+    Taupe,
     Red,
     Orange,
     Amber,
@@ -77,14 +97,14 @@ impl Color {
         Self { family, scale }
     }
 
-    /// White color (alias for slate-50 which is near-white)
+    /// White color (`--color-white`).
     pub const fn white() -> Self {
-        Self::slate(Scale::S50)
+        Self::new(ColorFamily::White, Scale::S500)
     }
 
-    /// Black color (alias for slate-950 which is near-black)
+    /// Black color (`--color-black`).
     pub const fn black() -> Self {
-        Self::slate(Scale::S950)
+        Self::new(ColorFamily::Black, Scale::S500)
     }
 
     pub const fn slate(scale: Scale) -> Self {
@@ -101,6 +121,18 @@ impl Color {
     }
     pub const fn stone(scale: Scale) -> Self {
         Self::new(ColorFamily::Stone, scale)
+    }
+    pub const fn mauve(scale: Scale) -> Self {
+        Self::new(ColorFamily::Mauve, scale)
+    }
+    pub const fn olive(scale: Scale) -> Self {
+        Self::new(ColorFamily::Olive, scale)
+    }
+    pub const fn mist(scale: Scale) -> Self {
+        Self::new(ColorFamily::Mist, scale)
+    }
+    pub const fn taupe(scale: Scale) -> Self {
+        Self::new(ColorFamily::Taupe, scale)
     }
     pub const fn red(scale: Scale) -> Self {
         Self::new(ColorFamily::Red, scale)
@@ -162,11 +194,7 @@ impl ComputeValue for Color {
     }
 }
 
-impl ToCss for Color {
-    fn to_css(&self) -> String {
-        self.compute().to_hex()
-    }
-}
+use palette::FromColor;
 
 /// RGBA color value.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -183,8 +211,97 @@ impl ColorValue {
     pub const fn new(r: u8, g: u8, b: u8, a: f32) -> Self {
         Self { r, g, b, a }
     }
+
     pub const fn from_rgb(r: u8, g: u8, b: u8) -> Self {
         Self::new(r, g, b, 1.0)
+    }
+
+    /// Creates a ColorValue from OKLCH parameters
+    pub fn from_oklch(l: f32, c: f32, h: f32) -> Self {
+        let (r, g, b) = crate::tokens::oklch::OklchConverter::to_rgb(l, c, h);
+        Self::from_rgb(r, g, b)
+    }
+
+    fn oklch_components(&self) -> (f32, f32, f32) {
+        let srgb = palette::Srgb::new(
+            self.r as f32 / 255.0,
+            self.g as f32 / 255.0,
+            self.b as f32 / 255.0,
+        );
+        let oklch: palette::Oklch = palette::Oklch::from_color(srgb);
+        let hue = oklch.hue.into_inner();
+        let safe_hue = if hue.is_finite() { hue } else { 0.0 };
+        (oklch.l, oklch.chroma, safe_hue)
+    }
+
+    /// Darkens the current color based on an OKLCH lightness transformation
+    pub fn darken_oklch(&self, amount: f32) -> Self {
+        let (l, c, h) = self.oklch_components();
+        let (r, g, b) = crate::tokens::oklch::OklchConverter::darken(l, c, h, amount);
+        Self::new(r, g, b, self.a)
+    }
+
+    /// Lightens the current color based on an OKLCH lightness transformation
+    pub fn lighten_oklch(&self, amount: f32) -> Self {
+        let (l, c, h) = self.oklch_components();
+        let (r, g, b) = crate::tokens::oklch::OklchConverter::lighten(l, c, h, amount);
+        Self::new(r, g, b, self.a)
+    }
+
+    /// Rebuilds the color with the same chroma/hue and a new OKLCH lightness.
+    pub fn with_oklch_lightness(&self, lightness: f32) -> Self {
+        let (_, c, h) = self.oklch_components();
+        let (r, g, b) = crate::tokens::oklch::OklchConverter::to_rgb(lightness, c, h);
+        Self::new(r, g, b, self.a)
+    }
+
+    /// OKLCH perceptual lightness (`L`, 0.0..1.0).
+    pub fn perceived_lightness_oklch(&self) -> f32 {
+        let (l, _, _) = self.oklch_components();
+        l
+    }
+
+    /// Fast black/white contrast pick based on perceptual OKLCH lightness.
+    pub fn preferred_text_color(&self) -> SpecialColor {
+        if self.perceived_lightness_oklch() > 0.6 {
+            SpecialColor::Black
+        } else {
+            SpecialColor::White
+        }
+    }
+
+    /// Generates a Tailwind-like 11-step scale (50..950) preserving hue/chroma.
+    pub fn generate_scale_oklch(&self) -> [ColorValue; 11] {
+        // Ordered for Scale::ALL = [50, 100, ..., 950]
+        let lightness_steps = [
+            0.985, 0.955, 0.91, 0.84, 0.74, 0.64, 0.54, 0.44, 0.34, 0.26, 0.18,
+        ];
+        let (_, c, h) = self.oklch_components();
+
+        let mut out = [ColorValue::from_rgb(0, 0, 0); 11];
+        for (idx, l) in lightness_steps.iter().enumerate() {
+            let (r, g, b) = crate::tokens::oklch::OklchConverter::to_rgb(*l, c, h);
+            out[idx] = ColorValue::new(r, g, b, self.a);
+        }
+        out
+    }
+
+    /// Generates a scale paired with semantic `Scale` keys.
+    pub fn generate_scale_map_oklch(&self) -> [(Scale, ColorValue); 11] {
+        let values = self.generate_scale_oklch();
+        [
+            (Scale::S50, values[0]),
+            (Scale::S100, values[1]),
+            (Scale::S200, values[2]),
+            (Scale::S300, values[3]),
+            (Scale::S400, values[4]),
+            (Scale::S500, values[5]),
+            (Scale::S600, values[6]),
+            (Scale::S700, values[7]),
+            (Scale::S800, values[8]),
+            (Scale::S900, values[9]),
+            (Scale::S950, values[10]),
+        ]
     }
 
     pub fn with_alpha(mut self, a: f32) -> Self {
@@ -209,7 +326,7 @@ impl ColorValue {
         format!("#{:02x}{:02x}{:02x}", self.r, self.g, self.b)
     }
 
-    pub fn to_css_string(&self) -> String {
+    pub fn to_rgb_string(&self) -> String {
         format!("rgb({}, {}, {})", self.r, self.g, self.b)
     }
 
@@ -235,13 +352,13 @@ pub enum SpecialColor {
     White,
 }
 
-impl ToCss for SpecialColor {
-    fn to_css(&self) -> String {
+impl SpecialColor {
+    pub fn value(&self) -> &'static str {
         match self {
-            SpecialColor::Transparent => "transparent".to_string(),
-            SpecialColor::Current => "currentColor".to_string(),
-            SpecialColor::Black => "#000000".to_string(),
-            SpecialColor::White => "#ffffff".to_string(),
+            SpecialColor::Transparent => "transparent",
+            SpecialColor::Current => "currentColor",
+            SpecialColor::Black => "#000000",
+            SpecialColor::White => "#ffffff",
         }
     }
 }
@@ -249,6 +366,8 @@ impl ToCss for SpecialColor {
 /// Get RGB values for a color family and scale (from shadcn-svelte colors.ts)
 fn get_palette_rgb(family: ColorFamily, scale: Scale) -> (u8, u8, u8) {
     match family {
+        ColorFamily::Black => (0, 0, 0),
+        ColorFamily::White => (255, 255, 255),
         ColorFamily::Slate => match scale {
             Scale::S50 => (248, 250, 252),
             Scale::S100 => (241, 245, 249),
@@ -312,6 +431,58 @@ fn get_palette_rgb(family: ColorFamily, scale: Scale) -> (u8, u8, u8) {
             Scale::S700 => (68, 64, 60),
             Scale::S800 => (41, 37, 36),
             Scale::S900 => (28, 25, 23),
+            Scale::S950 => (12, 10, 9),
+        },
+        ColorFamily::Mauve => match scale {
+            Scale::S50 => (250, 250, 250),
+            Scale::S100 => (243, 241, 243),
+            Scale::S200 => (231, 228, 231),
+            Scale::S300 => (215, 208, 215),
+            Scale::S400 => (168, 158, 169),
+            Scale::S500 => (121, 105, 123),
+            Scale::S600 => (89, 76, 91),
+            Scale::S700 => (70, 57, 71),
+            Scale::S800 => (42, 33, 44),
+            Scale::S900 => (29, 22, 30),
+            Scale::S950 => (12, 9, 12),
+        },
+        ColorFamily::Olive => match scale {
+            Scale::S50 => (251, 251, 249),
+            Scale::S100 => (244, 244, 240),
+            Scale::S200 => (232, 232, 227),
+            Scale::S300 => (216, 216, 208),
+            Scale::S400 => (171, 171, 156),
+            Scale::S500 => (124, 124, 103),
+            Scale::S600 => (91, 91, 75),
+            Scale::S700 => (71, 71, 57),
+            Scale::S800 => (43, 43, 34),
+            Scale::S900 => (29, 29, 22),
+            Scale::S950 => (12, 12, 9),
+        },
+        ColorFamily::Mist => match scale {
+            Scale::S50 => (249, 251, 251),
+            Scale::S100 => (241, 243, 243),
+            Scale::S200 => (227, 231, 232),
+            Scale::S300 => (208, 214, 216),
+            Scale::S400 => (156, 168, 171),
+            Scale::S500 => (103, 120, 124),
+            Scale::S600 => (75, 88, 91),
+            Scale::S700 => (57, 68, 71),
+            Scale::S800 => (34, 41, 43),
+            Scale::S900 => (22, 27, 29),
+            Scale::S950 => (9, 11, 12),
+        },
+        ColorFamily::Taupe => match scale {
+            Scale::S50 => (251, 250, 249),
+            Scale::S100 => (243, 241, 241),
+            Scale::S200 => (232, 228, 227),
+            Scale::S300 => (216, 210, 208),
+            Scale::S400 => (171, 160, 156),
+            Scale::S500 => (124, 109, 103),
+            Scale::S600 => (91, 79, 75),
+            Scale::S700 => (71, 60, 57),
+            Scale::S800 => (43, 36, 34),
+            Scale::S900 => (29, 24, 22),
             Scale::S950 => (12, 10, 9),
         },
         ColorFamily::Red => match scale {
@@ -562,5 +733,34 @@ mod tests {
     fn test_hex_conversion() {
         let value = ColorValue::from_rgb(255, 0, 0);
         assert_eq!(value.to_hex(), "#ff0000");
+    }
+
+    #[test]
+    fn test_black_white_are_exact() {
+        assert_eq!(Color::black().compute().to_hex(), "#000000");
+        assert_eq!(Color::white().compute().to_hex(), "#ffffff");
+    }
+
+    #[test]
+    fn test_oklch_contrast_pick() {
+        assert_eq!(
+            ColorValue::from_rgb(255, 255, 255).preferred_text_color(),
+            SpecialColor::Black
+        );
+        assert_eq!(
+            ColorValue::from_rgb(0, 0, 0).preferred_text_color(),
+            SpecialColor::White
+        );
+    }
+
+    #[test]
+    fn test_oklch_scale_generation_order() {
+        let brand = ColorValue::from_hex("#3b82f6").expect("valid hex");
+        let scale = brand.generate_scale_oklch();
+        assert_eq!(scale.len(), 11);
+        assert!(
+            scale[0].perceived_lightness_oklch() > scale[10].perceived_lightness_oklch(),
+            "50 should be lighter than 950"
+        );
     }
 }

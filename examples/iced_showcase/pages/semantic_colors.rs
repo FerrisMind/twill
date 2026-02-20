@@ -1,10 +1,11 @@
-use iced::widget::{column, row, text, Space};
-use iced::{Element, Length};
-use crate::components::Snippet;
 use crate::Message;
-use twill::tokens::{SemanticColor, SemanticThemeVars, FontWeight, BorderRadius};
-use twill::iced::{to_color, to_font_weight, styled_container};
+use crate::components::Snippet;
+use iced::widget::{Space, column, row, text};
+use iced::{Element, Length};
 use twill::Style;
+use twill::iced::{styled_container, to_color, to_font_weight};
+use twill::tokens::{BorderRadius, FontWeight, SemanticColor, SemanticThemeVars};
+use twill::traits::ComputeValue;
 
 pub fn view<'a>(is_dark: bool) -> Element<'a, Message> {
     let code = r#"// Resolving semantic tokens based on current theme
@@ -42,8 +43,8 @@ styled_container(
     ];
 
     let theme = SemanticThemeVars::shadcn_neutral();
-    let mut palette_grid = column![].spacing(16);
-    let mut current_row = row![].spacing(8);
+    let mut palette_grid = column![].spacing(12);
+    let mut current_row = row![].spacing(12);
     let mut count = 0;
 
     for (semantic, name) in semantics {
@@ -51,35 +52,46 @@ styled_container(
         let dark_color = theme.resolve(semantic, true).unwrap();
 
         let block = column![
-            text(name).size(14).font(iced::Font { weight: to_font_weight(FontWeight::Bold), ..Default::default() }),
-            Space::new().width(Length::Shrink).height(Length::Fixed(4.0)),
+            text(name).size(14).font(iced::Font {
+                weight: to_font_weight(FontWeight::Bold),
+                ..Default::default()
+            }),
+            Space::new()
+                .width(Length::Shrink)
+                .height(Length::Fixed(4.0)),
             row![
                 styled_container(
-                    column![text("Light").size(10).color(if is_dark { to_color(twill::tokens::Color::black()) } else { to_color(twill::tokens::Color::white()) })].into(),
+                    text("Light")
+                        .size(10)
+                        .color(contrast_color(light_color))
+                        .into(),
                     &Style::new().bg(light_color).rounded(BorderRadius::Md)
                 )
                 .width(Length::Fixed(80.0))
                 .height(Length::Fixed(48.0))
-                .center_x(Length::Fill)
-                .center_y(Length::Fill),
-                
+                .align_x(iced::alignment::Horizontal::Center)
+                .align_y(iced::alignment::Vertical::Center),
                 styled_container(
-                    column![text("Dark").size(10).color(if is_dark { to_color(twill::tokens::Color::black()) } else { to_color(twill::tokens::Color::white()) })].into(),
+                    text("Dark")
+                        .size(10)
+                        .color(contrast_color(dark_color))
+                        .into(),
                     &Style::new().bg(dark_color).rounded(BorderRadius::Md)
                 )
                 .width(Length::Fixed(80.0))
                 .height(Length::Fixed(48.0))
-                .center_x(Length::Fill)
-                .center_y(Length::Fill),
+                .align_x(iced::alignment::Horizontal::Center)
+                .align_y(iced::alignment::Vertical::Center),
             ]
-        ].spacing(4);
+        ]
+        .spacing(4);
 
         current_row = current_row.push(block);
         count += 1;
 
-        if count == 3 {
+        if count == 2 {
             palette_grid = palette_grid.push(current_row);
-            current_row = row![].spacing(8);
+            current_row = row![].spacing(12);
             count = 0;
         }
     }
@@ -91,10 +103,23 @@ styled_container(
     let snippet = Snippet::new("Semantic Color Map", code, palette_grid);
 
     column![
-        text("Semantic Colors").size(32).font(iced::Font { weight: to_font_weight(FontWeight::Bold), ..Default::default() }),
+        text("Semantic Colors").size(32).font(iced::Font {
+            weight: to_font_weight(FontWeight::Bold),
+            ..Default::default()
+        }),
         text("Showing both Light and Dark mode equivalents of shadcn semantic tokens.").size(16),
         snippet.view(is_dark),
     ]
     .spacing(32)
     .into()
+}
+
+fn contrast_color(color: twill::tokens::Color) -> iced::Color {
+    let raw = color.compute();
+    let luminance = (0.299 * raw.r as f32) + (0.587 * raw.g as f32) + (0.114 * raw.b as f32);
+    if luminance > 150.0 {
+        to_color(twill::tokens::Color::black())
+    } else {
+        to_color(twill::tokens::Color::white())
+    }
 }

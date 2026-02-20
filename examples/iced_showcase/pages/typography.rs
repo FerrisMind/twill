@@ -1,15 +1,18 @@
-use iced::widget::{column, text};
-use iced::Element;
-use crate::components::Snippet;
 use crate::Message;
-use twill::tokens::{FontSize, FontWeight, FontFamily};
+use crate::components::Snippet;
+use iced::Element;
+use iced::widget::{column, text};
 use twill::iced::{to_font_size, to_font_weight};
-use twill::traits::ToCss;
+use twill::tokens::{FontFamily, FontSize, FontWeight};
 
 pub fn view<'a>(is_dark: bool) -> Element<'a, Message> {
     column![
-        text("Typography").size(32).font(iced::Font { weight: to_font_weight(FontWeight::Bold), ..Default::default() }),
-        text("Map Twill's typography scale and weights seamlessly into Iced Text widgets.").size(16),
+        text("Typography").size(32).font(iced::Font {
+            weight: to_font_weight(FontWeight::Bold),
+            ..Default::default()
+        }),
+        text("Map Twill's typography scale and weights seamlessly into Iced Text widgets.")
+            .size(16),
         font_sizes_section(is_dark),
         font_weights_section(is_dark),
         font_family_section(is_dark),
@@ -43,8 +46,7 @@ text("Hello").size(size)"#;
     let mut col = column![].spacing(8);
     for (size, label) in font_sizes.iter() {
         col = col.push(
-            text(format!("{} — {:.0}px", label, to_font_size(*size)))
-                .size(to_font_size(*size))
+            text(format!("{} — {:.0}px", label, to_font_size(*size))).size(to_font_size(*size)),
         );
     }
 
@@ -74,7 +76,10 @@ text("Bold text").font(iced::Font { weight, ..Default::default() })"#;
         col = col.push(
             text(*label)
                 .size(to_font_size(FontSize::Xl))
-                .font(iced::Font { weight: to_font_weight(*weight), ..Default::default() })
+                .font(iced::Font {
+                    weight: to_font_weight(*weight),
+                    ..Default::default()
+                }),
         );
     }
 
@@ -97,14 +102,17 @@ text("The quick brown fox").font(iced::Font::MONOSPACE)"#;
 
     let mut col = column![].spacing(16);
     for (family, label, iced_font) in families.iter() {
-        let sample_text = format!("{}: The quick brown fox jumps over the lazy dog — {}", label, family.to_css());
+        let sample_text = format!(
+            "{}: The quick brown fox jumps over the lazy dog — {}",
+            label,
+            family.stack()
+        );
         col = col.push(
             text(sample_text)
                 .size(to_font_size(FontSize::Lg))
-                .font(*iced_font)
+                .font(*iced_font),
         );
     }
 
     Snippet::new("Font Family", code, col).view(is_dark)
 }
-
