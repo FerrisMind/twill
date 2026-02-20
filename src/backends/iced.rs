@@ -4,20 +4,18 @@
 
 use crate::style::Style;
 use crate::tokens::{BorderRadius, Color, Scale, Spacing, Cursor, Blur, AspectRatio, Shadow, FontSize, FontWeight, TransitionDuration, SemanticColor, SemanticThemeVars};
-use crate::traits::ToCss;
+use crate::traits::ComputeValue;
+
+fn spacing_to_px(spacing: Spacing) -> f32 {
+    match spacing.to_px() {
+        Some(px) => px as f32,
+        None => 0.0,
+    }
+}
 
 /// Convert twill Color to iced Color.
 pub fn to_color(color: Color) -> iced::Color {
-    let css = color.to_css();
-    let hex = css.trim_start_matches('#');
-    if hex.len() == 6 {
-        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0) as f32 / 255.0;
-        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0) as f32 / 255.0;
-        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0) as f32 / 255.0;
-        iced::Color::from_rgb(r, g, b)
-    } else {
-        iced::Color::WHITE
-    }
+    to_color_value(color.compute())
 }
 
 /// Convert twill ColorValue to iced Color.
@@ -32,9 +30,7 @@ pub fn to_color_value(value: crate::tokens::ColorValue) -> iced::Color {
 
 /// Convert twill Spacing to iced Padding.
 pub fn to_padding(spacing: Spacing) -> iced::Padding {
-    let rem = spacing.to_rem().unwrap_or(0.0);
-    let px = rem * 16.0;
-    iced::Padding::new(px)
+    iced::Padding::new(spacing_to_px(spacing))
 }
 
 /// Convert twill BorderRadius to iced border radius.
@@ -74,12 +70,13 @@ pub fn to_aspect_ratio(ratio: AspectRatio) -> Option<f32> {
         AspectRatio::Auto => None,
         AspectRatio::Square => Some(1.0),
         AspectRatio::Video => Some(16.0 / 9.0),
+        AspectRatio::Custom(_, 0) => None,
         AspectRatio::Custom(w, h) => Some(w as f32 / h as f32),
     }
 }
 
-/// Convert twill Shadow to iced Shadow
-pub fn to_shadow(shadow: Shadow, color: Color) -> iced::Shadow {
+/// Convert twill Shadow to iced Shadow with an optional color override.
+pub fn to_shadow_with_color(shadow: Shadow, color: Option<Color>) -> iced::Shadow {
     let (offset_y, blur, alpha) = match shadow {
         Shadow::None => return iced::Shadow::default(),
         Shadow::Xs2 => (1.0, 0.0, 0.05),
@@ -91,7 +88,7 @@ pub fn to_shadow(shadow: Shadow, color: Color) -> iced::Shadow {
         Shadow::S2xl => (25.0, 50.0, 0.63),
     };
 
-    let mut c = to_color(color);
+    let mut c = to_color(color.unwrap_or(Color::black()));
     c.a = alpha;
 
     iced::Shadow {
@@ -99,6 +96,11 @@ pub fn to_shadow(shadow: Shadow, color: Color) -> iced::Shadow {
         offset: iced::Vector::new(0.0, offset_y),
         blur_radius: blur,
     }
+}
+
+/// Convert twill Shadow to iced Shadow.
+pub fn to_shadow(shadow: Shadow, color: Color) -> iced::Shadow {
+    to_shadow_with_color(shadow, Some(color))
 }
 
 /// Convert twill FontSize to f32 for iced
@@ -240,23 +242,122 @@ pub fn styled_container<'a, Message: Clone + 'a>(
     if let Some(p) = &style.padding
         && let (Some(t), Some(r), Some(b), Some(l)) = (p.top, p.right, p.bottom, p.left)
     {
-        let top = t.to_rem().unwrap_or(0.0) * 16.0;
-        let right = r.to_rem().unwrap_or(0.0) * 16.0;
-        let bottom = b.to_rem().unwrap_or(0.0) * 16.0;
-        let left = l.to_rem().unwrap_or(0.0) * 16.0;
-        // Use uniform padding (average)
-        container = container.padding(iced::Padding::new((top + right + bottom + left) / 4.0));
-    }
-
-    // Background
-    if let Some(bg) = &style.background_color {
-        let bg_color = to_color(*bg);
-        container = container.style(move |_| {
-            iced::widget::container::Style::default().background(iced::Background::Color(bg_color))
+        let top = spacing_to_px(t);
+        let right = spacing_to_px(r);
+        let bottom = spacing_to_px(b);
+        let left = spacing_to_px(l);
+        container = container.padding(iced::Padding {
+            top,
+            right,
+            bottom,
+            left,
         });
     }
 
+    let bg_color = style.background_color.map(to_color);
+    let border_width = style.border_width.map_or(0.0, |w| match w {
+        crate::tokens::BorderWidth::S0 => 0.0,
+        crate::tokens::BorderWidth::S1 => 1.0,
+        crate::tokens::BorderWidth::S2 => 2.0,
+        crate::tokens::BorderWidth::S4 => 4.0,
+        crate::tokens::BorderWidth::S8 => 8.0,
+    });
+    let border_radius = style.border_radius.map_or(0.0, to_border_radius);
+    let border_color = style
+        .border_color
+        .map(to_color)
+        .unwrap_or(iced::Color::TRANSPARENT);
+    let shadow = style
+        .box_shadow
+        .map(|s| to_shadow_with_color(s, style.shadow_color))
+        .unwrap_or_default();
+
+    container = container.style(move |_| iced::widget::container::Style {
+        background: bg_color.map(iced::Background::Color),
+        border: iced::Border {
+            radius: border_radius.into(),
+            width: border_width,
+            color: border_color,
+        },
+        shadow,
+        ..Default::default()
+    });
+
     container.into()
+}
+
+/// Create an `iced` button directly from `twill::Button`.
+pub fn twill_button<'a, Message: Clone + 'a>(
+    button_cfg: &crate::components::Button,
+    label: &'a str,
+    on_press: Message,
+) -> iced::Element<'a, Message> {
+    let style = button_cfg.style();
+    let bg = style.background_color.unwrap_or(Color::blue(Scale::S500));
+    let text_color = style.text_color.unwrap_or(Color::white());
+    let border_color = style
+        .border_color
+        .map(to_color)
+        .unwrap_or(iced::Color::TRANSPARENT);
+    let border_width = style.border_width.map_or(0.0, |w| match w {
+        crate::tokens::BorderWidth::S0 => 0.0,
+        crate::tokens::BorderWidth::S1 => 1.0,
+        crate::tokens::BorderWidth::S2 => 2.0,
+        crate::tokens::BorderWidth::S4 => 4.0,
+        crate::tokens::BorderWidth::S8 => 8.0,
+    });
+    let border_radius = style.border_radius.map_or(6.0, to_border_radius);
+    let padding = style
+        .padding
+        .and_then(|p| match (p.top, p.right, p.bottom, p.left) {
+            (Some(top), Some(right), Some(bottom), Some(left)) => Some(iced::Padding {
+                top: spacing_to_px(top),
+                right: spacing_to_px(right),
+                bottom: spacing_to_px(bottom),
+                left: spacing_to_px(left),
+            }),
+            _ => None,
+        })
+        .unwrap_or(iced::Padding {
+            top: 8.0,
+            right: 16.0,
+            bottom: 8.0,
+            left: 16.0,
+        });
+
+    let mut widget = iced::widget::button(
+        iced::widget::text(label).color(to_color(text_color)),
+    )
+    .padding(padding)
+    .style(move |_theme, status| {
+        let mut background = to_color(bg);
+        match status {
+            iced::widget::button::Status::Hovered => {
+                background.a *= 0.9;
+            }
+            iced::widget::button::Status::Pressed => {
+                background.a *= 0.8;
+            }
+            _ => {}
+        }
+
+        iced::widget::button::Style {
+            background: Some(iced::Background::Color(background)),
+            text_color: to_color(text_color),
+            border: iced::Border {
+                radius: border_radius.into(),
+                width: border_width,
+                color: border_color,
+            },
+            ..Default::default()
+        }
+    });
+
+    if !button_cfg.disabled {
+        widget = widget.on_press(on_press);
+    }
+
+    widget.into()
 }
 
 #[cfg(test)]
@@ -270,5 +371,32 @@ mod tests {
         assert!((c.r - 59.0 / 255.0).abs() < 0.01);
         assert!((c.g - 130.0 / 255.0).abs() < 0.01);
         assert!((c.b - 246.0 / 255.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn test_color_conversion_uses_raw_values() {
+        let color = Color::blue(Scale::S500);
+        let converted = to_color(color);
+        let raw = color.compute();
+        assert!((converted.r - raw.r as f32 / 255.0).abs() < 0.001);
+        assert!((converted.g - raw.g as f32 / 255.0).abs() < 0.001);
+        assert!((converted.b - raw.b as f32 / 255.0).abs() < 0.001);
+    }
+
+    #[test]
+    fn test_spacing_px_padding() {
+        let p = to_padding(Spacing::Px);
+        assert!((p.top - 1.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn test_aspect_ratio_zero_denominator() {
+        assert_eq!(to_aspect_ratio(AspectRatio::Custom(16, 0)), None);
+    }
+
+    #[test]
+    fn test_shadow_uses_custom_color() {
+        let shadow = to_shadow_with_color(Shadow::Sm, Some(Color::red(Scale::S500)));
+        assert!(shadow.color.r > shadow.color.g);
     }
 }

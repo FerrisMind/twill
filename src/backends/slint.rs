@@ -3,25 +3,24 @@
 //! Provides color constants and utilities for Slint UI.
 
 use crate::tokens::{BorderRadius, Color, Scale, Spacing, Cursor, Blur, AspectRatio, Shadow, FontSize, FontWeight, TransitionDuration, SemanticColor, SemanticThemeVars};
-use crate::traits::ToCss;
+use crate::traits::ComputeValue;
+
+fn spacing_to_px(spacing: Spacing) -> f32 {
+    match spacing.to_px() {
+        Some(px) => px as f32,
+        None => 0.0,
+    }
+}
 
 /// Convert twill Color to Slint-compatible hex string.
 pub fn to_slint_color(color: Color) -> slint::Color {
-    let css = color.to_css();
-    let hex = css.trim_start_matches('#');
-    if hex.len() == 6 {
-        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
-        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
-        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
-        slint::Color::from_rgb_u8(r, g, b)
-    } else {
-        slint::Color::from_rgb_u8(255, 255, 255)
-    }
+    let value = color.compute();
+    slint::Color::from_argb_u8((value.a * 255.0) as u8, value.r, value.g, value.b)
 }
 
 /// Convert twill Spacing to Slint length (logical pixels).
 pub fn to_length(spacing: Spacing) -> f32 {
-    spacing.to_rem().unwrap_or(0.0) * 16.0
+    spacing_to_px(spacing)
 }
 
 /// Convert twill BorderRadius to Slint border radius.
@@ -101,6 +100,7 @@ pub fn to_aspect_ratio(ratio: AspectRatio) -> Option<f32> {
         AspectRatio::Auto => None,
         AspectRatio::Square => Some(1.0),
         AspectRatio::Video => Some(16.0 / 9.0),
+        AspectRatio::Custom(_, 0) => None,
         AspectRatio::Custom(w, h) => Some(w as f32 / h as f32),
     }
 }
@@ -117,6 +117,24 @@ pub fn to_shadow(shadow: Shadow) -> (f32, f32) {
         Shadow::Xl => (20.0, 25.0),
         Shadow::S2xl => (25.0, 50.0),
     }
+}
+
+/// Convert twill Shadow to Slint values with color.
+pub fn to_shadow_with_color(shadow: Shadow, color: Option<Color>) -> (f32, f32, slint::Color) {
+    let (offset, blur) = to_shadow(shadow);
+    let mut value = color.unwrap_or(Color::black()).compute();
+    value.a *= match shadow {
+        Shadow::None => 0.0,
+        Shadow::Xs2 | Shadow::Xs => 0.05,
+        Shadow::Sm | Shadow::Md => 0.1,
+        Shadow::Lg | Shadow::Xl => 0.26,
+        Shadow::S2xl => 0.63,
+    };
+    (
+        offset,
+        blur,
+        slint::Color::from_argb_u8((value.a * 255.0) as u8, value.r, value.g, value.b),
+    )
 }
 
 /// Convert twill FontSize to f32.
@@ -278,8 +296,35 @@ mod tests {
     }
 
     #[test]
+    fn test_color_conversion_uses_raw_values() {
+        let color = Color::blue(Scale::S500);
+        let converted = to_slint_color(color);
+        let raw = color.compute();
+        assert_eq!(converted.red(), raw.r);
+        assert_eq!(converted.green(), raw.g);
+        assert_eq!(converted.blue(), raw.b);
+    }
+
+    #[test]
     fn test_spacing() {
         let s4 = to_length(Spacing::S4);
         assert!((s4 - 16.0).abs() < 0.1); // 1rem = 16px
+    }
+
+    #[test]
+    fn test_px_spacing() {
+        let s = to_length(Spacing::Px);
+        assert!((s - 1.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn test_aspect_ratio_zero_denominator() {
+        assert_eq!(to_aspect_ratio(AspectRatio::Custom(16, 0)), None);
+    }
+
+    #[test]
+    fn test_shadow_uses_custom_color() {
+        let (_, _, c) = to_shadow_with_color(Shadow::Sm, Some(Color::red(Scale::S500)));
+        assert!(c.red() > c.green());
     }
 }

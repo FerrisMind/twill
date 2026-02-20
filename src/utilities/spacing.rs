@@ -323,7 +323,8 @@ pub enum Size {
     Percentage(crate::tokens::Percentage),
     Auto,
     Full,
-    Screen,
+    ScreenWidth,
+    ScreenHeight,
     MinContent,
     MaxContent,
     Fit,
@@ -336,7 +337,8 @@ impl ToCss for Size {
             Size::Percentage(p) => p.to_css(),
             Size::Auto => "auto".to_string(),
             Size::Full => "100%".to_string(),
-            Size::Screen => "100vh".to_string(),
+            Size::ScreenWidth => "100vw".to_string(),
+            Size::ScreenHeight => "100vh".to_string(),
             Size::MinContent => "min-content".to_string(),
             Size::MaxContent => "max-content".to_string(),
             Size::Fit => "fit-content".to_string(),
@@ -359,7 +361,7 @@ impl Width {
         Self(Some(Size::Auto))
     }
     pub fn screen() -> Self {
-        Self(Some(Size::Screen))
+        Self(Some(Size::ScreenWidth))
     }
 }
 
@@ -387,7 +389,7 @@ impl Height {
         Self(Some(Size::Auto))
     }
     pub fn screen() -> Self {
-        Self(Some(Size::Screen))
+        Self(Some(Size::ScreenHeight))
     }
 }
 
@@ -471,5 +473,11 @@ mod tests {
     fn test_margin_auto() {
         let m = Margin::auto_x();
         assert_eq!(m.to_css(), "margin-right: auto; margin-left: auto");
+    }
+
+    #[test]
+    fn test_screen_size_css() {
+        assert_eq!(Width::screen().to_css(), "width: 100vw");
+        assert_eq!(Height::screen().to_css(), "height: 100vh");
     }
 }

@@ -2,20 +2,18 @@
 
 use crate::style::Style;
 use crate::tokens::{BorderRadius, Color, Spacing, Cursor, Blur, AspectRatio, Shadow, FontSize, FontWeight, TransitionDuration, SemanticColor, SemanticThemeVars};
-use crate::traits::ToCss;
+use crate::traits::ComputeValue;
+
+fn spacing_to_px(spacing: Spacing) -> f32 {
+    match spacing.to_px() {
+        Some(px) => px as f32,
+        None => 0.0,
+    }
+}
 
 /// Convert twill Color to egui Color32.
 pub fn to_color32(color: Color) -> egui::Color32 {
-    let css = color.to_css();
-    let hex = css.trim_start_matches('#');
-    if hex.len() == 6 {
-        let r = u8::from_str_radix(&hex[0..2], 16).unwrap_or(0);
-        let g = u8::from_str_radix(&hex[2..4], 16).unwrap_or(0);
-        let b = u8::from_str_radix(&hex[4..6], 16).unwrap_or(0);
-        egui::Color32::from_rgb(r, g, b)
-    } else {
-        egui::Color32::WHITE
-    }
+    to_color32_value(color.compute())
 }
 
 /// Convert twill ColorValue to egui Color32.
@@ -30,9 +28,7 @@ pub fn to_color32_value(value: crate::tokens::ColorValue) -> egui::Color32 {
 
 /// Convert twill Spacing to egui Vec2 (in points).
 pub fn to_vec2(spacing: Spacing) -> egui::Vec2 {
-    let rem = spacing.to_rem().unwrap_or(0.0);
-    let px = rem * 16.0;
-    egui::Vec2::splat(px)
+    egui::Vec2::splat(spacing_to_px(spacing))
 }
 
 /// Convert twill BorderRadius to egui f32.
@@ -72,22 +68,38 @@ pub fn to_aspect_ratio(ratio: AspectRatio) -> Option<f32> {
         AspectRatio::Auto => None,
         AspectRatio::Square => Some(1.0),
         AspectRatio::Video => Some(16.0 / 9.0),
+        AspectRatio::Custom(_, 0) => None,
         AspectRatio::Custom(w, h) => Some(w as f32 / h as f32),
     }
 }
 
+/// Convert twill Shadow to egui Shadow with an optional color override.
+pub fn to_shadow_with_color(shadow: Shadow, shadow_color: Option<Color>) -> Option<egui::epaint::Shadow> {
+    let (offset, blur, alpha) = match shadow {
+        Shadow::None => return None,
+        Shadow::Xs2 => ([0, 1], 0, 0.05),
+        Shadow::Xs => ([0, 1], 2, 0.05),
+        Shadow::Sm => ([0, 1], 3, 0.1),
+        Shadow::Md => ([0, 4], 6, 0.1),
+        Shadow::Lg => ([0, 10], 15, 0.1),
+        Shadow::Xl => ([0, 20], 25, 0.1),
+        Shadow::S2xl => ([0, 25], 50, 0.25),
+    };
+
+    let mut value = shadow_color.unwrap_or(Color::black()).compute();
+    value.a *= alpha;
+
+    Some(egui::epaint::Shadow {
+        offset,
+        blur,
+        spread: 0,
+        color: to_color32_value(value),
+    })
+}
+
 /// Convert twill Shadow to egui Shadow.
 pub fn to_shadow(shadow: Shadow) -> Option<egui::epaint::Shadow> {
-    match shadow {
-        Shadow::None => None,
-        Shadow::Xs2 => Some(egui::epaint::Shadow { offset: [0, 1], blur: 0, spread: 0, color: egui::Color32::from_black_alpha(13) }),
-        Shadow::Xs => Some(egui::epaint::Shadow { offset: [0, 1], blur: 2, spread: 0, color: egui::Color32::from_black_alpha(13) }),
-        Shadow::Sm => Some(egui::epaint::Shadow { offset: [0, 1], blur: 3, spread: 0, color: egui::Color32::from_black_alpha(26) }),
-        Shadow::Md => Some(egui::epaint::Shadow { offset: [0, 4], blur: 6, spread: 0, color: egui::Color32::from_black_alpha(26) }),
-        Shadow::Lg => Some(egui::epaint::Shadow { offset: [0, 10], blur: 15, spread: 0, color: egui::Color32::from_black_alpha(26) }),
-        Shadow::Xl => Some(egui::epaint::Shadow { offset: [0, 20], blur: 25, spread: 0, color: egui::Color32::from_black_alpha(26) }),
-        Shadow::S2xl => Some(egui::epaint::Shadow { offset: [0, 25], blur: 50, spread: 0, color: egui::Color32::from_black_alpha(63) }),
-    }
+    to_shadow_with_color(shadow, None)
 }
 
 /// Convert twill FontSize to f32.
@@ -148,27 +160,19 @@ pub fn to_cursor_icon(cursor: Cursor) -> egui::CursorIcon {
 }
 
 /// Create an egui Frame from a twill Style.
+///
+/// Note: `Style::margin` is intentionally not mapped here because `egui::Frame`
+/// only owns inner spacing; outer spacing is controlled by parent layout code.
 pub fn to_frame(style: &Style) -> egui::Frame {
     let mut frame = egui::Frame::default();
 
     // Padding
     if let Some(p) = &style.padding {
-        let top = p
-            .top
-            .map(|s| s.to_rem().unwrap_or(0.0) * 16.0)
-            .unwrap_or(0.0) as i8;
-        let right = p
-            .right
-            .map(|s| s.to_rem().unwrap_or(0.0) * 16.0)
-            .unwrap_or(0.0) as i8;
-        let bottom = p
-            .bottom
-            .map(|s| s.to_rem().unwrap_or(0.0) * 16.0)
-            .unwrap_or(0.0) as i8;
-        let left = p
-            .left
-            .map(|s| s.to_rem().unwrap_or(0.0) * 16.0)
-            .unwrap_or(0.0) as i8;
+        let clamp_i8 = |v: f32| v.clamp(i8::MIN as f32, i8::MAX as f32) as i8;
+        let top = clamp_i8(p.top.map(spacing_to_px).unwrap_or(0.0));
+        let right = clamp_i8(p.right.map(spacing_to_px).unwrap_or(0.0));
+        let bottom = clamp_i8(p.bottom.map(spacing_to_px).unwrap_or(0.0));
+        let left = clamp_i8(p.left.map(spacing_to_px).unwrap_or(0.0));
         frame = frame.inner_margin(egui::Margin {
             top,
             left,
@@ -201,12 +205,56 @@ pub fn to_frame(style: &Style) -> egui::Frame {
 
     // Shadow
     if let Some(s) = &style.box_shadow
-        && let Some(egui_shadow) = to_shadow(*s)
+        && let Some(egui_shadow) = to_shadow_with_color(*s, style.shadow_color)
     {
         frame = frame.shadow(egui_shadow);
     }
 
     frame
+}
+
+/// Render an `egui` button directly from `twill::Button`.
+pub fn twill_button(ui: &mut egui::Ui, button: &crate::components::Button, label: &str) -> egui::Response {
+    let style = button.style();
+
+    let text_color = style
+        .text_color
+        .map(to_color32)
+        .unwrap_or(egui::Color32::WHITE);
+    let mut text = egui::RichText::new(label).color(text_color);
+    if let Some(size) = style.font_size {
+        text = text.size(to_font_size(size));
+    }
+    if let Some(weight) = style.font_weight
+        && weight.value() >= 700
+    {
+        text = text.strong();
+    }
+
+    let mut btn = egui::Button::new(text);
+    if let Some(bg) = style.background_color {
+        btn = btn.fill(to_color32(bg));
+    }
+    if let Some(radius) = style.border_radius {
+        btn = btn.corner_radius(to_corner_radius(radius));
+    }
+
+    if let (Some(width), Some(color)) = (style.border_width, style.border_color) {
+        let stroke_width = match width {
+            crate::tokens::BorderWidth::S0 => 0.0,
+            crate::tokens::BorderWidth::S1 => 1.0,
+            crate::tokens::BorderWidth::S2 => 2.0,
+            crate::tokens::BorderWidth::S4 => 4.0,
+            crate::tokens::BorderWidth::S8 => 8.0,
+        };
+        btn = btn.stroke(egui::Stroke::new(stroke_width, to_color32(color)));
+    }
+
+    if button.disabled {
+        ui.add_enabled(false, btn)
+    } else {
+        ui.add(btn)
+    }
 }
 
 #[cfg(test)]
@@ -227,5 +275,32 @@ mod tests {
     fn test_spacing_conversion() {
         let s4 = to_vec2(Spacing::S4);
         assert!(s4.x > 0.0);
+    }
+
+    #[test]
+    fn test_color_conversion_uses_raw_values() {
+        let color = Color::blue(Scale::S500);
+        let converted = to_color32(color);
+        let raw = color.compute();
+        assert_eq!(converted.r(), raw.r);
+        assert_eq!(converted.g(), raw.g);
+        assert_eq!(converted.b(), raw.b);
+    }
+
+    #[test]
+    fn test_spacing_px_conversion() {
+        let px = to_vec2(Spacing::Px);
+        assert!((px.x - 1.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn test_aspect_ratio_zero_denominator() {
+        assert_eq!(to_aspect_ratio(AspectRatio::Custom(16, 0)), None);
+    }
+
+    #[test]
+    fn test_shadow_uses_custom_color() {
+        let shadow = to_shadow_with_color(Shadow::Sm, Some(Color::red(Scale::S500))).unwrap();
+        assert!(shadow.color.r() > shadow.color.g());
     }
 }

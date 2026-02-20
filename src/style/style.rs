@@ -56,6 +56,7 @@ pub struct Style {
 
     // Shadow
     pub box_shadow: Option<Shadow>,
+    pub shadow_color: Option<Color>,
 
     // Typography
     pub font_family: Option<FontFamily>,
@@ -256,6 +257,19 @@ impl Style {
         self
     }
 
+    /// Set shadow color.
+    pub fn shadow_color(mut self, color: Color) -> Self {
+        self.shadow_color = Some(color);
+        self
+    }
+
+    /// Set box shadow and color together.
+    pub fn shadow_with_color(mut self, shadow: Shadow, color: Color) -> Self {
+        self.box_shadow = Some(shadow);
+        self.shadow_color = Some(color);
+        self
+    }
+
     // === Typography ===
 
     /// Set font family.
@@ -438,6 +452,7 @@ impl Merge<Self> for Style {
             border_style: other.border_style.or(self.border_style),
             border_color: other.border_color.or(self.border_color),
             box_shadow: other.box_shadow.or(self.box_shadow),
+            shadow_color: other.shadow_color.or(self.shadow_color),
             font_family: other.font_family.or(self.font_family),
             font_size: other.font_size.or(self.font_size),
             font_weight: other.font_weight.or(self.font_weight),
@@ -463,153 +478,216 @@ impl Merge<Self> for Style {
 
 impl ToCss for Style {
     fn to_css(&self) -> String {
-        let mut props = Vec::new();
+        use std::fmt::Write;
+
+        fn push_rule(out: &mut String, name: &str, value: &str) {
+            if !out.is_empty() {
+                out.push_str("; ");
+            }
+            out.push_str(name);
+            out.push_str(": ");
+            out.push_str(value);
+        }
+
+        fn push_raw(out: &mut String, rule: &str) {
+            if !out.is_empty() {
+                out.push_str("; ");
+            }
+            out.push_str(rule);
+        }
+
+        let mut css = String::with_capacity(256);
 
         // Layout
         if let Some(v) = &self.display {
-            props.push(format!("display: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "display", &val);
         }
         if let Some(v) = &self.visibility {
-            props.push(format!("visibility: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "visibility", &val);
         }
         if let Some(v) = &self.position {
-            props.push(format!("position: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "position", &val);
         }
         if let Some(v) = &self.z_index {
-            props.push(format!("z-index: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "z-index", &val);
         }
         if let Some(v) = &self.overflow {
-            props.push(format!("overflow: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "overflow", &val);
         }
         if let Some(v) = &self.overflow_x {
-            props.push(format!("overflow-x: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "overflow-x", &val);
         }
         if let Some(v) = &self.overflow_y {
-            props.push(format!("overflow-y: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "overflow-y", &val);
         }
         if let Some(v) = &self.aspect_ratio {
-            props.push(format!("aspect-ratio: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "aspect-ratio", &val);
         }
 
         // Flex/Grid
         if let Some(v) = &self.flex {
-            props.push(v.to_css());
+            let val = v.to_css();
+            push_raw(&mut css, &val);
         }
         if let Some(v) = &self.grid {
-            props.push(v.to_css());
+            let val = v.to_css();
+            push_raw(&mut css, &val);
         }
         if let Some(v) = &self.place_content {
-            props.push(format!("place-content: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "place-content", &val);
         }
         if let Some(v) = &self.place_items {
-            props.push(format!("place-items: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "place-items", &val);
         }
         if let Some(v) = &self.justify_items {
-            props.push(format!("justify-items: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "justify-items", &val);
         }
         if let Some(v) = &self.justify_self {
-            props.push(format!("justify-self: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "justify-self", &val);
         }
 
         // Spacing
         if let Some(v) = &self.padding {
-            props.push(v.to_css());
+            let val = v.to_css();
+            push_raw(&mut css, &val);
         }
         if let Some(v) = &self.margin {
-            props.push(v.to_css());
+            let val = v.to_css();
+            push_raw(&mut css, &val);
         }
 
         // Size
         if let Some(v) = &self.width {
-            props.push(v.to_css());
+            let val = v.to_css();
+            push_raw(&mut css, &val);
         }
         if let Some(v) = &self.height {
-            props.push(v.to_css());
+            let val = v.to_css();
+            push_raw(&mut css, &val);
         }
         if let Some(v) = &self.constraints {
-            props.push(v.to_css());
+            let val = v.to_css();
+            push_raw(&mut css, &val);
         }
 
         // Background
         if let Some(v) = &self.background_color {
-            props.push(format!("background-color: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "background-color", &val);
         }
         if let Some(v) = &self.opacity {
-            props.push(format!("opacity: {}", v));
+            if !css.is_empty() {
+                css.push_str("; ");
+            }
+            let _ = write!(&mut css, "opacity: {v}");
         }
         if let Some(v) = &self.blur {
-            props.push(format!("filter: blur({})", v.to_css()));
+            if !css.is_empty() {
+                css.push_str("; ");
+            }
+            let _ = write!(&mut css, "filter: blur({})", v.to_css());
         }
 
         // Border
         if let Some(v) = &self.border_radius {
-            props.push(format!("border-radius: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "border-radius", &val);
         }
         if let Some(v) = &self.border_width {
-            props.push(format!("border-width: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "border-width", &val);
         }
         if let Some(v) = &self.border_style {
-            props.push(format!("border-style: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "border-style", &val);
         }
         if let Some(v) = &self.border_color {
-            props.push(format!("border-color: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "border-color", &val);
         }
 
         // Shadow
         if let Some(v) = &self.box_shadow {
-            props.push(format!("box-shadow: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "box-shadow", &val);
         }
 
         // Typography
         if let Some(v) = &self.font_family {
-            props.push(format!("font-family: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "font-family", &val);
         }
         if let Some(v) = &self.font_size {
-            props.push(format!("font-size: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "font-size", &val);
         }
         if let Some(v) = &self.font_weight {
-            props.push(format!("font-weight: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "font-weight", &val);
         }
         if let Some(v) = &self.letter_spacing {
-            props.push(format!("letter-spacing: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "letter-spacing", &val);
         }
         if let Some(v) = &self.line_height {
-            props.push(format!("line-height: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "line-height", &val);
         }
         if let Some(v) = &self.text_align {
-            props.push(format!("text-align: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "text-align", &val);
         }
         if let Some(v) = &self.text_decoration {
-            props.push(format!("text-decoration: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "text-decoration", &val);
         }
         if let Some(v) = &self.text_transform {
-            props.push(format!("text-transform: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "text-transform", &val);
         }
         if let Some(v) = &self.text_color {
-            props.push(format!("color: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "color", &val);
         }
 
         // Motion
         if let Some(v) = &self.transition_property {
-            props.push(format!("transition-property: {}", v));
+            push_rule(&mut css, "transition-property", v);
         }
         if let Some(v) = &self.transition_duration {
-            props.push(format!("transition-duration: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "transition-duration", &val);
         }
         if let Some(v) = &self.transition_timing_function {
-            props.push(format!("transition-timing-function: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "transition-timing-function", &val);
         }
         if let Some(v) = &self.transition_delay {
-            props.push(format!("transition-delay: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "transition-delay", &val);
         }
         if let Some(v) = &self.animation {
-            props.push(format!("animation: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "animation", &val);
         }
         if let Some(v) = &self.cursor {
-            props.push(format!("cursor: {}", v.to_css()));
+            let val = v.to_css();
+            push_rule(&mut css, "cursor", &val);
         }
 
-        props.join("; ")
+        css
     }
 }
 
@@ -664,5 +742,14 @@ mod tests {
         assert!(css.contains("transition-duration: 300ms"));
         assert!(css.contains("transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1)"));
         assert!(css.contains("animation: pulse 2s"));
+    }
+
+    #[test]
+    fn test_shadow_color_merge() {
+        let base = Style::new().shadow_with_color(Shadow::Sm, Color::blue(Scale::S500));
+        let override_style = Style::new().shadow_color(Color::red(Scale::S500));
+        let merged = base.merge(override_style);
+        assert_eq!(merged.box_shadow, Some(Shadow::Sm));
+        assert_eq!(merged.shadow_color, Some(Color::red(Scale::S500)));
     }
 }
