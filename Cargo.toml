@@ -29,7 +29,7 @@ strip = true
 [dependencies]
 # Optional UI framework backends
 egui = { version = "0.33", optional = true }
-iced = { version = "0.14", optional = true, features = ["advanced", "image"] }
+iced = { version = "0.14", optional = true, features = ["advanced", "image", "tokio"] }
 slint = { version = "1.15", optional = true }
 
 [dev-dependencies]
@@ -44,14 +44,5 @@ iced = ["dep:iced"]
 slint = ["dep:slint"]
 
 [[example]]
-name = "demo-egui"
-required-features = ["egui"]
-
-[[example]]
-name = "demo-iced"
+name = "iced_showcase"
 required-features = ["iced"]
-
-[[example]]
-name = "demo-slint"
-required-features = ["slint"]
-

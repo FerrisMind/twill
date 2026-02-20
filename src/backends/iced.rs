@@ -235,7 +235,7 @@ pub fn danger_button<'a, Message: Clone + 'a>(
 pub fn styled_container<'a, Message: Clone + 'a>(
     content: iced::Element<'a, Message>,
     style: &Style,
-) -> iced::Element<'a, Message> {
+) -> iced::widget::Container<'a, Message> {
     let mut container = iced::widget::container(content);
 
     // Padding
@@ -283,7 +283,7 @@ pub fn styled_container<'a, Message: Clone + 'a>(
         ..Default::default()
     });
 
-    container.into()
+    container
 }
 
 /// Create an `iced` button directly from `twill::Button`.

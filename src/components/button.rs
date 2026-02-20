@@ -58,9 +58,16 @@ impl Button {
     pub fn destructive() -> Self {
         Self::new(ButtonVariant::Destructive, ButtonSize::Md)
     }
+    pub fn link() -> Self {
+        Self::new(ButtonVariant::Link, ButtonSize::Md)
+    }
 
     pub fn sm(mut self) -> Self {
         self.size = ButtonSize::Sm;
+        self
+    }
+    pub fn md(mut self) -> Self {
+        self.size = ButtonSize::Md;
         self
     }
     pub fn lg(mut self) -> Self {

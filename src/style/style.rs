@@ -1,14 +1,14 @@
 //! Style builder for composing styles fluently.
 
 use crate::tokens::{
-    AnimationToken, BorderRadius, BorderStyle, BorderWidth, Color, Easing, FontFamily, FontSize,
-    FontWeight, LetterSpacing, LineHeight, Shadow, Spacing, TextAlign, TextDecoration,
-    TextTransform, TransitionDuration, Blur, AspectRatio, Cursor
+    AnimationToken, AspectRatio, Blur, BorderRadius, BorderStyle, BorderWidth, Color, Cursor,
+    Easing, FontFamily, FontSize, FontWeight, LetterSpacing, LineHeight, Shadow, Spacing,
+    TextAlign, TextDecoration, TextTransform, TransitionDuration,
 };
 use crate::traits::{Merge, ToCss};
 use crate::utilities::{
-    Display, FlexContainer, GridContainer, Height, Margin, Overflow, Padding, Position,
-    SizeConstraints, Width, ZIndex, Visibility, PlaceContent, PlaceItems, JustifyItems, JustifySelf
+    Display, FlexContainer, GridContainer, Height, JustifyItems, JustifySelf, Margin, Overflow,
+    Padding, PlaceContent, PlaceItems, Position, SizeConstraints, Visibility, Width, ZIndex,
 };
 
 /// A comprehensive style builder for composing CSS styles.
@@ -364,7 +364,7 @@ impl Style {
     }
 
     // === Interactivity ===
-    
+
     /// Set cursor.
     pub fn cursor(mut self, cursor: Cursor) -> Self {
         self.cursor = Some(cursor);

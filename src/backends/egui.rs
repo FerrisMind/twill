@@ -1,7 +1,10 @@
 //! Egui backend for twill.
 
 use crate::style::Style;
-use crate::tokens::{BorderRadius, Color, Spacing, Cursor, Blur, AspectRatio, Shadow, FontSize, FontWeight, TransitionDuration, SemanticColor, SemanticThemeVars};
+use crate::tokens::{
+    AspectRatio, Blur, BorderRadius, Color, Cursor, FontSize, FontWeight, SemanticColor,
+    SemanticThemeVars, Shadow, Spacing, TransitionDuration,
+};
 use crate::traits::ComputeValue;
 
 fn spacing_to_px(spacing: Spacing) -> f32 {
@@ -74,7 +77,10 @@ pub fn to_aspect_ratio(ratio: AspectRatio) -> Option<f32> {
 }
 
 /// Convert twill Shadow to egui Shadow with an optional color override.
-pub fn to_shadow_with_color(shadow: Shadow, shadow_color: Option<Color>) -> Option<egui::epaint::Shadow> {
+pub fn to_shadow_with_color(
+    shadow: Shadow,
+    shadow_color: Option<Color>,
+) -> Option<egui::epaint::Shadow> {
     let (offset, blur, alpha) = match shadow {
         Shadow::None => return None,
         Shadow::Xs2 => ([0, 1], 0, 0.05),
@@ -114,7 +120,9 @@ pub fn to_font_weight(_weight: FontWeight) -> egui::FontFamily {
 
 /// Convert twill SemanticColor to egui Color32 based on the theme variant.
 pub fn to_semantic_color32(semantic: SemanticColor, is_dark: bool) -> egui::Color32 {
-    let color = SemanticThemeVars::shadcn_neutral().resolve(semantic, is_dark).unwrap_or(Color::black());
+    let color = SemanticThemeVars::shadcn_neutral()
+        .resolve(semantic, is_dark)
+        .unwrap_or(Color::black());
     to_color32(color)
 }
 
@@ -214,7 +222,11 @@ pub fn to_frame(style: &Style) -> egui::Frame {
 }
 
 /// Render an `egui` button directly from `twill::Button`.
-pub fn twill_button(ui: &mut egui::Ui, button: &crate::components::Button, label: &str) -> egui::Response {
+pub fn twill_button(
+    ui: &mut egui::Ui,
+    button: &crate::components::Button,
+    label: &str,
+) -> egui::Response {
     let style = button.style();
 
     let text_color = style

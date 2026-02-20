@@ -2,7 +2,10 @@
 //!
 //! Provides color constants and utilities for Slint UI.
 
-use crate::tokens::{BorderRadius, Color, Scale, Spacing, Cursor, Blur, AspectRatio, Shadow, FontSize, FontWeight, TransitionDuration, SemanticColor, SemanticThemeVars};
+use crate::tokens::{
+    AspectRatio, Blur, BorderRadius, Color, Cursor, FontSize, FontWeight, Scale, SemanticColor,
+    SemanticThemeVars, Shadow, Spacing, TransitionDuration,
+};
 use crate::traits::ComputeValue;
 
 fn spacing_to_px(spacing: Spacing) -> f32 {
@@ -159,7 +162,9 @@ pub fn to_font_weight(weight: FontWeight) -> i32 {
 
 /// Convert twill SemanticColor to Slint Color based on the theme variant.
 pub fn to_semantic_color(semantic: SemanticColor, is_dark: bool) -> slint::Color {
-    let color = SemanticThemeVars::shadcn_neutral().resolve(semantic, is_dark).unwrap_or(Color::black());
+    let color = SemanticThemeVars::shadcn_neutral()
+        .resolve(semantic, is_dark)
+        .unwrap_or(Color::black());
     to_slint_color(color)
 }
 
