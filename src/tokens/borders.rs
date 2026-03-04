@@ -27,7 +27,7 @@ pub enum BorderRadius {
 }
 
 impl BorderRadius {
-    /// Tailwind `--radius` default token.
+    /// Default radius token.
     pub const DEFAULT: BorderRadius = BorderRadius::Sm;
 }
 

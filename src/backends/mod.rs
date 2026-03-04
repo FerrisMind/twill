@@ -17,7 +17,10 @@ pub use egui::{
 };
 
 #[cfg(feature = "iced")]
-pub use iced::{to_color, to_color_value, twill_button as iced_twill_button};
+pub use iced::{
+    to_color, to_color_value, to_text_alignment, to_text_alignment_with_direction,
+    twill_button as iced_twill_button,
+};
 
 #[cfg(feature = "slint")]
 pub use slint::{

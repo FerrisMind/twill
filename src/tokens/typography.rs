@@ -1,4 +1,18 @@
-//! Typography design tokens following Tailwind typography scale.
+//! Typography design tokens following a utility-first type scale.
+
+/// Named font-size variable for custom-property style mapping.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct FontSizeVar(&'static str);
+
+impl FontSizeVar {
+    pub const fn new(name: &'static str) -> Self {
+        Self(name)
+    }
+
+    pub const fn as_str(self) -> &'static str {
+        self.0
+    }
+}
 
 /// Font family tokens.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -54,6 +68,10 @@ pub enum FontSize {
     S8xl,
     /// 8rem (128px) / line-height: 1
     S9xl,
+    /// Custom property (e.g. `var(--text-size)`).
+    Var(FontSizeVar),
+    /// Typed arbitrary pixel value (e.g. `14px`).
+    Px(u16),
 }
 
 impl FontSize {
@@ -73,6 +91,8 @@ impl FontSize {
             FontSize::S7xl => 4.5,
             FontSize::S8xl => 6.0,
             FontSize::S9xl => 8.0,
+            FontSize::Var(_) => 1.0,
+            FontSize::Px(px) => f32::from(*px) / 16.0,
         }
     }
 
@@ -92,13 +112,38 @@ impl FontSize {
             FontSize::S7xl => 1.0,
             FontSize::S8xl => 1.0,
             FontSize::S9xl => 1.0,
+            FontSize::Var(_) => 1.0,
+            FontSize::Px(_) => 1.0,
         }
     }
 }
 
 impl FontSize {
+    pub const fn var(name: FontSizeVar) -> Self {
+        Self::Var(name)
+    }
+
+    pub const fn px(value: u16) -> Self {
+        Self::Px(value)
+    }
+
+    pub fn resolve_px(&self, custom_properties: &[(&str, f32)]) -> Option<f32> {
+        match self {
+            FontSize::Var(var) => custom_properties
+                .iter()
+                .find(|(name, _)| *name == var.as_str())
+                .map(|(_, value)| (*value).max(0.0)),
+            FontSize::Px(px) => Some(f32::from(*px)),
+            _ => Some(self.size_rem() * 16.0),
+        }
+    }
+
     pub fn value(&self) -> String {
-        format!("{}rem", self.size_rem())
+        match self {
+            FontSize::Var(var) => format!("var({})", var.as_str()),
+            FontSize::Px(px) => format!("{px}px"),
+            _ => format!("{}rem", self.size_rem()),
+        }
     }
 }
 
@@ -338,6 +383,19 @@ mod tests {
     fn test_font_size() {
         assert_eq!(FontSize::Base.size_rem(), 1.0);
         assert_eq!(FontSize::S2xl.size_rem(), 1.5);
+        assert_eq!(FontSize::px(32).size_rem(), 2.0);
+    }
+
+    #[test]
+    fn test_font_size_custom_and_px_values() {
+        const TITLE: FontSizeVar = FontSizeVar::new("--title-size");
+        assert_eq!(FontSize::var(TITLE).value(), "var(--title-size)");
+        assert_eq!(FontSize::px(14).value(), "14px");
+        assert_eq!(
+            FontSize::var(TITLE).resolve_px(&[("--title-size", 28.0)]),
+            Some(28.0)
+        );
+        assert_eq!(FontSize::px(18).resolve_px(&[]), Some(18.0));
     }
 
     #[test]

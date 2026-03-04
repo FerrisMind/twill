@@ -1,4 +1,4 @@
-//! Color design tokens following Tailwind / shadcn color palettes.
+//! Color design tokens following curated palette families.
 //!
 //! Provides type-safe color values with exact RGB from shadcn-svelte.
 
@@ -52,7 +52,7 @@ impl Scale {
     }
 }
 
-/// Tailwind color palette families.
+/// Color palette families.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ColorFamily {
     Black,
@@ -270,7 +270,7 @@ impl ColorValue {
         }
     }
 
-    /// Generates a Tailwind-like 11-step scale (50..950) preserving hue/chroma.
+    /// Generates an 11-step scale (50..950) preserving hue/chroma.
     pub fn generate_scale_oklch(&self) -> [ColorValue; 11] {
         // Ordered for Scale::ALL = [50, 100, ..., 950]
         let lightness_steps = [
@@ -333,6 +333,90 @@ impl ColorValue {
     pub fn from_color(color: Color) -> Self {
         let (r, g, b) = get_palette_rgb(color.family, color.scale);
         Self::from_rgb(r, g, b)
+    }
+}
+
+/// Typed background-color token family (`bg-*` in Tailwind reference semantics).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum BackgroundColor {
+    Inherit,
+    Current,
+    Transparent,
+    Palette(Color),
+    CustomProperty(BackgroundColorVar),
+    Arbitrary(ColorValueToken),
+}
+
+impl BackgroundColor {
+    pub const fn inherit() -> Self {
+        Self::Inherit
+    }
+
+    pub const fn current() -> Self {
+        Self::Current
+    }
+
+    pub const fn transparent() -> Self {
+        Self::Transparent
+    }
+
+    pub const fn palette(color: Color) -> Self {
+        Self::Palette(color)
+    }
+
+    pub const fn custom_property(var: BackgroundColorVar) -> Self {
+        Self::CustomProperty(var)
+    }
+
+    pub const fn arbitrary(value: ColorValueToken) -> Self {
+        Self::Arbitrary(value)
+    }
+}
+
+impl From<Color> for BackgroundColor {
+    fn from(value: Color) -> Self {
+        Self::Palette(value)
+    }
+}
+
+/// Typed CSS custom-property reference for background-color tokens.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct BackgroundColorVar(&'static str);
+
+impl BackgroundColorVar {
+    pub const fn new(name: &'static str) -> Self {
+        Self(name)
+    }
+
+    pub const fn as_str(self) -> &'static str {
+        self.0
+    }
+}
+
+/// Typed arbitrary literal value for background-color (`bg-[<value>]` equivalent).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ColorValueToken(pub u8, pub u8, pub u8, pub u8);
+
+impl ColorValueToken {
+    pub const fn from_rgba8(r: u8, g: u8, b: u8, a: u8) -> Self {
+        Self(r, g, b, a)
+    }
+
+    pub const fn from_rgb8(r: u8, g: u8, b: u8) -> Self {
+        Self(r, g, b, 255)
+    }
+}
+
+impl From<ColorValue> for ColorValueToken {
+    fn from(value: ColorValue) -> Self {
+        let alpha = (value.a.clamp(0.0, 1.0) * 255.0).round() as u8;
+        Self(value.r, value.g, value.b, alpha)
+    }
+}
+
+impl From<ColorValueToken> for ColorValue {
+    fn from(value: ColorValueToken) -> Self {
+        ColorValue::new(value.0, value.1, value.2, value.3 as f32 / 255.0)
     }
 }
 

@@ -1,6 +1,6 @@
-//! Perspective tokens from Tailwind v4 theme scale.
+//! Perspective tokens for 3D transform depth.
 
-/// Perspective tokens (`--perspective-*` in Tailwind v4).
+/// Perspective tokens.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Perspective {
     Dramatic,

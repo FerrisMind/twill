@@ -2,8 +2,8 @@ use crate::Message;
 use crate::components::Snippet;
 use iced::Element;
 use iced::widget::{column, text};
-use twill::iced::{to_font_size, to_font_weight};
-use twill::tokens::{FontFamily, FontSize, FontWeight};
+use twill::iced::{resolve_font_size, to_font_size, to_font_weight};
+use twill::tokens::{FontFamily, FontSize, FontSizeVar, FontWeight};
 
 pub fn view<'a>(is_dark: bool) -> Element<'a, Message> {
     column![
@@ -14,6 +14,7 @@ pub fn view<'a>(is_dark: bool) -> Element<'a, Message> {
         text("Map Twill's typography scale and weights seamlessly into Iced Text widgets.")
             .size(16),
         font_sizes_section(is_dark),
+        custom_font_size_section(is_dark),
         font_weights_section(is_dark),
         font_family_section(is_dark),
     ]
@@ -51,6 +52,30 @@ text("Hello").size(size)"#;
     }
 
     Snippet::new("Font Sizes", code, col).view(is_dark)
+}
+
+fn custom_font_size_section<'a>(is_dark: bool) -> Element<'a, Message> {
+    let code = r#"const TITLE_SIZE: FontSizeVar = FontSizeVar::new("--title-size");
+
+let from_var = resolve_font_size(FontSize::var(TITLE_SIZE), &[("--title-size", 28.0)])
+    .unwrap_or(16.0);
+let from_px = resolve_font_size(FontSize::px(18), &[]).unwrap_or(16.0);
+
+let a = text("Custom property font-size").size(from_var);
+let b = text("Typed arbitrary px font-size").size(from_px);"#;
+
+    const TITLE_SIZE: FontSizeVar = FontSizeVar::new("--title-size");
+    let from_var =
+        resolve_font_size(FontSize::var(TITLE_SIZE), &[("--title-size", 28.0)]).unwrap_or(16.0);
+    let from_px = resolve_font_size(FontSize::px(18), &[]).unwrap_or(16.0);
+
+    let visual = column![
+        text(format!("var(--title-size) -> {:.0}px", from_var)).size(from_var),
+        text(format!("18px -> {:.0}px", from_px)).size(from_px),
+    ]
+    .spacing(8);
+
+    Snippet::new("Custom Property + Typed Arbitrary Value", code, visual).view(is_dark)
 }
 
 // ── Font Weights ────────────────────────────────────────────────────

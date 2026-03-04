@@ -1,10 +1,10 @@
 //! # Twill
 //!
-//! Idiomatic Rust styling library inspired by Tailwind concepts.
+//! Idiomatic Rust styling library with utility-first design tokens for native GUI.
 //!
 //! ## Philosophy
 //!
-//! Takes the best ideas from Tailwind:
+//! Applies utility-first styling ideas:
 //! - **Design Tokens** - type-safe base values (colors, spacing, sizes)
 //! - **Utility-first** - composable atomic styles
 //! - **Component Variants** - pre-built component variants
@@ -56,19 +56,22 @@ pub use traits::{ComputeValue, Merge};
 
 // Tokens
 pub use tokens::{
-    AnimationToken, BorderRadius, BorderStyle, BorderWidth, Breakpoint, Color, ColorFamily,
-    ColorValue, Container, DivideWidth, DropShadow, DynamicSemanticTheme, Easing, FontFamily,
-    FontSize, FontWeight, InsetShadow, LetterSpacing, LineHeight, MotionDefaults, OutlineStyle,
-    Percentage, Perspective, RingWidth, Scale, SemanticColor, SemanticThemeVars, Shadow, Spacing,
-    SpecialColor, TextAlign, TextDecoration, TextOverflow, TextShadow as TextShadowToken,
-    TextTransform, TransitionDuration, TransitionProperty, WhiteSpace, WordBreak,
+    AnimationToken, BackgroundColor, BackgroundColorVar, BorderRadius, BorderStyle, BorderWidth,
+    Breakpoint, Color, ColorFamily, ColorValue, ColorValueToken, Container, DivideWidth,
+    DropShadow, DynamicSemanticTheme, Easing, FontFamily, FontSize, FontSizeVar, FontWeight,
+    InsetShadow, LetterSpacing, LineHeight, MotionDefaults, OutlineStyle, Percentage, Perspective,
+    RingWidth, Scale, SemanticColor, SemanticThemeVars, Shadow, Spacing, SpecialColor, TextAlign,
+    TextDecoration, TextOverflow,
+    TextShadow as TextShadowToken, TextTransform, TransitionDuration, TransitionProperty,
+    WhiteSpace, WordBreak,
 };
 
 // Utilities
 pub use utilities::{
     AlignItems, AlignSelf, Columns, Display, Flex, FlexContainer, FlexDirection, FlexWrap,
-    GridContainer, GridTemplate, Height, JustifyContent, Margin, Overflow, Padding, Position,
-    SizeConstraints, Width, ZIndex,
+    GridContainer, GridTemplate, Height, HeightVar, JustifyContent, Margin, MarginValue, MarginVar,
+    Overflow, Padding, PaddingValue, PaddingVar, Position, SizeConstraints, Width, WidthVar,
+    ZIndex,
 };
 
 // Style
@@ -209,7 +212,10 @@ mod tests {
             .rounded(BorderRadius::Md);
 
         assert_eq!(style.padding, Some(Padding::all(Spacing::S4)));
-        assert_eq!(style.background_color, Some(Color::blue(Scale::S500)));
+        assert_eq!(
+            style.background_color,
+            Some(BackgroundColor::palette(Color::blue(Scale::S500)))
+        );
         assert_eq!(style.border_radius, Some(BorderRadius::Md));
     }
 
@@ -228,6 +234,9 @@ mod tests {
     fn test_button_component() {
         let btn = Button::primary();
         let style = btn.style();
-        assert_eq!(style.background_color, Some(Color::blue(Scale::S500)));
+        assert_eq!(
+            style.background_color,
+            Some(BackgroundColor::palette(Color::blue(Scale::S500)))
+        );
     }
 }

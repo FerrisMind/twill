@@ -180,7 +180,10 @@ mod tests {
     fn test_primary_button() {
         let btn = Button::primary();
         let style = btn.style();
-        assert_eq!(style.background_color, Some(Color::blue(Scale::S500)));
+        assert_eq!(
+            style.background_color,
+            Some(crate::tokens::BackgroundColor::palette(Color::blue(Scale::S500)))
+        );
     }
 
     #[test]

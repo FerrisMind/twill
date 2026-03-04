@@ -3,16 +3,18 @@
 use std::num::NonZeroU8;
 
 use crate::tokens::{
-    AnimationToken, AspectRatio, Blur, BorderRadius, BorderStyle, BorderWidth, Color, Container,
-    Cursor, DropShadow, Easing, FontFamily, FontSize, FontWeight, InsetShadow, LetterSpacing,
-    LineHeight, MotionDefaults, OutlineStyle, Perspective, RingWidth, Shadow, Spacing, TextAlign,
+    AnimationToken, AspectRatio, BackgroundColor, BackgroundColorVar, Blur, BorderRadius,
+    BorderStyle, BorderWidth, Color, ColorValueToken, Container, Cursor, DropShadow, Easing,
+    FontFamily, FontSize, FontSizeVar, FontWeight, InsetShadow, LetterSpacing, LineHeight,
+    MotionDefaults, OutlineStyle, Percentage, Perspective, RingWidth, Shadow, Spacing, TextAlign,
     TextDecoration, TextShadow, TextTransform, TransitionDuration, TransitionProperty,
 };
 use crate::traits::Merge;
 use crate::utilities::{
-    Columns, Display, Flex, FlexContainer, FlexDirection, GridContainer, Height, JustifyItems,
-    JustifySelf, Margin, ObjectFit, Overflow, Padding, PlaceContent, PlaceItems, Position, Size,
-    SizeConstraints, Visibility, Width, ZIndex,
+    AlignItems, Columns, Display, Flex, FlexContainer, FlexDirection, GridContainer, GridTemplate,
+    Height, HeightVar, JustifyContent, JustifyItems, JustifySelf, Margin, MarginValue, ObjectFit,
+    Overflow, Padding, PaddingValue, PlaceContent, PlaceItems, Position, Size, SizeConstraints,
+    Visibility, Width, WidthVar, ZIndex,
 };
 
 /// A comprehensive style builder for composing native UI styles.
@@ -51,7 +53,7 @@ pub struct Style {
     pub constraints: Option<SizeConstraints>,
 
     // Background
-    pub background_color: Option<Color>,
+    pub background_color: Option<BackgroundColor>,
     pub opacity: Option<f32>,
 
     // Effects
@@ -193,7 +195,7 @@ impl Style {
         self
     }
 
-    /// Set flex direction utility class (`flex-row`, `flex-row-reverse`, `flex-col`, `flex-col-reverse`).
+    /// Set flex direction.
     pub fn flex_direction(mut self, direction: FlexDirection) -> Self {
         if let Some(ref mut flex) = self.flex {
             self.flex = Some(FlexContainer {
@@ -206,48 +208,114 @@ impl Style {
         self
     }
 
-    /// Set flex item shorthand (`flex-*`).
+    /// Set align-items utility for flex containers.
+    pub fn align_items(mut self, align: AlignItems) -> Self {
+        if let Some(ref mut flex) = self.flex {
+            self.flex = Some(FlexContainer {
+                align: Some(align),
+                ..flex.clone()
+            });
+        } else {
+            self.flex = Some(FlexContainer::new().align(align));
+        }
+        self
+    }
+
+    /// Set main-axis content distribution for a flex container.
+    pub fn justify_content(mut self, justify: JustifyContent) -> Self {
+        if let Some(ref mut flex) = self.flex {
+            self.flex = Some(FlexContainer {
+                justify: Some(justify),
+                ..flex.clone()
+            });
+        } else {
+            self.flex = Some(FlexContainer::new().justify(justify));
+        }
+        self
+    }
+
+    /// Set cross-axis alignment to start.
+    pub fn items_start(self) -> Self {
+        self.align_items(AlignItems::Start)
+    }
+
+    /// Set cross-axis alignment to end.
+    pub fn items_end(self) -> Self {
+        self.align_items(AlignItems::End)
+    }
+
+    /// Set cross-axis alignment to safe end.
+    pub fn items_end_safe(self) -> Self {
+        self.align_items(AlignItems::EndSafe)
+    }
+
+    /// Set cross-axis alignment to center.
+    pub fn items_center(self) -> Self {
+        self.align_items(AlignItems::Center)
+    }
+
+    /// Set cross-axis alignment to safe center.
+    pub fn items_center_safe(self) -> Self {
+        self.align_items(AlignItems::CenterSafe)
+    }
+
+    /// Set cross-axis alignment to baseline.
+    pub fn items_baseline(self) -> Self {
+        self.align_items(AlignItems::Baseline)
+    }
+
+    /// Set cross-axis alignment to last baseline.
+    pub fn items_baseline_last(self) -> Self {
+        self.align_items(AlignItems::BaselineLast)
+    }
+
+    /// Stretch children on the cross axis.
+    pub fn items_stretch(self) -> Self {
+        self.align_items(AlignItems::Stretch)
+    }
+
+    /// Set flex item behavior.
     pub fn flex_item(mut self, flex: Flex) -> Self {
         self.flex_item = Some(flex);
         self
     }
 
-    /// Set `flex-<number>`.
+    /// Set numeric flex grow factor.
     pub fn flex_number(self, number: u16) -> Self {
         self.flex_item(Flex::number(number))
     }
 
-    /// Set `flex-<fraction>`.
+    /// Set flex grow factor as a fraction.
     pub fn flex_fraction(self, numerator: u16, denominator: u16) -> Self {
         self.flex_item(Flex::fraction(numerator, denominator))
     }
 
-    /// Set `flex-1`.
+    /// Convenience: flex grow factor `1`.
     pub fn flex_1(self) -> Self {
         self.flex_number(1)
     }
 
-    /// Set `flex-auto`.
+    /// Set automatic flex behavior.
     pub fn flex_auto(self) -> Self {
         self.flex_item(Flex::Auto)
     }
 
-    /// Set `flex-initial`.
+    /// Set initial flex behavior.
     pub fn flex_initial(self) -> Self {
         self.flex_item(Flex::Initial)
     }
 
-    /// Set `flex-none`.
+    /// Disable flex growth and shrink.
     pub fn flex_none(self) -> Self {
         self.flex_item(Flex::None)
     }
 
-    /// Set `flex-(<custom-property>)`.
+    /// Set flex behavior from a custom property.
     pub fn flex_custom_property(self, name: impl Into<String>) -> Self {
         self.flex_item(Flex::custom_property(name))
     }
 
-    /// Set `flex-[<value>]`.
+    /// Set an arbitrary flex behavior value.
     pub fn flex_arbitrary(self, value: impl Into<String>) -> Self {
         self.flex_item(Flex::arbitrary(value))
     }
@@ -258,16 +326,105 @@ impl Style {
         self
     }
 
+    /// Set grid template columns.
+    pub fn grid_cols(mut self, cols: GridTemplate) -> Self {
+        let mut grid = self.grid.unwrap_or_default();
+        grid.columns = Some(cols);
+        self.grid = Some(grid);
+        self
+    }
+
+    /// Set repeated equal grid columns.
+    pub fn grid_cols_count(self, count: u16) -> Self {
+        self.grid_cols(GridTemplate::count(count))
+    }
+
+    /// Set grid columns to `none`.
+    pub fn grid_cols_none(self) -> Self {
+        self.grid_cols(GridTemplate::none())
+    }
+
+    /// Set grid columns to `subgrid`.
+    pub fn grid_cols_subgrid(self) -> Self {
+        self.grid_cols(GridTemplate::subgrid())
+    }
+
+    /// Set grid columns from a custom property.
+    pub fn grid_cols_custom_property(self, name: impl Into<String>) -> Self {
+        self.grid_cols(GridTemplate::custom_property(name))
+    }
+
+    /// Set grid columns from an arbitrary template value.
+    pub fn grid_cols_arbitrary(self, value: impl Into<String>) -> Self {
+        self.grid_cols(GridTemplate::arbitrary(value))
+    }
+
     /// Set gap (for flex/grid).
     pub fn gap(mut self, spacing: Spacing) -> Self {
-        if let Some(ref mut flex) = self.flex {
+        if let Some(flex) = self.flex.take() {
             self.flex = Some(FlexContainer {
                 gap: Some(spacing),
-                ..flex.clone()
+                ..flex
             });
-        } else {
+        }
+
+        if let Some(grid) = self.grid.take() {
+            self.grid = Some(GridContainer {
+                gap: Some(spacing),
+                ..grid
+            });
+        }
+
+        if self.flex.is_none() && self.grid.is_none() {
             self.flex = Some(FlexContainer::new().gap(spacing));
         }
+
+        self
+    }
+
+    /// Set horizontal gap (`gap-x-*` family) for flex/grid.
+    pub fn gap_x(mut self, spacing: Spacing) -> Self {
+        if let Some(flex) = self.flex.take() {
+            self.flex = Some(FlexContainer {
+                col_gap: Some(spacing),
+                ..flex
+            });
+        }
+
+        if let Some(grid) = self.grid.take() {
+            self.grid = Some(GridContainer {
+                col_gap: Some(spacing),
+                ..grid
+            });
+        }
+
+        if self.flex.is_none() && self.grid.is_none() {
+            self.flex = Some(FlexContainer::new().gap_x(spacing));
+        }
+
+        self
+    }
+
+    /// Set vertical gap (`gap-y-*` family) for flex/grid.
+    pub fn gap_y(mut self, spacing: Spacing) -> Self {
+        if let Some(flex) = self.flex.take() {
+            self.flex = Some(FlexContainer {
+                row_gap: Some(spacing),
+                ..flex
+            });
+        }
+
+        if let Some(grid) = self.grid.take() {
+            self.grid = Some(GridContainer {
+                row_gap: Some(spacing),
+                ..grid
+            });
+        }
+
+        if self.flex.is_none() && self.grid.is_none() {
+            self.flex = Some(FlexContainer::new().gap_y(spacing));
+        }
+
         self
     }
 
@@ -297,6 +454,423 @@ impl Style {
 
     // === Spacing ===
 
+    fn update_padding_value(
+        mut self,
+        update: impl FnOnce(&mut Padding, PaddingValue),
+        value: PaddingValue,
+    ) -> Self {
+        let mut padding = self.padding.unwrap_or_default();
+        update(&mut padding, value);
+        self.padding = Some(padding);
+        self
+    }
+
+    fn update_margin_value(
+        mut self,
+        update: impl FnOnce(&mut Margin, MarginValue),
+        value: MarginValue,
+    ) -> Self {
+        let mut margin = self.margin.unwrap_or_default();
+        update(&mut margin, value);
+        self.margin = Some(margin);
+        self
+    }
+
+    /// `p-*` family: set all padding sides.
+    pub fn p(self, spacing: Spacing) -> Self {
+        self.p_value(spacing.into())
+    }
+
+    /// `p-(<custom-property>)` / `p-[<value>]` family.
+    pub fn p_value(self, value: PaddingValue) -> Self {
+        self.update_padding_value(
+            |padding, value| {
+                padding.top = Some(value);
+                padding.right = Some(value);
+                padding.bottom = Some(value);
+                padding.left = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `px-*` family: set horizontal padding.
+    pub fn px(self, spacing: Spacing) -> Self {
+        self.px_value(spacing.into())
+    }
+
+    /// `px-(<custom-property>)` / `px-[<value>]` family.
+    pub fn px_value(self, value: PaddingValue) -> Self {
+        self.update_padding_value(
+            |padding, value| {
+                padding.right = Some(value);
+                padding.left = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `py-*` family: set vertical padding.
+    pub fn py(self, spacing: Spacing) -> Self {
+        self.py_value(spacing.into())
+    }
+
+    /// `py-(<custom-property>)` / `py-[<value>]` family.
+    pub fn py_value(self, value: PaddingValue) -> Self {
+        self.update_padding_value(
+            |padding, value| {
+                padding.top = Some(value);
+                padding.bottom = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `ps-*` family (`padding-inline-start`) for default LTR mapping.
+    pub fn ps(self, spacing: Spacing) -> Self {
+        self.ps_value(spacing.into())
+    }
+
+    /// `ps-(<custom-property>)` / `ps-[<value>]` family.
+    pub fn ps_value(self, value: PaddingValue) -> Self {
+        self.update_padding_value(
+            |padding, value| {
+                padding.left = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `pe-*` family (`padding-inline-end`) for default LTR mapping.
+    pub fn pe(self, spacing: Spacing) -> Self {
+        self.pe_value(spacing.into())
+    }
+
+    /// `pe-(<custom-property>)` / `pe-[<value>]` family.
+    pub fn pe_value(self, value: PaddingValue) -> Self {
+        self.update_padding_value(
+            |padding, value| {
+                padding.right = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `pbs-*` family (`padding-block-start`).
+    pub fn pbs(self, spacing: Spacing) -> Self {
+        self.pbs_value(spacing.into())
+    }
+
+    /// `pbs-(<custom-property>)` / `pbs-[<value>]` family.
+    pub fn pbs_value(self, value: PaddingValue) -> Self {
+        self.update_padding_value(
+            |padding, value| {
+                padding.top = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `pbe-*` family (`padding-block-end`).
+    pub fn pbe(self, spacing: Spacing) -> Self {
+        self.pbe_value(spacing.into())
+    }
+
+    /// `pbe-(<custom-property>)` / `pbe-[<value>]` family.
+    pub fn pbe_value(self, value: PaddingValue) -> Self {
+        self.update_padding_value(
+            |padding, value| {
+                padding.bottom = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `pt-*` family.
+    pub fn pt(self, spacing: Spacing) -> Self {
+        self.pt_value(spacing.into())
+    }
+
+    /// `pt-(<custom-property>)` / `pt-[<value>]` family.
+    pub fn pt_value(self, value: PaddingValue) -> Self {
+        self.update_padding_value(
+            |padding, value| {
+                padding.top = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `pr-*` family.
+    pub fn pr(self, spacing: Spacing) -> Self {
+        self.pr_value(spacing.into())
+    }
+
+    /// `pr-(<custom-property>)` / `pr-[<value>]` family.
+    pub fn pr_value(self, value: PaddingValue) -> Self {
+        self.update_padding_value(
+            |padding, value| {
+                padding.right = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `pb-*` family.
+    pub fn pb(self, spacing: Spacing) -> Self {
+        self.pb_value(spacing.into())
+    }
+
+    /// `pb-(<custom-property>)` / `pb-[<value>]` family.
+    pub fn pb_value(self, value: PaddingValue) -> Self {
+        self.update_padding_value(
+            |padding, value| {
+                padding.bottom = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `pl-*` family.
+    pub fn pl(self, spacing: Spacing) -> Self {
+        self.pl_value(spacing.into())
+    }
+
+    /// `pl-(<custom-property>)` / `pl-[<value>]` family.
+    pub fn pl_value(self, value: PaddingValue) -> Self {
+        self.update_padding_value(
+            |padding, value| {
+                padding.left = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `m-*` family: set all margin sides.
+    pub fn m(self, spacing: Spacing) -> Self {
+        self.m_value(spacing.into())
+    }
+
+    /// `m-(<custom-property>)` / `m-[<value>]` family.
+    pub fn m_value(self, value: MarginValue) -> Self {
+        self.update_margin_value(
+            |margin, value| {
+                margin.top = Some(value);
+                margin.right = Some(value);
+                margin.bottom = Some(value);
+                margin.left = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `-m-*` family.
+    pub fn neg_m(self, spacing: Spacing) -> Self {
+        self.m_value(MarginValue::neg_scale(spacing))
+    }
+
+    /// `mx-*` family: set horizontal margin.
+    pub fn mx(self, spacing: Spacing) -> Self {
+        self.mx_value(spacing.into())
+    }
+
+    /// `mx-(<custom-property>)` / `mx-[<value>]` family.
+    pub fn mx_value(self, value: MarginValue) -> Self {
+        self.update_margin_value(
+            |margin, value| {
+                margin.right = Some(value);
+                margin.left = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `-mx-*` family.
+    pub fn neg_mx(self, spacing: Spacing) -> Self {
+        self.mx_value(MarginValue::neg_scale(spacing))
+    }
+
+    /// `my-*` family: set vertical margin.
+    pub fn my(self, spacing: Spacing) -> Self {
+        self.my_value(spacing.into())
+    }
+
+    /// `my-(<custom-property>)` / `my-[<value>]` family.
+    pub fn my_value(self, value: MarginValue) -> Self {
+        self.update_margin_value(
+            |margin, value| {
+                margin.top = Some(value);
+                margin.bottom = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `-my-*` family.
+    pub fn neg_my(self, spacing: Spacing) -> Self {
+        self.my_value(MarginValue::neg_scale(spacing))
+    }
+
+    /// `ms-*` family (`margin-inline-start`) for default LTR mapping.
+    pub fn ms(self, spacing: Spacing) -> Self {
+        self.ms_value(spacing.into())
+    }
+
+    /// `ms-(<custom-property>)` / `ms-[<value>]` family.
+    pub fn ms_value(self, value: MarginValue) -> Self {
+        self.update_margin_value(
+            |margin, value| {
+                margin.left = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `-ms-*` family.
+    pub fn neg_ms(self, spacing: Spacing) -> Self {
+        self.ms_value(MarginValue::neg_scale(spacing))
+    }
+
+    /// `me-*` family (`margin-inline-end`) for default LTR mapping.
+    pub fn me(self, spacing: Spacing) -> Self {
+        self.me_value(spacing.into())
+    }
+
+    /// `me-(<custom-property>)` / `me-[<value>]` family.
+    pub fn me_value(self, value: MarginValue) -> Self {
+        self.update_margin_value(
+            |margin, value| {
+                margin.right = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `-me-*` family.
+    pub fn neg_me(self, spacing: Spacing) -> Self {
+        self.me_value(MarginValue::neg_scale(spacing))
+    }
+
+    /// `mbs-*` family (`margin-block-start`).
+    pub fn mbs(self, spacing: Spacing) -> Self {
+        self.mbs_value(spacing.into())
+    }
+
+    /// `mbs-(<custom-property>)` / `mbs-[<value>]` family.
+    pub fn mbs_value(self, value: MarginValue) -> Self {
+        self.update_margin_value(
+            |margin, value| {
+                margin.top = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `-mbs-*` family.
+    pub fn neg_mbs(self, spacing: Spacing) -> Self {
+        self.mbs_value(MarginValue::neg_scale(spacing))
+    }
+
+    /// `mbe-*` family (`margin-block-end`).
+    pub fn mbe(self, spacing: Spacing) -> Self {
+        self.mbe_value(spacing.into())
+    }
+
+    /// `mbe-(<custom-property>)` / `mbe-[<value>]` family.
+    pub fn mbe_value(self, value: MarginValue) -> Self {
+        self.update_margin_value(
+            |margin, value| {
+                margin.bottom = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `-mbe-*` family.
+    pub fn neg_mbe(self, spacing: Spacing) -> Self {
+        self.mbe_value(MarginValue::neg_scale(spacing))
+    }
+
+    /// `mt-*` family.
+    pub fn mt(self, spacing: Spacing) -> Self {
+        self.mt_value(spacing.into())
+    }
+
+    /// `mt-(<custom-property>)` / `mt-[<value>]` family.
+    pub fn mt_value(self, value: MarginValue) -> Self {
+        self.update_margin_value(
+            |margin, value| {
+                margin.top = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `-mt-*` family.
+    pub fn neg_mt(self, spacing: Spacing) -> Self {
+        self.mt_value(MarginValue::neg_scale(spacing))
+    }
+
+    /// `mr-*` family.
+    pub fn mr(self, spacing: Spacing) -> Self {
+        self.mr_value(spacing.into())
+    }
+
+    /// `mr-(<custom-property>)` / `mr-[<value>]` family.
+    pub fn mr_value(self, value: MarginValue) -> Self {
+        self.update_margin_value(
+            |margin, value| {
+                margin.right = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `-mr-*` family.
+    pub fn neg_mr(self, spacing: Spacing) -> Self {
+        self.mr_value(MarginValue::neg_scale(spacing))
+    }
+
+    /// `mb-*` family.
+    pub fn mb(self, spacing: Spacing) -> Self {
+        self.mb_value(spacing.into())
+    }
+
+    /// `mb-(<custom-property>)` / `mb-[<value>]` family.
+    pub fn mb_value(self, value: MarginValue) -> Self {
+        self.update_margin_value(
+            |margin, value| {
+                margin.bottom = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `-mb-*` family.
+    pub fn neg_mb(self, spacing: Spacing) -> Self {
+        self.mb_value(MarginValue::neg_scale(spacing))
+    }
+
+    /// `ml-*` family.
+    pub fn ml(self, spacing: Spacing) -> Self {
+        self.ml_value(spacing.into())
+    }
+
+    /// `ml-(<custom-property>)` / `ml-[<value>]` family.
+    pub fn ml_value(self, value: MarginValue) -> Self {
+        self.update_margin_value(
+            |margin, value| {
+                margin.left = Some(value);
+            },
+            value,
+        )
+    }
+
+    /// `-ml-*` family.
+    pub fn neg_ml(self, spacing: Spacing) -> Self {
+        self.ml_value(MarginValue::neg_scale(spacing))
+    }
+
     /// Set padding.
     pub fn padding(mut self, padding: Padding) -> Self {
         self.padding = Some(padding);
@@ -317,10 +891,180 @@ impl Style {
         self
     }
 
+    /// `w-<number>` family (`w-px` uses `Spacing::Px`).
+    pub fn w(self, spacing: Spacing) -> Self {
+        self.width(Width::w(spacing))
+    }
+
+    /// `w-<fraction>` family.
+    pub fn w_fraction(self, fraction: Percentage) -> Self {
+        self.width(Width::w_fraction(fraction))
+    }
+
+    /// `w-3xs` ... `w-7xl` family.
+    pub fn w_container(self, container: Container) -> Self {
+        self.width(Width::w_container(container))
+    }
+
+    /// `w-auto`.
+    pub fn w_auto(self) -> Self {
+        self.width(Width::w_auto())
+    }
+
+    /// `w-px`.
+    pub fn w_px(self) -> Self {
+        self.width(Width::w_px())
+    }
+
+    /// `w-screen`.
+    pub fn w_screen(self) -> Self {
+        self.width(Width::w_screen())
+    }
+
+    /// `w-dvw`.
+    pub fn w_dvw(self) -> Self {
+        self.width(Width::w_dvw())
+    }
+
+    /// `w-dvh`.
+    pub fn w_dvh(self) -> Self {
+        self.width(Width::w_dvh())
+    }
+
+    /// `w-lvw`.
+    pub fn w_lvw(self) -> Self {
+        self.width(Width::w_lvw())
+    }
+
+    /// `w-lvh`.
+    pub fn w_lvh(self) -> Self {
+        self.width(Width::w_lvh())
+    }
+
+    /// `w-svw`.
+    pub fn w_svw(self) -> Self {
+        self.width(Width::w_svw())
+    }
+
+    /// `w-svh`.
+    pub fn w_svh(self) -> Self {
+        self.width(Width::w_svh())
+    }
+
+    /// `w-min`.
+    pub fn w_min(self) -> Self {
+        self.width(Width::w_min())
+    }
+
+    /// `w-max`.
+    pub fn w_max(self) -> Self {
+        self.width(Width::w_max())
+    }
+
+    /// `w-fit`.
+    pub fn w_fit(self) -> Self {
+        self.width(Width::w_fit())
+    }
+
+    /// `w-(<custom-property>)`.
+    pub fn w_var(self, var: WidthVar) -> Self {
+        self.width(Width::w_var(var))
+    }
+
+    /// Typed pixel width (`w-[<value>]` in px-focused native layouts).
+    pub fn w_px_value(self, px: u16) -> Self {
+        self.width(Width::w_px_value(px))
+    }
+
     /// Set height.
     pub fn height(mut self, height: Height) -> Self {
         self.height = Some(height);
         self
+    }
+
+    /// `h-<number>` family (`h-px` uses `Spacing::Px`).
+    pub fn h(self, spacing: Spacing) -> Self {
+        self.height(Height::h(spacing))
+    }
+
+    /// `h-<fraction>` family.
+    pub fn h_fraction(self, fraction: Percentage) -> Self {
+        self.height(Height::h_fraction(fraction))
+    }
+
+    /// `h-auto`.
+    pub fn h_auto(self) -> Self {
+        self.height(Height::h_auto())
+    }
+
+    /// `h-px`.
+    pub fn h_px(self) -> Self {
+        self.height(Height::h_px())
+    }
+
+    /// `h-screen`.
+    pub fn h_screen(self) -> Self {
+        self.height(Height::h_screen())
+    }
+
+    /// `h-dvw`.
+    pub fn h_dvw(self) -> Self {
+        self.height(Height::h_dvw())
+    }
+
+    /// `h-dvh`.
+    pub fn h_dvh(self) -> Self {
+        self.height(Height::h_dvh())
+    }
+
+    /// `h-lvw`.
+    pub fn h_lvw(self) -> Self {
+        self.height(Height::h_lvw())
+    }
+
+    /// `h-lvh`.
+    pub fn h_lvh(self) -> Self {
+        self.height(Height::h_lvh())
+    }
+
+    /// `h-svw`.
+    pub fn h_svw(self) -> Self {
+        self.height(Height::h_svw())
+    }
+
+    /// `h-svh`.
+    pub fn h_svh(self) -> Self {
+        self.height(Height::h_svh())
+    }
+
+    /// `h-min`.
+    pub fn h_min(self) -> Self {
+        self.height(Height::h_min())
+    }
+
+    /// `h-max`.
+    pub fn h_max(self) -> Self {
+        self.height(Height::h_max())
+    }
+
+    /// `h-fit`.
+    pub fn h_fit(self) -> Self {
+        self.height(Height::h_fit())
+    }
+
+    /// `h-lh`.
+    pub fn h_lh(self) -> Self {
+        self.height(Height::h_lh())
+    }
+
+    /// `h-(<custom-property>)`.
+    pub fn h_var(self, var: HeightVar) -> Self {
+        self.height(Height::h_var(var))
+    }
+
+    /// Typed pixel height (`h-[<value>]` in px-focused native layouts).
+    pub fn h_px_value(self, px: u16) -> Self {
+        self.height(Height::h_px_value(px))
     }
 
     /// Set size constraints.
@@ -329,7 +1073,7 @@ impl Style {
         self
     }
 
-    /// Set max-width to Tailwind prose measure (`65ch`).
+    /// Set max-width to prose measure (`65ch`).
     pub fn max_w_prose(mut self) -> Self {
         let constraints = self.constraints.unwrap_or_default().max_width(Size::Prose);
         self.constraints = Some(constraints);
@@ -347,13 +1091,44 @@ impl Style {
 
     /// Set background color.
     pub fn bg(mut self, color: Color) -> Self {
-        self.background_color = Some(color);
+        self.background_color = Some(BackgroundColor::palette(color));
         self
     }
 
     /// Set background color (alias for bg).
     pub fn background(self, color: Color) -> Self {
         self.bg(color)
+    }
+
+    /// Set background token directly.
+    pub fn background_token(mut self, token: BackgroundColor) -> Self {
+        self.background_color = Some(token);
+        self
+    }
+
+    /// `bg-inherit` equivalent.
+    pub fn bg_inherit(self) -> Self {
+        self.background_token(BackgroundColor::inherit())
+    }
+
+    /// `bg-current` equivalent.
+    pub fn bg_current(self) -> Self {
+        self.background_token(BackgroundColor::current())
+    }
+
+    /// `bg-transparent` equivalent.
+    pub fn bg_transparent(self) -> Self {
+        self.background_token(BackgroundColor::transparent())
+    }
+
+    /// `bg-(<custom-property>)` equivalent.
+    pub fn bg_var(self, var: BackgroundColorVar) -> Self {
+        self.background_token(BackgroundColor::custom_property(var))
+    }
+
+    /// `bg-[<value>]` equivalent.
+    pub fn bg_arbitrary(self, value: ColorValueToken) -> Self {
+        self.background_token(BackgroundColor::arbitrary(value))
     }
 
     /// Set opacity (0.0 - 1.0).
@@ -454,10 +1229,67 @@ impl Style {
         self
     }
 
+    /// `text-(length:<custom-property>)`.
+    pub fn text_size_var(mut self, var: FontSizeVar) -> Self {
+        self.font_size = Some(FontSize::var(var));
+        self
+    }
+
+    /// Typed arbitrary pixel font size (`text-[<value>]`).
+    pub fn text_size_px(mut self, px: u16) -> Self {
+        self.font_size = Some(FontSize::px(px));
+        self
+    }
+
     /// Set font weight.
     pub fn font_weight(mut self, weight: FontWeight) -> Self {
         self.font_weight = Some(weight);
         self
+    }
+
+    /// `font-thin`.
+    pub fn font_thin(self) -> Self {
+        self.font_weight(FontWeight::Thin)
+    }
+
+    /// `font-extralight`.
+    pub fn font_extralight(self) -> Self {
+        self.font_weight(FontWeight::ExtraLight)
+    }
+
+    /// `font-light`.
+    pub fn font_light(self) -> Self {
+        self.font_weight(FontWeight::Light)
+    }
+
+    /// `font-normal`.
+    pub fn font_normal(self) -> Self {
+        self.font_weight(FontWeight::Normal)
+    }
+
+    /// `font-medium`.
+    pub fn font_medium(self) -> Self {
+        self.font_weight(FontWeight::Medium)
+    }
+
+    /// `font-semibold`.
+    pub fn font_semibold(self) -> Self {
+        self.font_weight(FontWeight::SemiBold)
+    }
+
+    /// `font-bold`.
+    pub fn font_bold(self) -> Self {
+        self.font_weight(FontWeight::Bold)
+    }
+
+    /// `font-extrabold`.
+    pub fn font_extrabold(self) -> Self {
+        self.font_weight(FontWeight::ExtraBold)
+    }
+
+    /// `font-black`.
+    pub fn font_black(self) -> Self {
+        self.font_weight(FontWeight::Black)
     }
 
     /// Set letter spacing.
@@ -476,6 +1308,36 @@ impl Style {
     pub fn text_align(mut self, align: TextAlign) -> Self {
         self.text_align = Some(align);
         self
+    }
+
+    /// `text-left`.
+    pub fn text_left(self) -> Self {
+        self.text_align(TextAlign::Left)
+    }
+
+    /// `text-center`.
+    pub fn text_center(self) -> Self {
+        self.text_align(TextAlign::Center)
+    }
+
+    /// `text-right`.
+    pub fn text_right(self) -> Self {
+        self.text_align(TextAlign::Right)
+    }
+
+    /// `text-justify`.
+    pub fn text_justify(self) -> Self {
+        self.text_align(TextAlign::Justify)
+    }
+
+    /// `text-start`.
+    pub fn text_start(self) -> Self {
+        self.text_align(TextAlign::Start)
+    }
+
+    /// `text-end`.
+    pub fn text_end(self) -> Self {
+        self.text_align(TextAlign::End)
     }
 
     /// Set text decoration.
@@ -515,13 +1377,13 @@ impl Style {
         self
     }
 
-    /// Set transition property using Tailwind token.
+    /// Set transition property using a predefined token.
     pub fn transition(mut self, property: TransitionProperty) -> Self {
         self.transition_property = Some(property.value().to_string());
         self
     }
 
-    /// Apply Tailwind default transition preset.
+    /// Apply default transition preset.
     pub fn transition_default(mut self) -> Self {
         let defaults = MotionDefaults::default();
         self.transition_property = Some(TransitionProperty::Default.value().to_string());
@@ -530,13 +1392,13 @@ impl Style {
         self
     }
 
-    /// Set transition duration using Tailwind-aligned duration tokens.
+    /// Set transition duration using duration tokens.
     pub fn transition_duration(mut self, duration: TransitionDuration) -> Self {
         self.transition_duration = Some(duration);
         self
     }
 
-    /// Set transition timing function using Tailwind-aligned easing tokens.
+    /// Set transition timing function using easing tokens.
     pub fn transition_ease(mut self, easing: Easing) -> Self {
         self.transition_timing_function = Some(easing);
         self
@@ -721,8 +1583,229 @@ mod tests {
             .text_color(Color::slate(Scale::S50));
 
         assert_eq!(style.padding, Some(Padding::all(Spacing::S4)));
-        assert_eq!(style.background_color, Some(Color::blue(Scale::S500)));
+        assert_eq!(
+            style.background_color,
+            Some(BackgroundColor::palette(Color::blue(Scale::S500)))
+        );
         assert_eq!(style.border_radius, Some(BorderRadius::Md));
+    }
+
+    #[test]
+    fn test_padding_family_builders() {
+        let style = Style::new()
+            .px(Spacing::S4)
+            .pt(Spacing::S2)
+            .pb(Spacing::S6)
+            .ps(Spacing::S8);
+
+        let padding = style.padding.expect("padding must be present");
+        assert_eq!(padding.left, Some(PaddingValue::scale(Spacing::S8)));
+        assert_eq!(padding.right, Some(PaddingValue::scale(Spacing::S4)));
+        assert_eq!(padding.top, Some(PaddingValue::scale(Spacing::S2)));
+        assert_eq!(padding.bottom, Some(PaddingValue::scale(Spacing::S6)));
+    }
+
+    #[test]
+    fn test_padding_px_token_builders() {
+        let style = Style::new()
+            .p(Spacing::Px)
+            .px(Spacing::S4)
+            .py(Spacing::Px)
+            .pe(Spacing::Px);
+
+        let padding = style.padding.expect("padding must be present");
+        assert_eq!(padding.top, Some(PaddingValue::scale(Spacing::Px)));
+        assert_eq!(padding.bottom, Some(PaddingValue::scale(Spacing::Px)));
+        assert_eq!(padding.left, Some(PaddingValue::scale(Spacing::S4)));
+        assert_eq!(padding.right, Some(PaddingValue::scale(Spacing::Px)));
+    }
+
+    #[test]
+    fn test_padding_p_overrides_all_sides() {
+        let style = Style::new().px(Spacing::S2).py(Spacing::S3).p(Spacing::S5);
+        assert_eq!(style.padding, Some(Padding::all(Spacing::S5)));
+    }
+
+    #[test]
+    fn test_padding_value_builders() {
+        let style = Style::new()
+            .px_value(PaddingValue::px(5.0))
+            .pt_value(PaddingValue::rem(1.5))
+            .ps_value(PaddingValue::var(crate::utilities::PaddingVar::new(
+                "--pad",
+            )));
+
+        let padding = style.padding.expect("padding must be present");
+        assert_eq!(
+            padding.left,
+            Some(PaddingValue::var(crate::utilities::PaddingVar::new(
+                "--pad"
+            )))
+        );
+        assert_eq!(padding.right, Some(PaddingValue::px(5.0)));
+        assert_eq!(padding.top, Some(PaddingValue::rem(1.5)));
+    }
+
+    #[test]
+    fn test_width_family_builders() {
+        let style = Style::new()
+            .w(Spacing::S24)
+            .w_fraction(Percentage::S1_2)
+            .w_container(Container::Md)
+            .w_px();
+
+        assert_eq!(style.width, Some(Width::w_px()));
+    }
+
+    #[test]
+    fn test_width_variant_builders() {
+        const PANEL_W: WidthVar = WidthVar::new("--panel-w");
+        let style = Style::new()
+            .w_auto()
+            .w_screen()
+            .w_dvw()
+            .w_dvh()
+            .w_lvw()
+            .w_lvh()
+            .w_svw()
+            .w_svh()
+            .w_min()
+            .w_max()
+            .w_fit()
+            .w_var(PANEL_W)
+            .w_px_value(280);
+
+        assert_eq!(style.width, Some(Width::w_px_value(280)));
+    }
+
+    #[test]
+    fn test_height_family_builders() {
+        let style = Style::new()
+            .h(Spacing::S24)
+            .h_fraction(Percentage::S1_2)
+            .h_px();
+
+        assert_eq!(style.height, Some(Height::h_px()));
+    }
+
+    #[test]
+    fn test_height_variant_builders() {
+        const PANEL_H: HeightVar = HeightVar::new("--panel-h");
+        let style = Style::new()
+            .h_auto()
+            .h_screen()
+            .h_dvw()
+            .h_dvh()
+            .h_lvw()
+            .h_lvh()
+            .h_svw()
+            .h_svh()
+            .h_min()
+            .h_max()
+            .h_fit()
+            .h_lh()
+            .h_var(PANEL_H)
+            .h_px_value(220);
+
+        assert_eq!(style.height, Some(Height::h_px_value(220)));
+    }
+
+    #[test]
+    fn test_text_size_custom_builders() {
+        const TITLE_SIZE: FontSizeVar = FontSizeVar::new("--title-size");
+        let style = Style::new().text_size_var(TITLE_SIZE).text_size_px(18);
+        assert_eq!(style.font_size, Some(FontSize::px(18)));
+    }
+
+    #[test]
+    fn test_font_weight_class_family_builders() {
+        assert_eq!(Style::new().font_thin().font_weight, Some(FontWeight::Thin));
+        assert_eq!(
+            Style::new().font_extralight().font_weight,
+            Some(FontWeight::ExtraLight)
+        );
+        assert_eq!(
+            Style::new().font_light().font_weight,
+            Some(FontWeight::Light)
+        );
+        assert_eq!(
+            Style::new().font_normal().font_weight,
+            Some(FontWeight::Normal)
+        );
+        assert_eq!(
+            Style::new().font_medium().font_weight,
+            Some(FontWeight::Medium)
+        );
+        assert_eq!(
+            Style::new().font_semibold().font_weight,
+            Some(FontWeight::SemiBold)
+        );
+        assert_eq!(Style::new().font_bold().font_weight, Some(FontWeight::Bold));
+        assert_eq!(
+            Style::new().font_extrabold().font_weight,
+            Some(FontWeight::ExtraBold)
+        );
+        assert_eq!(
+            Style::new().font_black().font_weight,
+            Some(FontWeight::Black)
+        );
+    }
+
+    #[test]
+    fn test_text_align_class_family_builders() {
+        assert_eq!(Style::new().text_left().text_align, Some(TextAlign::Left));
+        assert_eq!(
+            Style::new().text_center().text_align,
+            Some(TextAlign::Center)
+        );
+        assert_eq!(Style::new().text_right().text_align, Some(TextAlign::Right));
+        assert_eq!(
+            Style::new().text_justify().text_align,
+            Some(TextAlign::Justify)
+        );
+        assert_eq!(Style::new().text_start().text_align, Some(TextAlign::Start));
+        assert_eq!(Style::new().text_end().text_align, Some(TextAlign::End));
+    }
+
+    #[test]
+    fn test_margin_class_family_builders() {
+        let style = Style::new()
+            .mx(Spacing::S4)
+            .mt(Spacing::S2)
+            .mb(Spacing::S6)
+            .ms(Spacing::S8);
+
+        let margin = style.margin.expect("margin must be present");
+        assert_eq!(margin.left, Some(MarginValue::scale(Spacing::S8)));
+        assert_eq!(margin.right, Some(MarginValue::scale(Spacing::S4)));
+        assert_eq!(margin.top, Some(MarginValue::scale(Spacing::S2)));
+        assert_eq!(margin.bottom, Some(MarginValue::scale(Spacing::S6)));
+    }
+
+    #[test]
+    fn test_margin_m_overrides_all_sides() {
+        let style = Style::new().mx(Spacing::S2).my(Spacing::S3).m(Spacing::S5);
+        assert_eq!(style.margin, Some(Margin::all(Spacing::S5)));
+    }
+
+    #[test]
+    fn test_margin_negative_and_value_builders() {
+        let style = Style::new()
+            .neg_mt(Spacing::S6)
+            .me_value(MarginValue::var(crate::utilities::MarginVar::new(
+                "--margin-end",
+            )))
+            .mbe_value(MarginValue::rem(1.25));
+
+        let margin = style.margin.expect("margin must be present");
+        assert_eq!(margin.top, Some(MarginValue::neg_scale(Spacing::S6)));
+        assert_eq!(
+            margin.right,
+            Some(MarginValue::var(crate::utilities::MarginVar::new(
+                "--margin-end"
+            )))
+        );
+        assert_eq!(margin.bottom, Some(MarginValue::rem(1.25)));
     }
 
     #[test]
@@ -774,6 +1857,115 @@ mod tests {
 
         let style = Style::new().flex_arbitrary("3_1_auto");
         assert_eq!(style.flex_item, Some(Flex::arbitrary("3_1_auto")));
+    }
+
+    #[test]
+    fn test_align_items_builder_fields() {
+        let style = Style::new().align_items(AlignItems::CenterSafe);
+        assert_eq!(
+            style.flex.and_then(|flex| flex.align),
+            Some(AlignItems::CenterSafe)
+        );
+    }
+
+    #[test]
+    fn test_justify_content_builder_fields() {
+        let style = Style::new().justify_content(JustifyContent::CenterSafe);
+        assert_eq!(
+            style.flex.and_then(|flex| flex.justify),
+            Some(JustifyContent::CenterSafe)
+        );
+    }
+
+    #[test]
+    fn test_align_items_shortcuts() {
+        assert_eq!(
+            Style::new().items_start().flex.and_then(|flex| flex.align),
+            Some(AlignItems::Start)
+        );
+        assert_eq!(
+            Style::new().items_end().flex.and_then(|flex| flex.align),
+            Some(AlignItems::End)
+        );
+        assert_eq!(
+            Style::new()
+                .items_end_safe()
+                .flex
+                .and_then(|flex| flex.align),
+            Some(AlignItems::EndSafe)
+        );
+        assert_eq!(
+            Style::new().items_center().flex.and_then(|flex| flex.align),
+            Some(AlignItems::Center)
+        );
+        assert_eq!(
+            Style::new()
+                .items_center_safe()
+                .flex
+                .and_then(|flex| flex.align),
+            Some(AlignItems::CenterSafe)
+        );
+        assert_eq!(
+            Style::new()
+                .items_baseline()
+                .flex
+                .and_then(|flex| flex.align),
+            Some(AlignItems::Baseline)
+        );
+        assert_eq!(
+            Style::new()
+                .items_baseline_last()
+                .flex
+                .and_then(|flex| flex.align),
+            Some(AlignItems::BaselineLast)
+        );
+        assert_eq!(
+            Style::new()
+                .items_stretch()
+                .flex
+                .and_then(|flex| flex.align),
+            Some(AlignItems::Stretch)
+        );
+    }
+
+    #[test]
+    fn test_gap_axis_builder_fields_for_flex() {
+        let style = Style::new().gap_x(Spacing::S6).gap_y(Spacing::S3);
+        let flex = style.flex.expect("flex must be initialized");
+        assert_eq!(flex.col_gap, Some(Spacing::S6));
+        assert_eq!(flex.row_gap, Some(Spacing::S3));
+    }
+
+    #[test]
+    fn test_gap_builder_fields_for_grid() {
+        let style = Style::new()
+            .grid(GridContainer::cols_3())
+            .gap(Spacing::S4)
+            .gap_x(Spacing::S8)
+            .gap_y(Spacing::S2);
+
+        let grid = style.grid.expect("grid must be present");
+        assert_eq!(grid.gap, Some(Spacing::S4));
+        assert_eq!(grid.col_gap, Some(Spacing::S8));
+        assert_eq!(grid.row_gap, Some(Spacing::S2));
+    }
+
+    #[test]
+    fn test_grid_template_columns_builder_fields() {
+        let style = Style::new()
+            .grid_cols_count(4)
+            .grid_cols_subgrid()
+            .grid_cols_none()
+            .grid_cols_custom_property("--layout-cols")
+            .grid_cols_arbitrary("200px_minmax(0,_1fr)_100px");
+
+        let grid = style.grid.expect("grid must be initialized");
+        assert_eq!(
+            grid.columns,
+            Some(GridTemplate::Arbitrary(
+                "200px minmax(0, 1fr) 100px".to_string()
+            ))
+        );
     }
 
     #[test]

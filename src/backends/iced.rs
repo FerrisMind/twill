@@ -4,11 +4,15 @@
 
 use crate::style::Style;
 use crate::tokens::{
-    AspectRatio, Blur, BorderRadius, BorderStyle, Color, Container, Cursor, FontSize, FontWeight,
-    Scale, SemanticColor, SemanticThemeVars, Shadow, Spacing, TransitionDuration,
+    AspectRatio, BackgroundColor, Blur, BorderRadius, BorderStyle, Color, ColorValue, Container,
+    Cursor, FontSize, FontWeight, Percentage, Scale, SemanticColor, SemanticThemeVars, Shadow,
+    Spacing, TextAlign, TransitionDuration,
 };
 use crate::traits::ComputeValue;
-use crate::utilities::{Columns, Flex, FlexDirection, ObjectFit};
+use crate::utilities::{
+    AlignItems, Columns, Flex, FlexDirection, GridTemplate, JustifyContent, MarginValue, ObjectFit,
+    PaddingValue,
+};
 use iced::advanced::layout::{Layout as AdvancedLayout, Limits, Node};
 use iced::advanced::overlay;
 use iced::advanced::renderer;
@@ -145,9 +149,287 @@ pub fn to_color_value(value: crate::tokens::ColorValue) -> iced::Color {
     )
 }
 
+fn resolve_background_color_token(token: BackgroundColor, fallback_text: Option<Color>) -> Option<ColorValue> {
+    match token {
+        BackgroundColor::Inherit => None,
+        BackgroundColor::Current => fallback_text.map(|text| text.compute()),
+        BackgroundColor::Transparent => Some(ColorValue::TRANSPARENT),
+        BackgroundColor::Palette(color) => Some(color.compute()),
+        BackgroundColor::CustomProperty(_) => None,
+        BackgroundColor::Arbitrary(value) => Some(value.into()),
+    }
+}
+
 /// Convert twill Spacing to iced Padding.
 pub fn to_padding(spacing: Spacing) -> iced::Padding {
     iced::Padding::new(spacing_to_px(spacing))
+}
+
+fn resolve_padding_value_px(value: PaddingValue, custom_properties: &[(&str, f32)]) -> f32 {
+    match value {
+        PaddingValue::Scale(spacing) => spacing_to_px(spacing),
+        PaddingValue::Px(px) => {
+            if px.is_finite() {
+                px.max(0.0)
+            } else {
+                0.0
+            }
+        }
+        PaddingValue::Rem(rem) => {
+            if rem.is_finite() {
+                (rem * 16.0).max(0.0)
+            } else {
+                0.0
+            }
+        }
+        PaddingValue::Var(var) => custom_properties
+            .iter()
+            .find(|(name, _)| *name == var.as_str())
+            .map(|(_, value)| value.max(0.0))
+            .unwrap_or(0.0),
+    }
+}
+
+fn to_style_padding(
+    padding: crate::utilities::Padding,
+    custom_properties: &[(&str, f32)],
+) -> iced::Padding {
+    iced::Padding {
+        top: padding
+            .top
+            .map(|value| resolve_padding_value_px(value, custom_properties))
+            .unwrap_or(0.0),
+        right: padding
+            .right
+            .map(|value| resolve_padding_value_px(value, custom_properties))
+            .unwrap_or(0.0),
+        bottom: padding
+            .bottom
+            .map(|value| resolve_padding_value_px(value, custom_properties))
+            .unwrap_or(0.0),
+        left: padding
+            .left
+            .map(|value| resolve_padding_value_px(value, custom_properties))
+            .unwrap_or(0.0),
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum ResolvedMarginValue {
+    Px(f32),
+    Auto,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+struct ResolvedMargin {
+    top: Option<ResolvedMarginValue>,
+    right: Option<ResolvedMarginValue>,
+    bottom: Option<ResolvedMarginValue>,
+    left: Option<ResolvedMarginValue>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+struct MarginOffsets {
+    top: f32,
+    right: f32,
+    bottom: f32,
+    left: f32,
+}
+
+impl MarginOffsets {
+    fn is_zero(self) -> bool {
+        (self.top.abs() < f32::EPSILON)
+            && (self.right.abs() < f32::EPSILON)
+            && (self.bottom.abs() < f32::EPSILON)
+            && (self.left.abs() < f32::EPSILON)
+    }
+}
+
+fn resolve_margin_value_px(
+    value: MarginValue,
+    custom_properties: &[(&str, f32)],
+) -> ResolvedMarginValue {
+    match value {
+        MarginValue::Scale(spacing) => ResolvedMarginValue::Px(spacing_to_px(spacing)),
+        MarginValue::NegativeScale(spacing) => ResolvedMarginValue::Px(-spacing_to_px(spacing)),
+        MarginValue::Px(px) => {
+            if px.is_finite() {
+                ResolvedMarginValue::Px(px)
+            } else {
+                ResolvedMarginValue::Px(0.0)
+            }
+        }
+        MarginValue::Rem(rem) => {
+            if rem.is_finite() {
+                ResolvedMarginValue::Px(rem * 16.0)
+            } else {
+                ResolvedMarginValue::Px(0.0)
+            }
+        }
+        MarginValue::Var(var) => ResolvedMarginValue::Px(
+            custom_properties
+                .iter()
+                .find(|(name, _)| *name == var.as_str())
+                .map(|(_, value)| *value)
+                .unwrap_or(0.0),
+        ),
+        MarginValue::Auto => ResolvedMarginValue::Auto,
+    }
+}
+
+fn to_style_margin(
+    margin: crate::utilities::Margin,
+    custom_properties: &[(&str, f32)],
+) -> ResolvedMargin {
+    ResolvedMargin {
+        top: margin
+            .top
+            .map(|value| resolve_margin_value_px(value, custom_properties)),
+        right: margin
+            .right
+            .map(|value| resolve_margin_value_px(value, custom_properties)),
+        bottom: margin
+            .bottom
+            .map(|value| resolve_margin_value_px(value, custom_properties)),
+        left: margin
+            .left
+            .map(|value| resolve_margin_value_px(value, custom_properties)),
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum ResolvedWidth {
+    Length(Length),
+    Ratio(f32),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum ResolvedHeight {
+    Length(Length),
+    Ratio(f32),
+}
+
+fn percentage_to_ratio(value: Percentage) -> Option<f32> {
+    match value {
+        Percentage::S0 => Some(0.0),
+        Percentage::S1_2 | Percentage::S2_4 | Percentage::S3_6 => Some(0.5),
+        Percentage::S1_3 | Percentage::S2_6 => Some(1.0 / 3.0),
+        Percentage::S2_3 | Percentage::S4_6 => Some(2.0 / 3.0),
+        Percentage::S1_4 => Some(0.25),
+        Percentage::S3_4 => Some(0.75),
+        Percentage::S1_5 => Some(0.2),
+        Percentage::S2_5 => Some(0.4),
+        Percentage::S3_5 => Some(0.6),
+        Percentage::S4_5 => Some(0.8),
+        Percentage::S1_6 => Some(1.0 / 6.0),
+        Percentage::S5_6 => Some(5.0 / 6.0),
+        Percentage::Full => Some(1.0),
+        Percentage::Min | Percentage::Max | Percentage::Fit => None,
+    }
+}
+
+fn resolve_width(
+    width: crate::utilities::Width,
+    custom_properties: &[(&str, f32)],
+) -> Option<ResolvedWidth> {
+    match width.0? {
+        crate::utilities::Size::Spacing(spacing) => {
+            Some(ResolvedWidth::Length(Length::Fixed(spacing_to_px(spacing))))
+        }
+        crate::utilities::Size::Percentage(fraction) => {
+            if matches!(fraction, Percentage::Full) {
+                Some(ResolvedWidth::Length(Length::Fill))
+            } else if matches!(
+                fraction,
+                Percentage::Min | Percentage::Max | Percentage::Fit
+            ) {
+                Some(ResolvedWidth::Length(Length::Shrink))
+            } else {
+                percentage_to_ratio(fraction)
+                    .map(|ratio| ResolvedWidth::Ratio(ratio.clamp(0.0, 1.0)))
+            }
+        }
+        crate::utilities::Size::Container(container) => Some(ResolvedWidth::Length(Length::Fixed(
+            container_to_px(container),
+        ))),
+        crate::utilities::Size::Auto => Some(ResolvedWidth::Length(Length::Shrink)),
+        crate::utilities::Size::Full
+        | crate::utilities::Size::ScreenWidth
+        | crate::utilities::Size::ScreenHeight
+        | crate::utilities::Size::Dvw
+        | crate::utilities::Size::Dvh
+        | crate::utilities::Size::Lvw
+        | crate::utilities::Size::Lvh
+        | crate::utilities::Size::Svw
+        | crate::utilities::Size::Svh => Some(ResolvedWidth::Length(Length::Fill)),
+        crate::utilities::Size::Prose => Some(ResolvedWidth::Length(Length::Fixed(520.0))),
+        crate::utilities::Size::MinContent
+        | crate::utilities::Size::MaxContent
+        | crate::utilities::Size::Fit
+        | crate::utilities::Size::Lh => Some(ResolvedWidth::Length(Length::Shrink)),
+        crate::utilities::Size::Var(var) => custom_properties
+            .iter()
+            .find(|(name, _)| *name == var.as_str())
+            .map(|(_, px)| ResolvedWidth::Length(Length::Fixed(px.max(0.0)))),
+        crate::utilities::Size::HeightVar(var) => custom_properties
+            .iter()
+            .find(|(name, _)| *name == var.as_str())
+            .map(|(_, px)| ResolvedWidth::Length(Length::Fixed(px.max(0.0)))),
+        crate::utilities::Size::Px(px) => Some(ResolvedWidth::Length(Length::Fixed(f32::from(px)))),
+    }
+}
+
+fn resolve_height(
+    height: crate::utilities::Height,
+    custom_properties: &[(&str, f32)],
+) -> Option<ResolvedHeight> {
+    match height.0? {
+        crate::utilities::Size::Spacing(spacing) => Some(ResolvedHeight::Length(Length::Fixed(
+            spacing_to_px(spacing),
+        ))),
+        crate::utilities::Size::Percentage(fraction) => {
+            if matches!(fraction, Percentage::Full) {
+                Some(ResolvedHeight::Length(Length::Fill))
+            } else if matches!(
+                fraction,
+                Percentage::Min | Percentage::Max | Percentage::Fit
+            ) {
+                Some(ResolvedHeight::Length(Length::Shrink))
+            } else {
+                percentage_to_ratio(fraction)
+                    .map(|ratio| ResolvedHeight::Ratio(ratio.clamp(0.0, 1.0)))
+            }
+        }
+        crate::utilities::Size::Container(container) => Some(ResolvedHeight::Length(
+            Length::Fixed(container_to_px(container)),
+        )),
+        crate::utilities::Size::Auto => Some(ResolvedHeight::Length(Length::Shrink)),
+        crate::utilities::Size::Full
+        | crate::utilities::Size::ScreenWidth
+        | crate::utilities::Size::ScreenHeight
+        | crate::utilities::Size::Dvw
+        | crate::utilities::Size::Dvh
+        | crate::utilities::Size::Lvw
+        | crate::utilities::Size::Lvh
+        | crate::utilities::Size::Svw
+        | crate::utilities::Size::Svh => Some(ResolvedHeight::Length(Length::Fill)),
+        crate::utilities::Size::Prose => Some(ResolvedHeight::Length(Length::Fixed(520.0))),
+        crate::utilities::Size::MinContent
+        | crate::utilities::Size::MaxContent
+        | crate::utilities::Size::Fit
+        | crate::utilities::Size::Lh => Some(ResolvedHeight::Length(Length::Shrink)),
+        crate::utilities::Size::Var(var) => custom_properties
+            .iter()
+            .find(|(name, _)| *name == var.as_str())
+            .map(|(_, px)| ResolvedHeight::Length(Length::Fixed(px.max(0.0)))),
+        crate::utilities::Size::HeightVar(var) => custom_properties
+            .iter()
+            .find(|(name, _)| *name == var.as_str())
+            .map(|(_, px)| ResolvedHeight::Length(Length::Fixed(px.max(0.0)))),
+        crate::utilities::Size::Px(px) => {
+            Some(ResolvedHeight::Length(Length::Fixed(f32::from(px))))
+        }
+    }
 }
 
 /// Convert twill BorderRadius to iced border radius.
@@ -234,7 +516,12 @@ pub fn to_shadow(shadow: Shadow, color: Color) -> iced::Shadow {
 
 /// Convert twill FontSize to f32 for iced
 pub fn to_font_size(size: FontSize) -> f32 {
-    size.size_rem() * 16.0
+    size.resolve_px(&[]).unwrap_or(16.0)
+}
+
+/// Resolve twill FontSize to pixels for iced with optional custom properties.
+pub fn resolve_font_size(size: FontSize, custom_properties: &[(&str, f32)]) -> Option<f32> {
+    size.resolve_px(custom_properties)
 }
 
 /// Convert twill FontWeight to iced font Weight
@@ -249,6 +536,44 @@ pub fn to_font_weight(weight: FontWeight) -> iced::font::Weight {
         FontWeight::Bold => iced::font::Weight::Bold,
         FontWeight::ExtraBold => iced::font::Weight::ExtraBold,
         FontWeight::Black => iced::font::Weight::Black,
+    }
+}
+
+/// Convert twill TextAlign to iced text alignment using LTR logical fallback.
+///
+/// For direction-aware logical alignment (`text-start` / `text-end`),
+/// use [`to_text_alignment_with_direction`].
+pub fn to_text_alignment(align: TextAlign) -> iced::widget::text::Alignment {
+    to_text_alignment_with_direction(align, false)
+}
+
+/// Convert twill TextAlign to iced text alignment with explicit text direction.
+///
+/// - `is_rtl = false` for left-to-right content
+/// - `is_rtl = true` for right-to-left content
+pub fn to_text_alignment_with_direction(
+    align: TextAlign,
+    is_rtl: bool,
+) -> iced::widget::text::Alignment {
+    match align {
+        TextAlign::Left => iced::widget::text::Alignment::Left,
+        TextAlign::Center => iced::widget::text::Alignment::Center,
+        TextAlign::Right => iced::widget::text::Alignment::Right,
+        TextAlign::Justify => iced::widget::text::Alignment::Justified,
+        TextAlign::Start => {
+            if is_rtl {
+                iced::widget::text::Alignment::Right
+            } else {
+                iced::widget::text::Alignment::Left
+            }
+        }
+        TextAlign::End => {
+            if is_rtl {
+                iced::widget::text::Alignment::Left
+            } else {
+                iced::widget::text::Alignment::Right
+            }
+        }
     }
 }
 
@@ -370,19 +695,23 @@ pub fn styled_container<'a, Message: Clone + 'a>(
     content: iced::Element<'a, Message>,
     style: &Style,
 ) -> iced::widget::Container<'a, Message> {
+    styled_container_with_custom_properties(content, style, &[])
+}
+
+/// Create a styled container with twill Style and explicit custom-property values.
+pub fn styled_container_with_custom_properties<'a, Message: Clone + 'a>(
+    content: iced::Element<'a, Message>,
+    style: &Style,
+    custom_properties: &[(&str, f32)],
+) -> iced::widget::Container<'a, Message> {
     let padding = style
         .padding
-        .and_then(|p| match (p.top, p.right, p.bottom, p.left) {
-            (Some(top), Some(right), Some(bottom), Some(left)) => Some(iced::Padding {
-                top: spacing_to_px(top),
-                right: spacing_to_px(right),
-                bottom: spacing_to_px(bottom),
-                left: spacing_to_px(left),
-            }),
-            _ => None,
-        });
+        .map(|padding| to_style_padding(padding, custom_properties));
 
-    let bg_color = style.background_color.map(to_color);
+    let bg_color = style
+        .background_color
+        .and_then(|bg| resolve_background_color_token(bg, style.text_color))
+        .map(to_color_value);
     let base_border_width: f32 = style.border_width.map_or(0.0, |w| match w {
         crate::tokens::BorderWidth::S0 => 0.0,
         crate::tokens::BorderWidth::S1 => 1.0,
@@ -470,6 +799,181 @@ pub fn columns_layout<'a, Message: Clone + 'a>(
             fallback.into()
         }
     }
+}
+
+const MAX_GRID_TEMPLATE_TRACKS: usize = 64;
+
+fn clamp_track_count(count: usize) -> usize {
+    count.clamp(1, MAX_GRID_TEMPLATE_TRACKS)
+}
+
+fn parse_repeat_track_count(value: &str) -> Option<usize> {
+    let raw = value.trim();
+    let repeat_start = raw.find("repeat(")?;
+    let after_repeat = &raw[repeat_start + "repeat(".len()..];
+    let comma_index = after_repeat.find(',')?;
+    let count_part = after_repeat[..comma_index].trim();
+    count_part.parse::<usize>().ok().map(clamp_track_count)
+}
+
+fn count_top_level_tracks(value: &str) -> Option<usize> {
+    let mut depth = 0_i32;
+    let mut in_token = false;
+    let mut count = 0_usize;
+
+    for ch in value.chars() {
+        match ch {
+            '(' | '[' | '{' => {
+                depth += 1;
+                in_token = true;
+            }
+            ')' | ']' | '}' => {
+                depth = (depth - 1).max(0);
+            }
+            _ if ch.is_whitespace() && depth == 0 => {
+                if in_token {
+                    count += 1;
+                    in_token = false;
+                }
+            }
+            _ => {
+                if !ch.is_whitespace() {
+                    in_token = true;
+                }
+            }
+        }
+    }
+
+    if in_token {
+        count += 1;
+    }
+
+    if count == 0 {
+        None
+    } else {
+        Some(clamp_track_count(count))
+    }
+}
+
+fn track_count_from_template_value(value: &str) -> Option<usize> {
+    let raw = value.trim();
+    if raw.is_empty() {
+        return None;
+    }
+
+    if raw.eq_ignore_ascii_case("none") {
+        return Some(1);
+    }
+
+    if let Ok(count) = raw.parse::<usize>() {
+        return Some(clamp_track_count(count));
+    }
+
+    parse_repeat_track_count(raw).or_else(|| count_top_level_tracks(raw))
+}
+
+fn lookup_custom_property_value<'a>(name: &str, vars: &'a [(&'a str, &'a str)]) -> Option<&'a str> {
+    vars.iter()
+        .find(|(key, _)| *key == name)
+        .map(|(_, value)| *value)
+}
+
+fn resolve_grid_template_track_count(
+    template: &GridTemplate,
+    inherited_track_count: Option<usize>,
+    custom_properties: &[(&str, &str)],
+) -> usize {
+    let resolved = match template {
+        GridTemplate::Count(count) => Some(count.get() as usize),
+        GridTemplate::None => Some(1),
+        GridTemplate::Subgrid => inherited_track_count,
+        GridTemplate::CustomProperty(name) => lookup_custom_property_value(name, custom_properties)
+            .and_then(track_count_from_template_value)
+            .or(inherited_track_count),
+        GridTemplate::Arbitrary(value) => {
+            if value.trim().eq_ignore_ascii_case("subgrid") {
+                inherited_track_count
+            } else {
+                track_count_from_template_value(value)
+            }
+        }
+    };
+
+    clamp_track_count(resolved.unwrap_or(1))
+}
+
+fn build_grid_template_columns_layout<'a, Message: Clone + 'a>(
+    items: Vec<iced::Element<'a, Message>>,
+    track_count: usize,
+    gap: Spacing,
+) -> iced::Element<'a, Message> {
+    let track_count = clamp_track_count(track_count);
+    let gap_px = spacing_to_px(gap);
+
+    if track_count <= 1 {
+        let mut col = iced::widget::Column::new()
+            .spacing(gap_px)
+            .width(Length::Fill);
+        for item in items {
+            col = col.push(item);
+        }
+        return col.into();
+    }
+
+    let mut grid_rows = iced::widget::Column::new()
+        .spacing(gap_px)
+        .width(Length::Fill);
+    let mut current_row = iced::widget::Row::new().spacing(gap_px).width(Length::Fill);
+    let mut items_in_row = 0_usize;
+
+    for item in items {
+        current_row = current_row.push(iced::widget::container(item).width(Length::FillPortion(1)));
+        items_in_row += 1;
+
+        if items_in_row == track_count {
+            grid_rows = grid_rows.push(current_row);
+            current_row = iced::widget::Row::new().spacing(gap_px).width(Length::Fill);
+            items_in_row = 0;
+        }
+    }
+
+    if items_in_row > 0 {
+        for _ in items_in_row..track_count {
+            current_row = current_row.push(
+                iced::widget::Space::new()
+                    .width(Length::FillPortion(1))
+                    .height(Length::Shrink),
+            );
+        }
+        grid_rows = grid_rows.push(current_row);
+    }
+
+    grid_rows.into()
+}
+
+/// Create an iced layout for a typed `grid-template-columns` value.
+pub fn grid_template_columns_layout<'a, Message: Clone + 'a>(
+    items: Vec<iced::Element<'a, Message>>,
+    template: GridTemplate,
+    gap: Spacing,
+) -> iced::Element<'a, Message> {
+    grid_template_columns_layout_with_context(items, template, gap, None, &[])
+}
+
+/// Create an iced layout for typed `grid-template-columns` with optional context.
+///
+/// - `inherited_track_count` is used for `Subgrid`.
+/// - `custom_properties` is used for `CustomProperty`.
+pub fn grid_template_columns_layout_with_context<'a, Message: Clone + 'a>(
+    items: Vec<iced::Element<'a, Message>>,
+    template: GridTemplate,
+    gap: Spacing,
+    inherited_track_count: Option<usize>,
+    custom_properties: &[(&str, &str)],
+) -> iced::Element<'a, Message> {
+    let track_count =
+        resolve_grid_template_track_count(&template, inherited_track_count, custom_properties);
+    build_grid_template_columns_layout(items, track_count, gap)
 }
 
 struct ColumnsFlow<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
@@ -909,16 +1413,714 @@ where
     }
 }
 
+struct WidthRatioBox<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
+    child: iced::Element<'a, Message, Theme, Renderer>,
+    ratio: f32,
+    width: Length,
+    height: Length,
+}
+
+impl<'a, Message, Theme, Renderer> WidthRatioBox<'a, Message, Theme, Renderer> {
+    fn new(child: iced::Element<'a, Message, Theme, Renderer>, ratio: f32) -> Self {
+        Self {
+            child,
+            ratio: ratio.clamp(0.0, 1.0),
+            width: Length::Fill,
+            height: Length::Shrink,
+        }
+    }
+}
+
+impl<Message, Theme, Renderer> AdvancedWidget<Message, Theme, Renderer>
+    for WidthRatioBox<'_, Message, Theme, Renderer>
+where
+    Renderer: renderer::Renderer,
+{
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, self.height)
+    }
+
+    fn children(&self) -> Vec<Tree> {
+        vec![Tree::new(&self.child)]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(std::slice::from_ref(&self.child));
+    }
+
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+        let limits = limits.width(self.width).height(self.height);
+        let max = limits.max();
+
+        let child_state = tree
+            .children
+            .first_mut()
+            .expect("width ratio box missing child state");
+
+        if !max.width.is_finite() {
+            let child_node = self
+                .child
+                .as_widget_mut()
+                .layout(child_state, renderer, &limits);
+            let size = limits.resolve(self.width, self.height, child_node.size());
+            return Node::with_children(size, vec![child_node]);
+        }
+
+        let width = (max.width.max(0.0) * self.ratio).max(0.0);
+        let height = if max.height.is_finite() {
+            max.height.max(0.0)
+        } else {
+            f32::INFINITY
+        };
+
+        let child_limits = Limits::new(Size::new(width, 0.0), Size::new(width, height))
+            .width(Length::Fixed(width));
+
+        let child_node = self
+            .child
+            .as_widget_mut()
+            .layout(child_state, renderer, &child_limits);
+        let size = limits.resolve(self.width, self.height, child_node.size());
+
+        Node::with_children(size, vec![child_node])
+    }
+
+    fn draw(
+        &self,
+        tree: &Tree,
+        renderer: &mut Renderer,
+        theme: &Theme,
+        style: &renderer::Style,
+        layout: AdvancedLayout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+    ) {
+        if let (Some(child_state), Some(child_layout)) =
+            (tree.children.first(), layout.children().next())
+        {
+            self.child.as_widget().draw(
+                child_state,
+                renderer,
+                theme,
+                style,
+                child_layout,
+                cursor,
+                viewport,
+            );
+        }
+    }
+
+    fn update(
+        &mut self,
+        tree: &mut Tree,
+        event: &iced::Event,
+        layout: AdvancedLayout<'_>,
+        cursor: mouse::Cursor,
+        renderer: &Renderer,
+        clipboard: &mut dyn Clipboard,
+        shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
+    ) {
+        if let (Some(state), Some(child_layout)) =
+            (tree.children.first_mut(), layout.children().next())
+        {
+            self.child.as_widget_mut().update(
+                state,
+                event,
+                child_layout,
+                cursor,
+                renderer,
+                clipboard,
+                shell,
+                viewport,
+            );
+        }
+    }
+
+    fn operate(
+        &mut self,
+        tree: &mut Tree,
+        layout: AdvancedLayout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation,
+    ) {
+        if let (Some(state), Some(child_layout)) =
+            (tree.children.first_mut(), layout.children().next())
+        {
+            operation.container(None, child_layout.bounds());
+            operation.traverse(&mut |operation| {
+                self.child
+                    .as_widget_mut()
+                    .operate(state, child_layout, renderer, operation);
+            });
+        }
+    }
+
+    fn mouse_interaction(
+        &self,
+        tree: &Tree,
+        layout: AdvancedLayout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        if let (Some(state), Some(child_layout)) = (tree.children.first(), layout.children().next())
+        {
+            self.child.as_widget().mouse_interaction(
+                state,
+                child_layout,
+                cursor,
+                viewport,
+                renderer,
+            )
+        } else {
+            mouse::Interaction::default()
+        }
+    }
+
+    fn overlay<'b>(
+        &'b mut self,
+        tree: &'b mut Tree,
+        layout: AdvancedLayout<'b>,
+        renderer: &Renderer,
+        viewport: &Rectangle,
+        translation: Vector,
+    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
+        let (Some(state), Some(child_layout)) =
+            (tree.children.first_mut(), layout.children().next())
+        else {
+            return None;
+        };
+
+        self.child
+            .as_widget_mut()
+            .overlay(state, child_layout, renderer, viewport, translation)
+    }
+}
+
+impl<'a, Message, Theme, Renderer> From<WidthRatioBox<'a, Message, Theme, Renderer>>
+    for iced::Element<'a, Message, Theme, Renderer>
+where
+    Renderer: renderer::Renderer + 'a,
+    Theme: 'a,
+    Message: 'a,
+{
+    fn from(boxed: WidthRatioBox<'a, Message, Theme, Renderer>) -> Self {
+        iced::Element::new(boxed)
+    }
+}
+
+struct HeightRatioBox<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
+    child: iced::Element<'a, Message, Theme, Renderer>,
+    ratio: f32,
+    width: Length,
+    height: Length,
+}
+
+impl<'a, Message, Theme, Renderer> HeightRatioBox<'a, Message, Theme, Renderer> {
+    fn new(child: iced::Element<'a, Message, Theme, Renderer>, ratio: f32) -> Self {
+        Self {
+            child,
+            ratio: ratio.clamp(0.0, 1.0),
+            width: Length::Fill,
+            height: Length::Fill,
+        }
+    }
+}
+
+impl<Message, Theme, Renderer> AdvancedWidget<Message, Theme, Renderer>
+    for HeightRatioBox<'_, Message, Theme, Renderer>
+where
+    Renderer: renderer::Renderer,
+{
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, self.height)
+    }
+
+    fn children(&self) -> Vec<Tree> {
+        vec![Tree::new(&self.child)]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(std::slice::from_ref(&self.child));
+    }
+
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+        let limits = limits.width(self.width).height(self.height);
+        let max = limits.max();
+
+        let child_state = tree
+            .children
+            .first_mut()
+            .expect("height ratio box missing child state");
+
+        if !max.height.is_finite() {
+            let child_node = self
+                .child
+                .as_widget_mut()
+                .layout(child_state, renderer, &limits);
+            let size = limits.resolve(self.width, self.height, child_node.size());
+            return Node::with_children(size, vec![child_node]);
+        }
+
+        let height = (max.height.max(0.0) * self.ratio).max(0.0);
+        let width = if max.width.is_finite() {
+            max.width.max(0.0)
+        } else {
+            f32::INFINITY
+        };
+
+        let child_limits = Limits::new(Size::new(0.0, height), Size::new(width, height))
+            .height(Length::Fixed(height));
+
+        let child_node = self
+            .child
+            .as_widget_mut()
+            .layout(child_state, renderer, &child_limits);
+        let size = limits.resolve(self.width, self.height, child_node.size());
+
+        Node::with_children(size, vec![child_node])
+    }
+
+    fn draw(
+        &self,
+        tree: &Tree,
+        renderer: &mut Renderer,
+        theme: &Theme,
+        style: &renderer::Style,
+        layout: AdvancedLayout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+    ) {
+        if let (Some(child_state), Some(child_layout)) =
+            (tree.children.first(), layout.children().next())
+        {
+            self.child.as_widget().draw(
+                child_state,
+                renderer,
+                theme,
+                style,
+                child_layout,
+                cursor,
+                viewport,
+            );
+        }
+    }
+
+    fn update(
+        &mut self,
+        tree: &mut Tree,
+        event: &iced::Event,
+        layout: AdvancedLayout<'_>,
+        cursor: mouse::Cursor,
+        renderer: &Renderer,
+        clipboard: &mut dyn Clipboard,
+        shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
+    ) {
+        if let (Some(state), Some(child_layout)) =
+            (tree.children.first_mut(), layout.children().next())
+        {
+            self.child.as_widget_mut().update(
+                state,
+                event,
+                child_layout,
+                cursor,
+                renderer,
+                clipboard,
+                shell,
+                viewport,
+            );
+        }
+    }
+
+    fn operate(
+        &mut self,
+        tree: &mut Tree,
+        layout: AdvancedLayout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation,
+    ) {
+        if let (Some(state), Some(child_layout)) =
+            (tree.children.first_mut(), layout.children().next())
+        {
+            operation.container(None, child_layout.bounds());
+            operation.traverse(&mut |operation| {
+                self.child
+                    .as_widget_mut()
+                    .operate(state, child_layout, renderer, operation);
+            });
+        }
+    }
+
+    fn mouse_interaction(
+        &self,
+        tree: &Tree,
+        layout: AdvancedLayout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        if let (Some(state), Some(child_layout)) = (tree.children.first(), layout.children().next())
+        {
+            self.child.as_widget().mouse_interaction(
+                state,
+                child_layout,
+                cursor,
+                viewport,
+                renderer,
+            )
+        } else {
+            mouse::Interaction::default()
+        }
+    }
+
+    fn overlay<'b>(
+        &'b mut self,
+        tree: &'b mut Tree,
+        layout: AdvancedLayout<'b>,
+        renderer: &Renderer,
+        viewport: &Rectangle,
+        translation: Vector,
+    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
+        let (Some(state), Some(child_layout)) =
+            (tree.children.first_mut(), layout.children().next())
+        else {
+            return None;
+        };
+
+        self.child
+            .as_widget_mut()
+            .overlay(state, child_layout, renderer, viewport, translation)
+    }
+}
+
+impl<'a, Message, Theme, Renderer> From<HeightRatioBox<'a, Message, Theme, Renderer>>
+    for iced::Element<'a, Message, Theme, Renderer>
+where
+    Renderer: renderer::Renderer + 'a,
+    Theme: 'a,
+    Message: 'a,
+{
+    fn from(boxed: HeightRatioBox<'a, Message, Theme, Renderer>) -> Self {
+        iced::Element::new(boxed)
+    }
+}
+
+struct MarginBox<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
+    child: iced::Element<'a, Message, Theme, Renderer>,
+    margin: MarginOffsets,
+    width: Length,
+    height: Length,
+}
+
+impl<'a, Message, Theme, Renderer> MarginBox<'a, Message, Theme, Renderer> {
+    fn new(child: iced::Element<'a, Message, Theme, Renderer>, margin: MarginOffsets) -> Self {
+        Self {
+            child,
+            margin,
+            width: Length::Shrink,
+            height: Length::Shrink,
+        }
+    }
+}
+
+impl<Message, Theme, Renderer> AdvancedWidget<Message, Theme, Renderer>
+    for MarginBox<'_, Message, Theme, Renderer>
+where
+    Renderer: renderer::Renderer,
+{
+    fn size(&self) -> Size<Length> {
+        Size::new(self.width, self.height)
+    }
+
+    fn children(&self) -> Vec<Tree> {
+        vec![Tree::new(&self.child)]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(std::slice::from_ref(&self.child));
+    }
+
+    fn layout(&mut self, tree: &mut Tree, renderer: &Renderer, limits: &Limits) -> Node {
+        let limits = limits.width(self.width).height(self.height);
+        let shrink_width = self.margin.left.max(0.0) + self.margin.right.max(0.0);
+        let shrink_height = self.margin.top.max(0.0) + self.margin.bottom.max(0.0);
+        let child_limits = limits.shrink(Size::new(shrink_width, shrink_height));
+
+        let child_state = tree
+            .children
+            .first_mut()
+            .expect("margin box missing child state");
+        let mut child_node =
+            self.child
+                .as_widget_mut()
+                .layout(child_state, renderer, &child_limits);
+        child_node.move_to_mut(Point::new(self.margin.left, self.margin.top));
+
+        let child_size = child_node.size();
+        let width = (child_size.width + self.margin.left + self.margin.right).max(0.0);
+        let height = (child_size.height + self.margin.top + self.margin.bottom).max(0.0);
+        let size = limits.resolve(self.width, self.height, Size::new(width, height));
+
+        Node::with_children(size, vec![child_node])
+    }
+
+    fn draw(
+        &self,
+        tree: &Tree,
+        renderer: &mut Renderer,
+        theme: &Theme,
+        style: &renderer::Style,
+        layout: AdvancedLayout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+    ) {
+        if let (Some(child_state), Some(child_layout)) =
+            (tree.children.first(), layout.children().next())
+        {
+            self.child.as_widget().draw(
+                child_state,
+                renderer,
+                theme,
+                style,
+                child_layout,
+                cursor,
+                viewport,
+            );
+        }
+    }
+
+    fn update(
+        &mut self,
+        tree: &mut Tree,
+        event: &iced::Event,
+        layout: AdvancedLayout<'_>,
+        cursor: mouse::Cursor,
+        renderer: &Renderer,
+        clipboard: &mut dyn Clipboard,
+        shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
+    ) {
+        if let (Some(state), Some(child_layout)) =
+            (tree.children.first_mut(), layout.children().next())
+        {
+            self.child.as_widget_mut().update(
+                state,
+                event,
+                child_layout,
+                cursor,
+                renderer,
+                clipboard,
+                shell,
+                viewport,
+            );
+        }
+    }
+
+    fn operate(
+        &mut self,
+        tree: &mut Tree,
+        layout: AdvancedLayout<'_>,
+        renderer: &Renderer,
+        operation: &mut dyn Operation,
+    ) {
+        if let (Some(state), Some(child_layout)) =
+            (tree.children.first_mut(), layout.children().next())
+        {
+            operation.container(None, child_layout.bounds());
+            operation.traverse(&mut |operation| {
+                self.child
+                    .as_widget_mut()
+                    .operate(state, child_layout, renderer, operation);
+            });
+        }
+    }
+
+    fn mouse_interaction(
+        &self,
+        tree: &Tree,
+        layout: AdvancedLayout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+        renderer: &Renderer,
+    ) -> mouse::Interaction {
+        if let (Some(state), Some(child_layout)) = (tree.children.first(), layout.children().next())
+        {
+            self.child.as_widget().mouse_interaction(
+                state,
+                child_layout,
+                cursor,
+                viewport,
+                renderer,
+            )
+        } else {
+            mouse::Interaction::default()
+        }
+    }
+
+    fn overlay<'b>(
+        &'b mut self,
+        tree: &'b mut Tree,
+        layout: AdvancedLayout<'b>,
+        renderer: &Renderer,
+        viewport: &Rectangle,
+        translation: Vector,
+    ) -> Option<overlay::Element<'b, Message, Theme, Renderer>> {
+        let (Some(state), Some(child_layout)) =
+            (tree.children.first_mut(), layout.children().next())
+        else {
+            return None;
+        };
+
+        self.child
+            .as_widget_mut()
+            .overlay(state, child_layout, renderer, viewport, translation)
+    }
+}
+
+impl<'a, Message, Theme, Renderer> From<MarginBox<'a, Message, Theme, Renderer>>
+    for iced::Element<'a, Message, Theme, Renderer>
+where
+    Renderer: renderer::Renderer + 'a,
+    Theme: 'a,
+    Message: 'a,
+{
+    fn from(boxed: MarginBox<'a, Message, Theme, Renderer>) -> Self {
+        iced::Element::new(boxed)
+    }
+}
+
+fn apply_margin<'a, Message: Clone + 'a>(
+    content: iced::Element<'a, Message>,
+    margin: crate::utilities::Margin,
+    custom_properties: &[(&str, f32)],
+) -> iced::Element<'a, Message> {
+    let resolved = to_style_margin(margin, custom_properties);
+    let mut element = content;
+
+    let mut horizontal_auto = None;
+    let mut vertical_auto = None;
+
+    let offsets = MarginOffsets {
+        top: match resolved.top {
+            Some(ResolvedMarginValue::Px(px)) => px,
+            Some(ResolvedMarginValue::Auto) => {
+                vertical_auto = Some(iced::alignment::Vertical::Bottom);
+                0.0
+            }
+            None => 0.0,
+        },
+        right: match resolved.right {
+            Some(ResolvedMarginValue::Px(px)) => px,
+            Some(ResolvedMarginValue::Auto) => {
+                horizontal_auto = Some(iced::alignment::Horizontal::Left);
+                0.0
+            }
+            None => 0.0,
+        },
+        bottom: match resolved.bottom {
+            Some(ResolvedMarginValue::Px(px)) => px,
+            Some(ResolvedMarginValue::Auto) => {
+                vertical_auto = Some(iced::alignment::Vertical::Top);
+                0.0
+            }
+            None => 0.0,
+        },
+        left: match resolved.left {
+            Some(ResolvedMarginValue::Px(px)) => px,
+            Some(ResolvedMarginValue::Auto) => {
+                horizontal_auto = Some(iced::alignment::Horizontal::Right);
+                0.0
+            }
+            None => 0.0,
+        },
+    };
+
+    if matches!(resolved.left, Some(ResolvedMarginValue::Auto))
+        && matches!(resolved.right, Some(ResolvedMarginValue::Auto))
+    {
+        horizontal_auto = Some(iced::alignment::Horizontal::Center);
+    }
+
+    if matches!(resolved.top, Some(ResolvedMarginValue::Auto))
+        && matches!(resolved.bottom, Some(ResolvedMarginValue::Auto))
+    {
+        vertical_auto = Some(iced::alignment::Vertical::Center);
+    }
+
+    if !offsets.is_zero() {
+        element = MarginBox::new(element, offsets).into();
+    }
+
+    if horizontal_auto.is_some() || vertical_auto.is_some() {
+        let mut wrapper = iced::widget::container(element);
+
+        if let Some(horizontal) = horizontal_auto {
+            wrapper = wrapper.width(Length::Fill).align_x(horizontal);
+        }
+
+        if let Some(vertical) = vertical_auto {
+            wrapper = wrapper.height(Length::Fill).align_y(vertical);
+        }
+
+        element = wrapper.into();
+    }
+
+    element
+}
+
 /// Apply high-level layout wrappers like Display::Hidden, Overflow, MaxWidth
 pub fn apply_layout<'a, Message: Clone + 'a>(
     content: iced::Element<'a, Message>,
     style: &Style,
 ) -> iced::Element<'a, Message> {
+    apply_layout_with_custom_properties(content, style, &[])
+}
+
+/// Apply high-level layout wrappers with explicit custom-property values.
+pub fn apply_layout_with_custom_properties<'a, Message: Clone + 'a>(
+    content: iced::Element<'a, Message>,
+    style: &Style,
+    custom_properties: &[(&str, f32)],
+) -> iced::Element<'a, Message> {
     if matches!(style.display, Some(crate::utilities::Display::Hidden)) {
         return iced::widget::Space::new().into();
     }
 
-    let mut container = styled_container(content, style);
+    let mut container = styled_container_with_custom_properties(content, style, custom_properties);
+    let mut width_ratio = None;
+    let mut height_ratio = None;
+
+    if let Some(width) = style
+        .width
+        .and_then(|width| resolve_width(width, custom_properties))
+    {
+        match width {
+            ResolvedWidth::Length(length) => {
+                container = container.width(length);
+            }
+            ResolvedWidth::Ratio(ratio) => {
+                width_ratio = Some(ratio);
+                container = container.width(Length::Fill);
+            }
+        }
+    }
+
+    if let Some(height) = style
+        .height
+        .and_then(|height| resolve_height(height, custom_properties))
+    {
+        match height {
+            ResolvedHeight::Length(length) => {
+                container = container.height(length);
+            }
+            ResolvedHeight::Ratio(ratio) => {
+                height_ratio = Some(ratio);
+                container = container.height(Length::Fill);
+            }
+        }
+    }
 
     if let Some(constraints) = style.constraints {
         match constraints.max_width {
@@ -948,10 +2150,22 @@ pub fn apply_layout<'a, Message: Clone + 'a>(
         container.into()
     };
 
+    if let Some(ratio) = width_ratio {
+        element = WidthRatioBox::new(element, ratio).into();
+    }
+
+    if let Some(ratio) = height_ratio {
+        element = HeightRatioBox::new(element, ratio).into();
+    }
+
     if let Some(ratio) = style.aspect_ratio.and_then(to_aspect_ratio) {
         element = AspectRatioBox::new(element, ratio)
             .width(Length::Fill)
             .into();
+    }
+
+    if let Some(margin) = style.margin {
+        element = apply_margin(element, margin, custom_properties);
     }
 
     element
@@ -964,27 +2178,205 @@ fn is_reverse_direction(direction: FlexDirection) -> bool {
     )
 }
 
-/// Create an iced flex layout for `flex-direction` classes.
-///
-/// Tailwind mapping:
-/// - `flex-row`
-/// - `flex-row-reverse`
-/// - `flex-col`
-/// - `flex-col-reverse`
-pub fn flex_direction_layout<'a, Message: Clone + 'a>(
+fn row_alignment_for_items(items: AlignItems) -> iced::alignment::Vertical {
+    match items {
+        AlignItems::Start | AlignItems::Stretch => iced::alignment::Vertical::Top,
+        AlignItems::End | AlignItems::EndSafe => iced::alignment::Vertical::Bottom,
+        AlignItems::Center | AlignItems::CenterSafe => iced::alignment::Vertical::Center,
+        AlignItems::Baseline | AlignItems::BaselineLast => iced::alignment::Vertical::Bottom,
+    }
+}
+
+fn column_alignment_for_items(items: AlignItems) -> iced::alignment::Horizontal {
+    match items {
+        AlignItems::Start
+        | AlignItems::Stretch
+        | AlignItems::Baseline
+        | AlignItems::BaselineLast => iced::alignment::Horizontal::Left,
+        AlignItems::End | AlignItems::EndSafe => iced::alignment::Horizontal::Right,
+        AlignItems::Center | AlignItems::CenterSafe => iced::alignment::Horizontal::Center,
+    }
+}
+
+fn normalize_justify_content(justify: JustifyContent) -> JustifyContent {
+    match justify {
+        JustifyContent::EndSafe => JustifyContent::End,
+        JustifyContent::CenterSafe => JustifyContent::Center,
+        _ => justify,
+    }
+}
+
+fn main_axis_spacer<'a, Message: Clone + 'a>(
+    direction: FlexDirection,
+    portion: u16,
+) -> iced::Element<'a, Message> {
+    let portion = portion.max(1);
+    match direction {
+        FlexDirection::Row | FlexDirection::RowReverse => iced::widget::Space::new()
+            .width(Length::FillPortion(portion))
+            .height(Length::Shrink)
+            .into(),
+        FlexDirection::Col | FlexDirection::ColReverse => iced::widget::Space::new()
+            .width(Length::Shrink)
+            .height(Length::FillPortion(portion))
+            .into(),
+    }
+}
+
+fn distribute_items_for_justify<'a, Message: Clone + 'a>(
+    items: Vec<iced::Element<'a, Message>>,
+    direction: FlexDirection,
+    justify_content: Option<JustifyContent>,
+) -> (Vec<iced::Element<'a, Message>>, bool) {
+    let justify = justify_content
+        .map(normalize_justify_content)
+        .unwrap_or(JustifyContent::Start);
+    let start_at_end = is_reverse_direction(direction);
+    let item_count = items.len();
+
+    let mut distributed = Vec::new();
+    let mut needs_main_axis_fill = false;
+
+    match justify {
+        JustifyContent::Start | JustifyContent::Normal | JustifyContent::Baseline => {
+            if start_at_end && item_count > 0 {
+                distributed.push(main_axis_spacer(direction, 1));
+                needs_main_axis_fill = true;
+            }
+            distributed.extend(items);
+        }
+        JustifyContent::End => {
+            if !start_at_end && item_count > 0 {
+                distributed.push(main_axis_spacer(direction, 1));
+                needs_main_axis_fill = true;
+            }
+            distributed.extend(items);
+        }
+        JustifyContent::Center => {
+            if item_count > 0 {
+                distributed.push(main_axis_spacer(direction, 1));
+                needs_main_axis_fill = true;
+            }
+            distributed.extend(items);
+            if item_count > 0 {
+                distributed.push(main_axis_spacer(direction, 1));
+                needs_main_axis_fill = true;
+            }
+        }
+        JustifyContent::Between => {
+            if item_count <= 1 {
+                if start_at_end && item_count > 0 {
+                    distributed.push(main_axis_spacer(direction, 1));
+                    needs_main_axis_fill = true;
+                }
+                distributed.extend(items);
+            } else {
+                for (index, item) in items.into_iter().enumerate() {
+                    if index > 0 {
+                        distributed.push(main_axis_spacer(direction, 1));
+                        needs_main_axis_fill = true;
+                    }
+                    distributed.push(item);
+                }
+            }
+        }
+        JustifyContent::Around => {
+            if item_count == 0 {
+                return (distributed, false);
+            }
+            distributed.push(main_axis_spacer(direction, 1));
+            needs_main_axis_fill = true;
+
+            for (index, item) in items.into_iter().enumerate() {
+                distributed.push(item);
+                if index + 1 < item_count {
+                    distributed.push(main_axis_spacer(direction, 2));
+                }
+            }
+
+            distributed.push(main_axis_spacer(direction, 1));
+        }
+        JustifyContent::Evenly => {
+            if item_count == 0 {
+                return (distributed, false);
+            }
+            distributed.push(main_axis_spacer(direction, 1));
+            needs_main_axis_fill = true;
+
+            for (index, item) in items.into_iter().enumerate() {
+                distributed.push(item);
+                if index + 1 < item_count {
+                    distributed.push(main_axis_spacer(direction, 1));
+                }
+            }
+
+            distributed.push(main_axis_spacer(direction, 1));
+        }
+        JustifyContent::Stretch => {
+            distributed.extend(items);
+            needs_main_axis_fill = true;
+        }
+        JustifyContent::EndSafe | JustifyContent::CenterSafe => {
+            unreachable!("safe variants are normalized before distribution")
+        }
+    }
+
+    (distributed, needs_main_axis_fill)
+}
+
+fn flex_layout<'a, Message: Clone + 'a>(
     mut items: Vec<iced::Element<'a, Message>>,
     direction: FlexDirection,
     gap: Spacing,
+    align_items: Option<AlignItems>,
+    justify_content: Option<JustifyContent>,
 ) -> iced::Element<'a, Message> {
     if is_reverse_direction(direction) {
         items.reverse();
     }
+
+    if matches!(align_items, Some(AlignItems::Stretch)) {
+        items = items
+            .into_iter()
+            .map(|item| match direction {
+                FlexDirection::Row | FlexDirection::RowReverse => {
+                    iced::widget::container(item).height(Length::Fill).into()
+                }
+                FlexDirection::Col | FlexDirection::ColReverse => {
+                    iced::widget::container(item).width(Length::Fill).into()
+                }
+            })
+            .collect();
+    }
+
+    let justify_content = justify_content.map(normalize_justify_content);
+    if matches!(justify_content, Some(JustifyContent::Stretch)) {
+        items = items
+            .into_iter()
+            .map(|item| match direction {
+                FlexDirection::Row | FlexDirection::RowReverse => {
+                    iced::widget::container(item).width(Length::Fill).into()
+                }
+                FlexDirection::Col | FlexDirection::ColReverse => {
+                    iced::widget::container(item).height(Length::Fill).into()
+                }
+            })
+            .collect();
+    }
+
+    let (items, needs_main_axis_fill) =
+        distribute_items_for_justify(items, direction, justify_content);
 
     let gap = spacing_to_px(gap);
 
     match direction {
         FlexDirection::Row | FlexDirection::RowReverse => {
             let mut row = iced::widget::Row::new().spacing(gap).width(Length::Fill);
+            if let Some(items) = align_items {
+                row = row
+                    .align_y(row_alignment_for_items(items))
+                    .height(Length::Fill);
+            }
             for item in items {
                 row = row.push(item);
             }
@@ -992,12 +2384,94 @@ pub fn flex_direction_layout<'a, Message: Clone + 'a>(
         }
         FlexDirection::Col | FlexDirection::ColReverse => {
             let mut col = iced::widget::Column::new().spacing(gap).width(Length::Fill);
+            if let Some(items) = align_items {
+                col = col.align_x(column_alignment_for_items(items));
+            }
+            col = if needs_main_axis_fill {
+                col.height(Length::Fill)
+            } else {
+                col.height(Length::Shrink)
+            };
             for item in items {
                 col = col.push(item);
             }
             col.into()
         }
     }
+}
+
+fn gap_on_main_axis(
+    direction: FlexDirection,
+    gap: Option<Spacing>,
+    row_gap: Option<Spacing>,
+    col_gap: Option<Spacing>,
+) -> Spacing {
+    match direction {
+        FlexDirection::Row | FlexDirection::RowReverse => col_gap.or(gap).unwrap_or(Spacing::S0),
+        FlexDirection::Col | FlexDirection::ColReverse => row_gap.or(gap).unwrap_or(Spacing::S0),
+    }
+}
+
+/// Create an iced flex layout for a given direction.
+pub fn flex_direction_layout<'a, Message: Clone + 'a>(
+    items: Vec<iced::Element<'a, Message>>,
+    direction: FlexDirection,
+    gap: Spacing,
+) -> iced::Element<'a, Message> {
+    flex_layout(items, direction, gap, None, None)
+}
+
+/// Create an iced layout for `gap-*` utilities.
+pub fn gap_layout<'a, Message: Clone + 'a>(
+    items: Vec<iced::Element<'a, Message>>,
+    direction: FlexDirection,
+    gap: Spacing,
+) -> iced::Element<'a, Message> {
+    flex_layout(items, direction, gap, None, None)
+}
+
+/// Create an iced layout for `gap-x-*` utilities.
+///
+/// In single-line flex layouts, this maps to the main axis for row directions.
+pub fn gap_x_layout<'a, Message: Clone + 'a>(
+    items: Vec<iced::Element<'a, Message>>,
+    direction: FlexDirection,
+    gap_x: Spacing,
+) -> iced::Element<'a, Message> {
+    let gap = gap_on_main_axis(direction, None, None, Some(gap_x));
+    flex_layout(items, direction, gap, None, None)
+}
+
+/// Create an iced layout for `gap-y-*` utilities.
+///
+/// In single-line flex layouts, this maps to the main axis for column directions.
+pub fn gap_y_layout<'a, Message: Clone + 'a>(
+    items: Vec<iced::Element<'a, Message>>,
+    direction: FlexDirection,
+    gap_y: Spacing,
+) -> iced::Element<'a, Message> {
+    let gap = gap_on_main_axis(direction, None, Some(gap_y), None);
+    flex_layout(items, direction, gap, None, None)
+}
+
+/// Create an iced flex layout for a typed align-items value.
+pub fn align_items_layout<'a, Message: Clone + 'a>(
+    items: Vec<iced::Element<'a, Message>>,
+    direction: FlexDirection,
+    gap: Spacing,
+    align_items: AlignItems,
+) -> iced::Element<'a, Message> {
+    flex_layout(items, direction, gap, Some(align_items), None)
+}
+
+/// Create an iced flex layout for a typed justify-content value.
+pub fn justify_content_layout<'a, Message: Clone + 'a>(
+    items: Vec<iced::Element<'a, Message>>,
+    direction: FlexDirection,
+    gap: Spacing,
+    justify_content: JustifyContent,
+) -> iced::Element<'a, Message> {
+    flex_layout(items, direction, gap, None, Some(justify_content))
 }
 
 fn fraction_to_portion(numerator: u16, denominator: u16) -> u16 {
@@ -1106,7 +2580,14 @@ pub fn apply_flex_item_with_custom_properties<'a, Message: Clone + 'a>(
     direction: FlexDirection,
     custom_properties: &[(&str, &str)],
 ) -> iced::Element<'a, Message> {
-    let element = apply_layout(content, style);
+    let mut numeric_custom_properties = Vec::new();
+    for (name, value) in custom_properties {
+        if let Ok(parsed) = value.parse::<f32>() {
+            numeric_custom_properties.push((*name, parsed));
+        }
+    }
+
+    let element = apply_layout_with_custom_properties(content, style, &numeric_custom_properties);
     let Some(flex) = style.flex_item.as_ref() else {
         return element;
     };
@@ -1260,15 +2741,7 @@ pub fn twill_button<'a, Message: Clone + 'a>(
     let border_radius = style.border_radius.map_or(6.0, to_border_radius);
     let padding = style
         .padding
-        .and_then(|p| match (p.top, p.right, p.bottom, p.left) {
-            (Some(top), Some(right), Some(bottom), Some(left)) => Some(iced::Padding {
-                top: spacing_to_px(top),
-                right: spacing_to_px(right),
-                bottom: spacing_to_px(bottom),
-                left: spacing_to_px(left),
-            }),
-            _ => None,
-        })
+        .map(|padding| to_style_padding(padding, &[]))
         .unwrap_or(iced::Padding {
             top: 8.0,
             right: 16.0,
@@ -1282,7 +2755,8 @@ pub fn twill_button<'a, Message: Clone + 'a>(
     let mut widget = iced::widget::button(iced::widget::text(label).color(to_color(text_color)))
         .padding(padding)
         .style(move |_theme, status| {
-            let mut background_value = base_bg_token.map(|c| c.compute());
+            let mut background_value =
+                base_bg_token.and_then(|bg| resolve_background_color_token(bg, Some(text_color)));
             let mut resolved_text = to_color(text_color);
 
             let is_dark_theme = matches!(_theme, iced::Theme::Dark);
@@ -1365,9 +2839,279 @@ mod tests {
     }
 
     #[test]
+    fn test_font_size_resolution_variants() {
+        const TITLE_SIZE: crate::tokens::FontSizeVar = crate::tokens::FontSizeVar::new("--title");
+        assert!((to_font_size(FontSize::Base) - 16.0).abs() < f32::EPSILON);
+        assert_eq!(resolve_font_size(FontSize::var(TITLE_SIZE), &[]), None);
+        assert_eq!(
+            resolve_font_size(FontSize::var(TITLE_SIZE), &[("--title", 28.0)]),
+            Some(28.0)
+        );
+        assert_eq!(resolve_font_size(FontSize::px(22), &[]), Some(22.0));
+    }
+
+    #[test]
+    fn test_font_weight_mapping_variants() {
+        assert_eq!(to_font_weight(FontWeight::Thin), iced::font::Weight::Thin);
+        assert_eq!(
+            to_font_weight(FontWeight::ExtraLight),
+            iced::font::Weight::ExtraLight
+        );
+        assert_eq!(to_font_weight(FontWeight::Light), iced::font::Weight::Light);
+        assert_eq!(
+            to_font_weight(FontWeight::Normal),
+            iced::font::Weight::Normal
+        );
+        assert_eq!(
+            to_font_weight(FontWeight::Medium),
+            iced::font::Weight::Medium
+        );
+        assert_eq!(
+            to_font_weight(FontWeight::SemiBold),
+            iced::font::Weight::Semibold
+        );
+        assert_eq!(to_font_weight(FontWeight::Bold), iced::font::Weight::Bold);
+        assert_eq!(
+            to_font_weight(FontWeight::ExtraBold),
+            iced::font::Weight::ExtraBold
+        );
+        assert_eq!(to_font_weight(FontWeight::Black), iced::font::Weight::Black);
+    }
+
+    #[test]
+    fn test_text_alignment_mapping_variants() {
+        assert_eq!(
+            to_text_alignment(TextAlign::Left),
+            iced::widget::text::Alignment::Left
+        );
+        assert_eq!(
+            to_text_alignment(TextAlign::Center),
+            iced::widget::text::Alignment::Center
+        );
+        assert_eq!(
+            to_text_alignment(TextAlign::Right),
+            iced::widget::text::Alignment::Right
+        );
+        assert_eq!(
+            to_text_alignment(TextAlign::Justify),
+            iced::widget::text::Alignment::Justified
+        );
+        assert_eq!(
+            to_text_alignment_with_direction(TextAlign::Start, false),
+            iced::widget::text::Alignment::Left
+        );
+        assert_eq!(
+            to_text_alignment_with_direction(TextAlign::Start, true),
+            iced::widget::text::Alignment::Right
+        );
+        assert_eq!(
+            to_text_alignment_with_direction(TextAlign::End, false),
+            iced::widget::text::Alignment::Right
+        );
+        assert_eq!(
+            to_text_alignment_with_direction(TextAlign::End, true),
+            iced::widget::text::Alignment::Left
+        );
+    }
+
+    #[test]
     fn test_spacing_px_padding() {
         let p = to_padding(Spacing::Px);
         assert!((p.top - 1.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn test_style_padding_allows_partial_sides() {
+        let px = to_style_padding(crate::utilities::Padding::x(Spacing::S4), &[]);
+        assert!((px.left - 16.0).abs() < f32::EPSILON);
+        assert!((px.right - 16.0).abs() < f32::EPSILON);
+        assert!((px.top - 0.0).abs() < f32::EPSILON);
+        assert!((px.bottom - 0.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn test_style_padding_logical_aliases_map_to_physical_sides() {
+        let ps = to_style_padding(crate::utilities::Padding::ps(Spacing::S6), &[]);
+        let pe = to_style_padding(crate::utilities::Padding::pe(Spacing::S6), &[]);
+        let pbs = to_style_padding(crate::utilities::Padding::pbs(Spacing::S2), &[]);
+        let pbe = to_style_padding(crate::utilities::Padding::pbe(Spacing::S2), &[]);
+
+        assert!((ps.left - 24.0).abs() < f32::EPSILON);
+        assert!((ps.right - 0.0).abs() < f32::EPSILON);
+        assert!((pe.left - 0.0).abs() < f32::EPSILON);
+        assert!((pe.right - 24.0).abs() < f32::EPSILON);
+        assert!((pbs.top - 8.0).abs() < f32::EPSILON);
+        assert!((pbe.bottom - 8.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn test_style_padding_px_token_families() {
+        let p = to_style_padding(crate::utilities::Padding::p(Spacing::Px), &[]);
+        let px = to_style_padding(crate::utilities::Padding::px(Spacing::Px), &[]);
+        let py = to_style_padding(crate::utilities::Padding::py(Spacing::Px), &[]);
+        let pt = to_style_padding(crate::utilities::Padding::pt(Spacing::Px), &[]);
+        let pr = to_style_padding(crate::utilities::Padding::pr(Spacing::Px), &[]);
+        let pb = to_style_padding(crate::utilities::Padding::pb(Spacing::Px), &[]);
+        let pl = to_style_padding(crate::utilities::Padding::pl(Spacing::Px), &[]);
+        let ps = to_style_padding(crate::utilities::Padding::ps(Spacing::Px), &[]);
+        let pe = to_style_padding(crate::utilities::Padding::pe(Spacing::Px), &[]);
+        let pbs = to_style_padding(crate::utilities::Padding::pbs(Spacing::Px), &[]);
+        let pbe = to_style_padding(crate::utilities::Padding::pbe(Spacing::Px), &[]);
+
+        assert!((p.top - 1.0).abs() < f32::EPSILON);
+        assert!((p.right - 1.0).abs() < f32::EPSILON);
+        assert!((p.bottom - 1.0).abs() < f32::EPSILON);
+        assert!((p.left - 1.0).abs() < f32::EPSILON);
+        assert!((px.left - 1.0).abs() < f32::EPSILON);
+        assert!((px.right - 1.0).abs() < f32::EPSILON);
+        assert!((py.top - 1.0).abs() < f32::EPSILON);
+        assert!((py.bottom - 1.0).abs() < f32::EPSILON);
+        assert!((pt.top - 1.0).abs() < f32::EPSILON);
+        assert!((pr.right - 1.0).abs() < f32::EPSILON);
+        assert!((pb.bottom - 1.0).abs() < f32::EPSILON);
+        assert!((pl.left - 1.0).abs() < f32::EPSILON);
+        assert!((ps.left - 1.0).abs() < f32::EPSILON);
+        assert!((pe.right - 1.0).abs() < f32::EPSILON);
+        assert!((pbs.top - 1.0).abs() < f32::EPSILON);
+        assert!((pbe.bottom - 1.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn test_style_padding_custom_property_and_arbitrary_values() {
+        let var = crate::utilities::PaddingVar::new("--pad");
+        let p = crate::utilities::Padding::individual_value(
+            PaddingValue::var(var),
+            PaddingValue::px(5.0),
+            PaddingValue::rem(1.0),
+            PaddingValue::Scale(Spacing::S2),
+        );
+        let resolved = to_style_padding(p, &[("--pad", 12.0)]);
+        assert!((resolved.top - 12.0).abs() < f32::EPSILON);
+        assert!((resolved.right - 5.0).abs() < f32::EPSILON);
+        assert!((resolved.bottom - 16.0).abs() < f32::EPSILON);
+        assert!((resolved.left - 8.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn test_resolve_width_fixed_and_container_variants() {
+        assert_eq!(
+            resolve_width(crate::utilities::Width::w(Spacing::S24), &[]),
+            Some(ResolvedWidth::Length(Length::Fixed(96.0)))
+        );
+        assert_eq!(
+            resolve_width(
+                crate::utilities::Width::w_container(crate::tokens::Container::Md),
+                &[]
+            ),
+            Some(ResolvedWidth::Length(Length::Fixed(448.0)))
+        );
+        assert_eq!(
+            resolve_width(crate::utilities::Width::w_px(), &[]),
+            Some(ResolvedWidth::Length(Length::Fixed(1.0)))
+        );
+        assert_eq!(
+            resolve_width(crate::utilities::Width::w_full(), &[]),
+            Some(ResolvedWidth::Length(Length::Fill))
+        );
+        assert_eq!(
+            resolve_width(crate::utilities::Width::w_auto(), &[]),
+            Some(ResolvedWidth::Length(Length::Shrink))
+        );
+    }
+
+    #[test]
+    fn test_resolve_width_fraction_variants() {
+        let half = resolve_width(
+            crate::utilities::Width::w_fraction(crate::tokens::Percentage::S1_2),
+            &[],
+        );
+        match half {
+            Some(ResolvedWidth::Ratio(ratio)) => assert!((ratio - 0.5).abs() < f32::EPSILON),
+            _ => panic!("expected ratio width"),
+        }
+
+        let two_fifths = resolve_width(
+            crate::utilities::Width::w_fraction(crate::tokens::Percentage::S2_5),
+            &[],
+        );
+        match two_fifths {
+            Some(ResolvedWidth::Ratio(ratio)) => assert!((ratio - 0.4).abs() < 0.0001),
+            _ => panic!("expected ratio width"),
+        }
+    }
+
+    #[test]
+    fn test_resolve_width_custom_property_and_px_value() {
+        let var = crate::utilities::WidthVar::new("--panel-w");
+        assert_eq!(
+            resolve_width(crate::utilities::Width::w_var(var), &[("--panel-w", 280.0)]),
+            Some(ResolvedWidth::Length(Length::Fixed(280.0)))
+        );
+        assert_eq!(
+            resolve_width(crate::utilities::Width::w_px_value(320), &[]),
+            Some(ResolvedWidth::Length(Length::Fixed(320.0)))
+        );
+    }
+
+    #[test]
+    fn test_resolve_height_fixed_and_variant_families() {
+        assert_eq!(
+            resolve_height(crate::utilities::Height::h(Spacing::S24), &[]),
+            Some(ResolvedHeight::Length(Length::Fixed(96.0)))
+        );
+        assert_eq!(
+            resolve_height(crate::utilities::Height::h_px(), &[]),
+            Some(ResolvedHeight::Length(Length::Fixed(1.0)))
+        );
+        assert_eq!(
+            resolve_height(crate::utilities::Height::h_full(), &[]),
+            Some(ResolvedHeight::Length(Length::Fill))
+        );
+        assert_eq!(
+            resolve_height(crate::utilities::Height::h_auto(), &[]),
+            Some(ResolvedHeight::Length(Length::Shrink))
+        );
+        assert_eq!(
+            resolve_height(crate::utilities::Height::h_lh(), &[]),
+            Some(ResolvedHeight::Length(Length::Shrink))
+        );
+    }
+
+    #[test]
+    fn test_resolve_height_fraction_variants() {
+        let half = resolve_height(
+            crate::utilities::Height::h_fraction(crate::tokens::Percentage::S1_2),
+            &[],
+        );
+        match half {
+            Some(ResolvedHeight::Ratio(ratio)) => assert!((ratio - 0.5).abs() < f32::EPSILON),
+            _ => panic!("expected ratio height"),
+        }
+
+        let two_fifths = resolve_height(
+            crate::utilities::Height::h_fraction(crate::tokens::Percentage::S2_5),
+            &[],
+        );
+        match two_fifths {
+            Some(ResolvedHeight::Ratio(ratio)) => assert!((ratio - 0.4).abs() < 0.0001),
+            _ => panic!("expected ratio height"),
+        }
+    }
+
+    #[test]
+    fn test_resolve_height_custom_property_and_px_value() {
+        let var = crate::utilities::HeightVar::new("--panel-h");
+        assert_eq!(
+            resolve_height(
+                crate::utilities::Height::h_var(var),
+                &[("--panel-h", 240.0)]
+            ),
+            Some(ResolvedHeight::Length(Length::Fixed(240.0)))
+        );
+        assert_eq!(
+            resolve_height(crate::utilities::Height::h_px_value(360), &[]),
+            Some(ResolvedHeight::Length(Length::Fixed(360.0)))
+        );
     }
 
     #[test]
@@ -1438,6 +3182,67 @@ mod tests {
     }
 
     #[test]
+    fn test_track_count_from_repeat_value() {
+        assert_eq!(
+            track_count_from_template_value("repeat(4, minmax(0, 1fr))"),
+            Some(4)
+        );
+    }
+
+    #[test]
+    fn test_track_count_from_explicit_tracks() {
+        assert_eq!(
+            track_count_from_template_value("200px minmax(0, 1fr) 100px"),
+            Some(3)
+        );
+    }
+
+    #[test]
+    fn test_resolve_grid_template_track_count_variants() {
+        assert_eq!(
+            resolve_grid_template_track_count(&GridTemplate::count(3), None, &[]),
+            3
+        );
+        assert_eq!(
+            resolve_grid_template_track_count(&GridTemplate::none(), None, &[]),
+            1
+        );
+        assert_eq!(
+            resolve_grid_template_track_count(&GridTemplate::subgrid(), Some(5), &[]),
+            5
+        );
+        assert_eq!(
+            resolve_grid_template_track_count(
+                &GridTemplate::custom_property("--layout-cols"),
+                None,
+                &[("--layout-cols", "repeat(6, minmax(0, 1fr))")]
+            ),
+            6
+        );
+        assert_eq!(
+            resolve_grid_template_track_count(
+                &GridTemplate::arbitrary("200px_minmax(0,_1fr)_100px"),
+                None,
+                &[]
+            ),
+            3
+        );
+    }
+
+    #[test]
+    fn test_grid_template_columns_layout_builds() {
+        let _: iced::Element<'_, ()> =
+            grid_template_columns_layout(vec![], GridTemplate::count(4), Spacing::S4);
+        let _: iced::Element<'_, ()> = grid_template_columns_layout_with_context(
+            vec![],
+            GridTemplate::subgrid(),
+            Spacing::S2,
+            Some(3),
+            &[],
+        );
+    }
+
+    #[test]
     fn test_resolve_column_width_handles_tight_space() {
         let width = resolve_column_width(100.0, 3, 80.0);
         assert_eq!(width, 0.0);
@@ -1476,5 +3281,125 @@ mod tests {
         assert!(is_reverse_direction(FlexDirection::ColReverse));
         assert!(!is_reverse_direction(FlexDirection::Row));
         assert!(!is_reverse_direction(FlexDirection::Col));
+    }
+
+    #[test]
+    fn test_flex_direction_layout_reverse_builds() {
+        let _: iced::Element<'_, ()> =
+            flex_direction_layout(vec![], FlexDirection::RowReverse, Spacing::S4);
+        let _: iced::Element<'_, ()> =
+            flex_direction_layout(vec![], FlexDirection::ColReverse, Spacing::S4);
+    }
+
+    #[test]
+    fn test_align_items_safe_and_baseline_mapping() {
+        assert_eq!(
+            row_alignment_for_items(AlignItems::EndSafe),
+            iced::alignment::Vertical::Bottom
+        );
+        assert_eq!(
+            row_alignment_for_items(AlignItems::BaselineLast),
+            iced::alignment::Vertical::Bottom
+        );
+        assert_eq!(
+            column_alignment_for_items(AlignItems::CenterSafe),
+            iced::alignment::Horizontal::Center
+        );
+    }
+
+    #[test]
+    fn test_align_items_layout_builds() {
+        let _: iced::Element<'_, ()> = align_items_layout(
+            vec![],
+            FlexDirection::Row,
+            Spacing::S4,
+            AlignItems::CenterSafe,
+        );
+        let _: iced::Element<'_, ()> = align_items_layout(
+            vec![],
+            FlexDirection::ColReverse,
+            Spacing::S2,
+            AlignItems::Stretch,
+        );
+    }
+
+    #[test]
+    fn test_gap_main_axis_mapping() {
+        assert_eq!(
+            gap_on_main_axis(
+                FlexDirection::Row,
+                Some(Spacing::S4),
+                Some(Spacing::S2),
+                Some(Spacing::S8)
+            ),
+            Spacing::S8
+        );
+        assert_eq!(
+            gap_on_main_axis(
+                FlexDirection::RowReverse,
+                Some(Spacing::S4),
+                Some(Spacing::S2),
+                None
+            ),
+            Spacing::S4
+        );
+        assert_eq!(
+            gap_on_main_axis(
+                FlexDirection::Col,
+                Some(Spacing::S4),
+                Some(Spacing::S6),
+                Some(Spacing::S8)
+            ),
+            Spacing::S6
+        );
+        assert_eq!(
+            gap_on_main_axis(FlexDirection::ColReverse, None, None, Some(Spacing::S8)),
+            Spacing::S0
+        );
+    }
+
+    #[test]
+    fn test_gap_layout_builds() {
+        let _: iced::Element<'_, ()> = gap_layout(vec![], FlexDirection::Row, Spacing::S4);
+        let _: iced::Element<'_, ()> = gap_x_layout(vec![], FlexDirection::Row, Spacing::S6);
+        let _: iced::Element<'_, ()> = gap_y_layout(vec![], FlexDirection::Col, Spacing::S3);
+    }
+
+    #[test]
+    fn test_justify_content_safe_mapping() {
+        assert_eq!(
+            normalize_justify_content(JustifyContent::EndSafe),
+            JustifyContent::End
+        );
+        assert_eq!(
+            normalize_justify_content(JustifyContent::CenterSafe),
+            JustifyContent::Center
+        );
+        assert_eq!(
+            normalize_justify_content(JustifyContent::Between),
+            JustifyContent::Between
+        );
+    }
+
+    #[test]
+    fn test_justify_content_layout_builds() {
+        let _: iced::Element<'_, ()> = justify_content_layout(
+            vec![],
+            FlexDirection::Row,
+            Spacing::S4,
+            JustifyContent::Between,
+        );
+        let _: iced::Element<'_, ()> = justify_content_layout(
+            vec![],
+            FlexDirection::RowReverse,
+            Spacing::S2,
+            JustifyContent::CenterSafe,
+        );
+        let _: iced::Element<'_, ()> = justify_content_layout(
+            vec![],
+            FlexDirection::ColReverse,
+            Spacing::S2,
+            JustifyContent::Evenly,
+        );
     }
 }

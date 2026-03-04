@@ -62,7 +62,7 @@ pub fn view<'a>(_is_dark: bool) -> Element<'a, Message> {
     }
 
     // 2. Darkening a color: RGB vs OKLCH
-    let brand_red = TwillColor::red(Scale::S500).compute(); // Tailwind Red-500
+    let brand_red = TwillColor::red(Scale::S500).compute();
 
     let bad_hover_rgb = ColorValue::new(
         (brand_red.r as f32 * 0.7) as u8,

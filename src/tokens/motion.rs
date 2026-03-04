@@ -1,4 +1,4 @@
-//! Motion design tokens adapted from Tailwind.
+//! Motion design tokens for utility-first transitions and animations.
 
 /// Transition duration tokens.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -36,7 +36,7 @@ impl TransitionDuration {
     }
 }
 
-/// Timing function tokens (`--ease-*` in Tailwind).
+/// Timing function tokens.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Easing {
     Linear,
@@ -56,7 +56,7 @@ impl Easing {
     }
 }
 
-/// Built-in animation tokens (`--animate-*` in Tailwind).
+/// Built-in animation tokens.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AnimationToken {
     None,
@@ -78,7 +78,7 @@ impl AnimationToken {
     }
 }
 
-/// Tailwind-compatible default transition tokens.
+/// Default transition tokens.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct MotionDefaults {
     pub duration: TransitionDuration,
@@ -94,7 +94,7 @@ impl Default for MotionDefaults {
     }
 }
 
-/// Transition property tokens (`transition-*` in Tailwind).
+/// Transition property tokens.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TransitionProperty {
     None,

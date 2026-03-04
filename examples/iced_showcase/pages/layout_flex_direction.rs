@@ -14,7 +14,7 @@ pub fn view<'a>(is_dark: bool) -> Element<'a, Message> {
             ..Default::default()
         }),
         text("Utilities for controlling the direction of flex items.").size(16),
-        classes_section(is_dark),
+        variants_section(is_dark),
         row_section(is_dark),
         row_reverse_section(is_dark),
         col_section(is_dark),
@@ -24,24 +24,22 @@ pub fn view<'a>(is_dark: bool) -> Element<'a, Message> {
     .into()
 }
 
-fn classes_section<'a>(is_dark: bool) -> Element<'a, Message> {
-    let code = r#"// Tailwind classes covered in Twill:
-// flex-row
-// flex-row-reverse
-// flex-col
-// flex-col-reverse
+fn variants_section<'a>(is_dark: bool) -> Element<'a, Message> {
+    let code = r#"let variants = [
+    FlexDirection::Row,
+    FlexDirection::RowReverse,
+    FlexDirection::Col,
+    FlexDirection::ColReverse,
+];"#;
 
-let dir = twill::FlexDirection::from_tailwind_class("flex-col-reverse");"#;
+    let visual = text("Direction is modeled via enum variants in typed Rust API.").size(13);
 
-    let visual =
-        text("All classes from Tailwind `flex-direction.mdx` are modeled explicitly.").size(13);
-
-    Snippet::new("Flex Direction: Class Coverage", code, visual).view(is_dark)
+    Snippet::new("Flex Direction: Variant Coverage", code, visual).view(is_dark)
 }
 
 fn row_section<'a>(is_dark: bool) -> Element<'a, Message> {
     let code = r#"let items = vec![tile("01"), tile("02"), tile("03")];
-let layout = flex_direction_layout(items, FlexDirection::Row, Spacing::S4); // flex-row"#;
+let layout = flex_direction_layout(items, FlexDirection::Row, Spacing::S4);"#;
 
     let visual = preview_surface(
         flex_direction_layout(
@@ -56,12 +54,12 @@ let layout = flex_direction_layout(items, FlexDirection::Row, Spacing::S4); // f
         is_dark,
     );
 
-    Snippet::new("Row (`flex-row`)", code, visual).view(is_dark)
+    Snippet::new("Row", code, visual).view(is_dark)
 }
 
 fn row_reverse_section<'a>(is_dark: bool) -> Element<'a, Message> {
     let code = r#"let items = vec![tile("01"), tile("02"), tile("03")];
-let layout = flex_direction_layout(items, FlexDirection::RowReverse, Spacing::S4); // flex-row-reverse"#;
+let layout = flex_direction_layout(items, FlexDirection::RowReverse, Spacing::S4);"#;
 
     let visual = preview_surface(
         flex_direction_layout(
@@ -76,12 +74,12 @@ let layout = flex_direction_layout(items, FlexDirection::RowReverse, Spacing::S4
         is_dark,
     );
 
-    Snippet::new("Row Reverse (`flex-row-reverse`)", code, visual).view(is_dark)
+    Snippet::new("Row Reverse", code, visual).view(is_dark)
 }
 
 fn col_section<'a>(is_dark: bool) -> Element<'a, Message> {
     let code = r#"let items = vec![tile("01"), tile("02"), tile("03")];
-let layout = flex_direction_layout(items, FlexDirection::Col, Spacing::S4); // flex-col"#;
+let layout = flex_direction_layout(items, FlexDirection::Col, Spacing::S4);"#;
 
     let visual = preview_surface(
         container(flex_direction_layout(
@@ -97,12 +95,12 @@ let layout = flex_direction_layout(items, FlexDirection::Col, Spacing::S4); // f
         is_dark,
     );
 
-    Snippet::new("Column (`flex-col`)", code, visual).view(is_dark)
+    Snippet::new("Column", code, visual).view(is_dark)
 }
 
 fn col_reverse_section<'a>(is_dark: bool) -> Element<'a, Message> {
     let code = r#"let items = vec![tile("01"), tile("02"), tile("03")];
-let layout = flex_direction_layout(items, FlexDirection::ColReverse, Spacing::S4); // flex-col-reverse"#;
+let layout = flex_direction_layout(items, FlexDirection::ColReverse, Spacing::S4);"#;
 
     let visual = preview_surface(
         container(flex_direction_layout(
@@ -118,7 +116,7 @@ let layout = flex_direction_layout(items, FlexDirection::ColReverse, Spacing::S4
         is_dark,
     );
 
-    Snippet::new("Column Reverse (`flex-col-reverse`)", code, visual).view(is_dark)
+    Snippet::new("Column Reverse", code, visual).view(is_dark)
 }
 
 fn preview_surface<'a>(

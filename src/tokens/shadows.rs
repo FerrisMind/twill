@@ -1,4 +1,4 @@
-//! Shadow design tokens following Tailwind shadow scale.
+//! Shadow design tokens following a utility-first shadow scale.
 
 /// Box shadow tokens.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -23,7 +23,7 @@ pub enum Shadow {
 }
 
 impl Shadow {
-    /// Tailwind `--shadow` default token.
+    /// Default shadow token.
     pub const DEFAULT: Shadow = Shadow::Sm;
 }
 
@@ -56,7 +56,7 @@ pub enum InsetShadow {
 }
 
 impl InsetShadow {
-    /// Tailwind `--shadow-inner` default token.
+    /// Default inset shadow token.
     pub const DEFAULT: InsetShadow = InsetShadow::Sm;
 }
 
@@ -93,7 +93,7 @@ pub enum DropShadow {
 }
 
 impl DropShadow {
-    /// Tailwind `--drop-shadow` default token.
+    /// Default drop-shadow token.
     pub const DEFAULT: DropShadow = DropShadow::Base;
 }
 

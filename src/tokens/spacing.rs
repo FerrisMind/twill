@@ -1,10 +1,10 @@
-//! Spacing design tokens following Tailwind spacing scale.
+//! Spacing design tokens following a utility-first spacing scale.
 //!
 //! The spacing scale is based on a 4px (0.25rem) base unit.
 
 use crate::traits::ComputeValue;
 
-/// Spacing values based on Tailwind's spacing scale.
+/// Spacing values based on a utility-first spacing scale.
 /// Base unit is 0.25rem (4px in most browsers).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Spacing {
@@ -83,7 +83,7 @@ pub enum Spacing {
 }
 
 impl Spacing {
-    /// Tailwind `--spacing` base token (0.25rem).
+    /// Base spacing token (0.25rem).
     pub const BASE: Spacing = Spacing::S1;
 
     /// Get the rem value of this spacing.
@@ -313,7 +313,7 @@ impl Container {
     }
 }
 
-/// Breakpoint tokens (`--breakpoint-*` in Tailwind v4 theme).
+/// Breakpoint tokens.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Breakpoint {
     Sm,

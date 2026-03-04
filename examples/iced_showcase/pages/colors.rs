@@ -77,7 +77,7 @@ let bg_color = to_color(blue_500);
         ]);
     }
 
-    let snippet = Snippet::new("Tailwind Color Palettes (All)", code, all_palettes);
+    let snippet = Snippet::new("Color Palettes (All)", code, all_palettes);
 
     column![
         text("Colors").size(32).font(iced::Font {

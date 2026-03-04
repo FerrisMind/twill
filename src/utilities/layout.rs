@@ -77,32 +77,6 @@ impl FlexDirection {
             FlexDirection::ColReverse => "column-reverse",
         }
     }
-
-    pub fn class_name(&self) -> &'static str {
-        match self {
-            FlexDirection::Row => "flex-row",
-            FlexDirection::RowReverse => "flex-row-reverse",
-            FlexDirection::Col => "flex-col",
-            FlexDirection::ColReverse => "flex-col-reverse",
-        }
-    }
-
-    /// Parse Tailwind `flex-direction` utility class.
-    ///
-    /// Supported:
-    /// - `flex-row`
-    /// - `flex-row-reverse`
-    /// - `flex-col`
-    /// - `flex-col-reverse`
-    pub fn from_tailwind_class(class: &str) -> Option<Self> {
-        match class {
-            "flex-row" => Some(Self::Row),
-            "flex-row-reverse" => Some(Self::RowReverse),
-            "flex-col" => Some(Self::Col),
-            "flex-col-reverse" => Some(Self::ColReverse),
-            _ => None,
-        }
-    }
 }
 
 /// Flex wrap.
@@ -128,10 +102,15 @@ impl FlexWrap {
 pub enum JustifyContent {
     Start,
     End,
+    EndSafe,
     Center,
+    CenterSafe,
     Between,
     Around,
     Evenly,
+    Stretch,
+    Baseline,
+    Normal,
 }
 
 impl JustifyContent {
@@ -139,10 +118,15 @@ impl JustifyContent {
         match self {
             JustifyContent::Start => "flex-start",
             JustifyContent::End => "flex-end",
+            JustifyContent::EndSafe => "safe flex-end",
             JustifyContent::Center => "center",
+            JustifyContent::CenterSafe => "safe center",
             JustifyContent::Between => "space-between",
             JustifyContent::Around => "space-around",
             JustifyContent::Evenly => "space-evenly",
+            JustifyContent::Stretch => "stretch",
+            JustifyContent::Baseline => "baseline",
+            JustifyContent::Normal => "normal",
         }
     }
 }
@@ -152,8 +136,11 @@ impl JustifyContent {
 pub enum AlignItems {
     Start,
     End,
+    EndSafe,
     Center,
+    CenterSafe,
     Baseline,
+    BaselineLast,
     Stretch,
 }
 
@@ -162,8 +149,11 @@ impl AlignItems {
         match self {
             AlignItems::Start => "flex-start",
             AlignItems::End => "flex-end",
+            AlignItems::EndSafe => "safe flex-end",
             AlignItems::Center => "center",
+            AlignItems::CenterSafe => "safe center",
             AlignItems::Baseline => "baseline",
+            AlignItems::BaselineLast => "last baseline",
             AlignItems::Stretch => "stretch",
         }
     }
@@ -254,46 +244,6 @@ impl Flex {
         Self::Arbitrary(normalized)
     }
 
-    /// Parse Tailwind `flex-*` class value.
-    ///
-    /// Supported:
-    /// - `flex-<number>`
-    /// - `flex-<fraction>`
-    /// - `flex-auto`
-    /// - `flex-initial`
-    /// - `flex-none`
-    /// - `flex-(<custom-property>)`
-    /// - `flex-[<value>]`
-    pub fn from_tailwind_class(class: &str) -> Option<Self> {
-        if class == "flex-auto" {
-            return Some(Self::Auto);
-        }
-        if class == "flex-initial" {
-            return Some(Self::Initial);
-        }
-        if class == "flex-none" {
-            return Some(Self::None);
-        }
-
-        let raw = class.strip_prefix("flex-")?;
-
-        if raw.starts_with('(') && raw.ends_with(')') && raw.len() > 2 {
-            return Some(Self::custom_property(raw[1..raw.len() - 1].to_string()));
-        }
-
-        if raw.starts_with('[') && raw.ends_with(']') && raw.len() > 2 {
-            return Some(Self::arbitrary(raw[1..raw.len() - 1].to_string()));
-        }
-
-        if let Some((num, den)) = raw.split_once('/') {
-            let numerator = num.parse::<u16>().ok()?;
-            let denominator = den.parse::<u16>().ok()?;
-            return Some(Self::fraction(numerator, denominator));
-        }
-
-        raw.parse::<u16>().ok().map(Self::number)
-    }
-
     pub fn value(&self) -> String {
         match self {
             Flex::Number(number) => number.to_string(),
@@ -347,6 +297,46 @@ impl FlexContainer {
         self
     }
 
+    /// Align items to start.
+    pub fn items_start(self) -> Self {
+        self.align(AlignItems::Start)
+    }
+
+    /// Align items to end.
+    pub fn items_end(self) -> Self {
+        self.align(AlignItems::End)
+    }
+
+    /// Align items to safe end.
+    pub fn items_end_safe(self) -> Self {
+        self.align(AlignItems::EndSafe)
+    }
+
+    /// Align items to center.
+    pub fn items_center(self) -> Self {
+        self.align(AlignItems::Center)
+    }
+
+    /// Align items to safe center.
+    pub fn items_center_safe(self) -> Self {
+        self.align(AlignItems::CenterSafe)
+    }
+
+    /// Align items to baseline.
+    pub fn items_baseline(self) -> Self {
+        self.align(AlignItems::Baseline)
+    }
+
+    /// Align items to last baseline.
+    pub fn items_baseline_last(self) -> Self {
+        self.align(AlignItems::BaselineLast)
+    }
+
+    /// Stretch items on cross axis.
+    pub fn items_stretch(self) -> Self {
+        self.align(AlignItems::Stretch)
+    }
+
     pub fn gap(mut self, gap: Spacing) -> Self {
         self.gap = Some(gap);
         self
@@ -362,22 +352,32 @@ impl FlexContainer {
         self
     }
 
-    /// Row direction (flex-row)
+    /// Set column gap (`gap-x-*` family).
+    pub fn gap_x(self, gap: Spacing) -> Self {
+        self.col_gap(gap)
+    }
+
+    /// Set row gap (`gap-y-*` family).
+    pub fn gap_y(self, gap: Spacing) -> Self {
+        self.row_gap(gap)
+    }
+
+    /// Row direction.
     pub fn row() -> Self {
         Self::new().direction(FlexDirection::Row)
     }
 
-    /// Column direction (flex-col)
+    /// Column direction.
     pub fn col() -> Self {
         Self::new().direction(FlexDirection::Col)
     }
 
-    /// Row reverse direction (flex-row-reverse)
+    /// Row reverse direction.
     pub fn row_reverse() -> Self {
         Self::new().direction(FlexDirection::RowReverse)
     }
 
-    /// Column reverse direction (flex-col-reverse)
+    /// Column reverse direction.
     pub fn col_reverse() -> Self {
         Self::new().direction(FlexDirection::ColReverse)
     }
@@ -419,30 +419,57 @@ impl ObjectFit {
     }
 }
 
-/// Grid template columns/rows.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+/// Grid template value.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum GridTemplate {
-    Cols1,
-    Cols2,
-    Cols3,
-    Cols4,
-    Cols5,
-    Cols6,
-    Cols12,
+    /// Repeat `n` equal tracks.
+    Count(NonZeroU16),
+    /// No explicit template.
     None,
+    /// Inherit track definition from parent grid.
+    Subgrid,
+    /// Use a CSS variable-like external value provider.
+    CustomProperty(String),
+    /// Use an explicit raw template value.
+    Arbitrary(String),
 }
 
 impl GridTemplate {
-    pub fn track_count(&self) -> Option<u8> {
+    /// Create a repeated equal-track template.
+    pub fn count(count: u16) -> Self {
+        let count = count.max(1);
+        Self::Count(NonZeroU16::new(count).expect("count is clamped to at least 1"))
+    }
+
+    /// Create a `none` template.
+    pub fn none() -> Self {
+        Self::None
+    }
+
+    /// Create a `subgrid` template.
+    pub fn subgrid() -> Self {
+        Self::Subgrid
+    }
+
+    /// Create a custom-property-backed template.
+    pub fn custom_property(name: impl Into<String>) -> Self {
+        Self::CustomProperty(name.into())
+    }
+
+    /// Create an arbitrary template value.
+    pub fn arbitrary(value: impl Into<String>) -> Self {
+        let normalized = value.into().replace('_', " ");
+        Self::Arbitrary(normalized)
+    }
+
+    /// Return known track count when statically available.
+    pub fn track_count_hint(&self) -> Option<u16> {
         match self {
-            GridTemplate::Cols1 => Some(1),
-            GridTemplate::Cols2 => Some(2),
-            GridTemplate::Cols3 => Some(3),
-            GridTemplate::Cols4 => Some(4),
-            GridTemplate::Cols5 => Some(5),
-            GridTemplate::Cols6 => Some(6),
-            GridTemplate::Cols12 => Some(12),
-            GridTemplate::None => None,
+            GridTemplate::Count(count) => Some(count.get()),
+            GridTemplate::None
+            | GridTemplate::Subgrid
+            | GridTemplate::CustomProperty(_)
+            | GridTemplate::Arbitrary(_) => None,
         }
     }
 }
@@ -507,6 +534,31 @@ impl GridContainer {
         self
     }
 
+    /// Set repeated equal grid columns.
+    pub fn cols_count(self, count: u16) -> Self {
+        self.columns(GridTemplate::count(count))
+    }
+
+    /// Set grid columns to `none`.
+    pub fn cols_none(self) -> Self {
+        self.columns(GridTemplate::none())
+    }
+
+    /// Set grid columns to `subgrid`.
+    pub fn cols_subgrid(self) -> Self {
+        self.columns(GridTemplate::subgrid())
+    }
+
+    /// Set grid columns from a custom property.
+    pub fn cols_custom_property(self, name: impl Into<String>) -> Self {
+        self.columns(GridTemplate::custom_property(name))
+    }
+
+    /// Set grid columns from an arbitrary template value.
+    pub fn cols_arbitrary(self, value: impl Into<String>) -> Self {
+        self.columns(GridTemplate::arbitrary(value))
+    }
+
     pub fn rows(mut self, rows: GridTemplate) -> Self {
         self.rows = Some(rows);
         self
@@ -517,19 +569,41 @@ impl GridContainer {
         self
     }
 
-    /// Grid with 2 columns
+    /// Set row gap (`gap-y-*` family).
+    pub fn row_gap(mut self, gap: Spacing) -> Self {
+        self.row_gap = Some(gap);
+        self
+    }
+
+    /// Set column gap (`gap-x-*` family).
+    pub fn col_gap(mut self, gap: Spacing) -> Self {
+        self.col_gap = Some(gap);
+        self
+    }
+
+    /// Set column gap (`gap-x-*` family).
+    pub fn gap_x(self, gap: Spacing) -> Self {
+        self.col_gap(gap)
+    }
+
+    /// Set row gap (`gap-y-*` family).
+    pub fn gap_y(self, gap: Spacing) -> Self {
+        self.row_gap(gap)
+    }
+
+    /// Grid with 2 equal columns.
     pub fn cols_2() -> Self {
-        Self::new().columns(GridTemplate::Cols2)
+        Self::new().cols_count(2)
     }
 
-    /// Grid with 3 columns
+    /// Grid with 3 equal columns.
     pub fn cols_3() -> Self {
-        Self::new().columns(GridTemplate::Cols3)
+        Self::new().cols_count(3)
     }
 
-    /// Grid with 4 columns
+    /// Grid with 4 equal columns.
     pub fn cols_4() -> Self {
-        Self::new().columns(GridTemplate::Cols4)
+        Self::new().cols_count(4)
     }
 }
 
@@ -707,48 +781,141 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_flex_direction_tailwind_class() {
-        assert_eq!(
-            FlexDirection::from_tailwind_class("flex-row"),
-            Some(FlexDirection::Row)
-        );
-        assert_eq!(
-            FlexDirection::from_tailwind_class("flex-row-reverse"),
-            Some(FlexDirection::RowReverse)
-        );
-        assert_eq!(
-            FlexDirection::from_tailwind_class("flex-col"),
-            Some(FlexDirection::Col)
-        );
-        assert_eq!(
-            FlexDirection::from_tailwind_class("flex-col-reverse"),
-            Some(FlexDirection::ColReverse)
-        );
-        assert_eq!(FlexDirection::from_tailwind_class("flex"), None);
+    fn test_flex_direction_values() {
+        assert_eq!(FlexDirection::Row.value(), "row");
+        assert_eq!(FlexDirection::RowReverse.value(), "row-reverse");
+        assert_eq!(FlexDirection::Col.value(), "column");
+        assert_eq!(FlexDirection::ColReverse.value(), "column-reverse");
     }
 
     #[test]
-    fn test_flex_direction_class_name_roundtrip() {
-        let directions = [
-            FlexDirection::Row,
-            FlexDirection::RowReverse,
-            FlexDirection::Col,
-            FlexDirection::ColReverse,
-        ];
+    fn test_align_items_values_cover_flex_variants() {
+        assert_eq!(AlignItems::Start.value(), "flex-start");
+        assert_eq!(AlignItems::End.value(), "flex-end");
+        assert_eq!(AlignItems::EndSafe.value(), "safe flex-end");
+        assert_eq!(AlignItems::Center.value(), "center");
+        assert_eq!(AlignItems::CenterSafe.value(), "safe center");
+        assert_eq!(AlignItems::Baseline.value(), "baseline");
+        assert_eq!(AlignItems::BaselineLast.value(), "last baseline");
+        assert_eq!(AlignItems::Stretch.value(), "stretch");
+    }
 
-        for direction in directions {
-            assert_eq!(
-                FlexDirection::from_tailwind_class(direction.class_name()),
-                Some(direction)
-            );
-        }
+    #[test]
+    fn test_justify_content_values() {
+        assert_eq!(JustifyContent::Start.value(), "flex-start");
+        assert_eq!(JustifyContent::End.value(), "flex-end");
+        assert_eq!(JustifyContent::EndSafe.value(), "safe flex-end");
+        assert_eq!(JustifyContent::Center.value(), "center");
+        assert_eq!(JustifyContent::CenterSafe.value(), "safe center");
+        assert_eq!(JustifyContent::Between.value(), "space-between");
+        assert_eq!(JustifyContent::Around.value(), "space-around");
+        assert_eq!(JustifyContent::Evenly.value(), "space-evenly");
+        assert_eq!(JustifyContent::Stretch.value(), "stretch");
+        assert_eq!(JustifyContent::Baseline.value(), "baseline");
+        assert_eq!(JustifyContent::Normal.value(), "normal");
+    }
+
+    #[test]
+    fn test_flex_container_align_items_helpers() {
+        assert_eq!(
+            FlexContainer::row().items_start().align,
+            Some(AlignItems::Start)
+        );
+        assert_eq!(
+            FlexContainer::row().items_end().align,
+            Some(AlignItems::End)
+        );
+        assert_eq!(
+            FlexContainer::row().items_end_safe().align,
+            Some(AlignItems::EndSafe)
+        );
+        assert_eq!(
+            FlexContainer::row().items_center().align,
+            Some(AlignItems::Center)
+        );
+        assert_eq!(
+            FlexContainer::row().items_center_safe().align,
+            Some(AlignItems::CenterSafe)
+        );
+        assert_eq!(
+            FlexContainer::row().items_baseline().align,
+            Some(AlignItems::Baseline)
+        );
+        assert_eq!(
+            FlexContainer::row().items_baseline_last().align,
+            Some(AlignItems::BaselineLast)
+        );
+        assert_eq!(
+            FlexContainer::row().items_stretch().align,
+            Some(AlignItems::Stretch)
+        );
     }
 
     #[test]
     fn test_grid_container_builder() {
         let grid = GridContainer::cols_3().gap(Spacing::S2);
-        assert_eq!(grid.columns, Some(GridTemplate::Cols3));
+        assert_eq!(grid.columns, Some(GridTemplate::count(3)));
         assert_eq!(grid.gap, Some(Spacing::S2));
+    }
+
+    #[test]
+    fn test_grid_template_variants() {
+        assert_eq!(GridTemplate::count(4).track_count_hint(), Some(4));
+        assert_eq!(GridTemplate::count(0).track_count_hint(), Some(1));
+        assert_eq!(GridTemplate::none().track_count_hint(), None);
+        assert_eq!(GridTemplate::subgrid().track_count_hint(), None);
+        assert_eq!(
+            GridTemplate::custom_property("--layout-cols"),
+            GridTemplate::CustomProperty("--layout-cols".to_string())
+        );
+        assert_eq!(
+            GridTemplate::arbitrary("200px_minmax(0,_1fr)_100px"),
+            GridTemplate::Arbitrary("200px minmax(0, 1fr) 100px".to_string())
+        );
+    }
+
+    #[test]
+    fn test_grid_container_columns_helpers() {
+        assert_eq!(
+            GridContainer::new().cols_count(5).columns,
+            Some(GridTemplate::count(5))
+        );
+        assert_eq!(
+            GridContainer::new().cols_none().columns,
+            Some(GridTemplate::none())
+        );
+        assert_eq!(
+            GridContainer::new().cols_subgrid().columns,
+            Some(GridTemplate::subgrid())
+        );
+        assert_eq!(
+            GridContainer::new()
+                .cols_custom_property("--layout-cols")
+                .columns,
+            Some(GridTemplate::custom_property("--layout-cols"))
+        );
+        assert_eq!(
+            GridContainer::new()
+                .cols_arbitrary("200px_minmax(0,_1fr)_100px")
+                .columns,
+            Some(GridTemplate::arbitrary("200px_minmax(0,_1fr)_100px"))
+        );
+    }
+
+    #[test]
+    fn test_flex_container_gap_axis_helpers() {
+        let flex = FlexContainer::row().gap_x(Spacing::S6).gap_y(Spacing::S3);
+        assert_eq!(flex.col_gap, Some(Spacing::S6));
+        assert_eq!(flex.row_gap, Some(Spacing::S3));
+    }
+
+    #[test]
+    fn test_grid_container_gap_axis_helpers() {
+        let grid = GridContainer::cols_2()
+            .gap_x(Spacing::S8)
+            .gap_y(Spacing::S4);
+        assert_eq!(grid.col_gap, Some(Spacing::S8));
+        assert_eq!(grid.row_gap, Some(Spacing::S4));
     }
 
     #[test]
@@ -772,26 +939,19 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_flex_tailwind_class() {
-        assert_eq!(Flex::from_tailwind_class("flex-1"), Some(Flex::number(1)));
+    fn test_flex_builders() {
+        assert_eq!(Flex::number(1), Flex::Number(1));
+        assert_eq!(Flex::fraction(1, 2).value(), "calc(1/2 * 100%)");
+        assert_eq!(Flex::Auto, Flex::Auto);
+        assert_eq!(Flex::Initial, Flex::Initial);
+        assert_eq!(Flex::None, Flex::None);
         assert_eq!(
-            Flex::from_tailwind_class("flex-1/2"),
-            Some(Flex::fraction(1, 2))
-        );
-        assert_eq!(Flex::from_tailwind_class("flex-auto"), Some(Flex::Auto));
-        assert_eq!(
-            Flex::from_tailwind_class("flex-initial"),
-            Some(Flex::Initial)
-        );
-        assert_eq!(Flex::from_tailwind_class("flex-none"), Some(Flex::None));
-        assert_eq!(
-            Flex::from_tailwind_class("flex-(--my-flex)"),
-            Some(Flex::custom_property("--my-flex"))
+            Flex::custom_property("--my-flex"),
+            Flex::CustomProperty("--my-flex".to_string())
         );
         assert_eq!(
-            Flex::from_tailwind_class("flex-[3_1_auto]"),
-            Some(Flex::arbitrary("3_1_auto"))
+            Flex::arbitrary("3_1_auto"),
+            Flex::Arbitrary("3 1 auto".to_string())
         );
-        assert_eq!(Flex::from_tailwind_class("flex-nope"), None);
     }
 }

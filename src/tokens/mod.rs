@@ -1,6 +1,6 @@
 //! Design tokens module.
 //!
-//! This module contains all design tokens following Tailwind conventions:
+//! This module contains all core design token families:
 //! - Colors (all core families with 11 scale values each)
 //! - Spacing (0-96 with fractional values)
 //! - Breakpoints and container scales
@@ -26,7 +26,10 @@ pub mod typography;
 pub use aspect_ratio::AspectRatio;
 pub use blur::Blur;
 pub use borders::{BorderRadius, BorderStyle, BorderWidth, DivideWidth, OutlineStyle, RingWidth};
-pub use colors::{Color, ColorFamily, ColorValue, Scale, SpecialColor};
+pub use colors::{
+    BackgroundColor, BackgroundColorVar, Color, ColorFamily, ColorValue, ColorValueToken, Scale,
+    SpecialColor,
+};
 pub use cursor::Cursor;
 pub use motion::{AnimationToken, Easing, MotionDefaults, TransitionDuration, TransitionProperty};
 pub use oklch::OklchConverter;
@@ -35,6 +38,6 @@ pub use semantic::{DynamicSemanticTheme, SemanticColor, SemanticThemeVars};
 pub use shadows::{DropShadow, InsetShadow, Shadow, TextShadow};
 pub use spacing::{Breakpoint, Container, Percentage, Spacing};
 pub use typography::{
-    FontFamily, FontSize, FontWeight, LetterSpacing, LineHeight, TextAlign, TextDecoration,
-    TextOverflow, TextTransform, WhiteSpace, WordBreak,
+    FontFamily, FontSize, FontSizeVar, FontWeight, LetterSpacing, LineHeight, TextAlign,
+    TextDecoration, TextOverflow, TextTransform, WhiteSpace, WordBreak,
 };

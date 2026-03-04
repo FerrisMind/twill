@@ -135,7 +135,7 @@ pub fn to_font_size(size: FontSize) -> f32 {
     size.size_rem() * 16.0
 }
 
-/// Convert twill FontWeight to Slint weight integer via Tailwind scale.
+/// Convert twill FontWeight to Slint weight integer via numeric scale.
 pub fn to_font_weight(weight: FontWeight) -> i32 {
     match weight {
         FontWeight::Thin => 100,

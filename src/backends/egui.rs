@@ -2,15 +2,37 @@
 
 use crate::style::Style;
 use crate::tokens::{
-    AspectRatio, Blur, BorderRadius, Color, Cursor, FontSize, FontWeight, SemanticColor,
-    SemanticThemeVars, Shadow, Spacing, TransitionDuration,
+    AspectRatio, BackgroundColor, Blur, BorderRadius, Color, ColorValue, Cursor, FontSize,
+    FontWeight, SemanticColor, SemanticThemeVars, Shadow, Spacing, TransitionDuration,
 };
 use crate::traits::ComputeValue;
+use crate::utilities::PaddingValue;
 
 fn spacing_to_px(spacing: Spacing) -> f32 {
     match spacing.to_px() {
         Some(px) => px as f32,
         None => 0.0,
+    }
+}
+
+fn padding_value_to_px(value: PaddingValue) -> f32 {
+    match value {
+        PaddingValue::Scale(spacing) => spacing_to_px(spacing),
+        PaddingValue::Px(px) => {
+            if px.is_finite() {
+                px.max(0.0)
+            } else {
+                0.0
+            }
+        }
+        PaddingValue::Rem(rem) => {
+            if rem.is_finite() {
+                (rem * 16.0).max(0.0)
+            } else {
+                0.0
+            }
+        }
+        PaddingValue::Var(_) => 0.0,
     }
 }
 
@@ -27,6 +49,17 @@ pub fn to_color32_value(value: crate::tokens::ColorValue) -> egui::Color32 {
         (value.b as f32 * value.a) as u8,
         (255.0 * value.a) as u8,
     )
+}
+
+fn resolve_background_color_token(token: BackgroundColor, fallback_text: Option<Color>) -> Option<ColorValue> {
+    match token {
+        BackgroundColor::Inherit => None,
+        BackgroundColor::Current => fallback_text.map(|text| text.compute()),
+        BackgroundColor::Transparent => Some(ColorValue::TRANSPARENT),
+        BackgroundColor::Palette(color) => Some(color.compute()),
+        BackgroundColor::CustomProperty(_) => None,
+        BackgroundColor::Arbitrary(value) => Some(value.into()),
+    }
 }
 
 /// Convert twill Spacing to egui Vec2 (in points).
@@ -167,10 +200,10 @@ pub fn to_frame(style: &Style) -> egui::Frame {
     // Padding
     if let Some(p) = &style.padding {
         let clamp_i8 = |v: f32| v.clamp(i8::MIN as f32, i8::MAX as f32) as i8;
-        let top = clamp_i8(p.top.map(spacing_to_px).unwrap_or(0.0));
-        let right = clamp_i8(p.right.map(spacing_to_px).unwrap_or(0.0));
-        let bottom = clamp_i8(p.bottom.map(spacing_to_px).unwrap_or(0.0));
-        let left = clamp_i8(p.left.map(spacing_to_px).unwrap_or(0.0));
+        let top = clamp_i8(p.top.map(padding_value_to_px).unwrap_or(0.0));
+        let right = clamp_i8(p.right.map(padding_value_to_px).unwrap_or(0.0));
+        let bottom = clamp_i8(p.bottom.map(padding_value_to_px).unwrap_or(0.0));
+        let left = clamp_i8(p.left.map(padding_value_to_px).unwrap_or(0.0));
         frame = frame.inner_margin(egui::Margin {
             top,
             left,
@@ -180,8 +213,11 @@ pub fn to_frame(style: &Style) -> egui::Frame {
     }
 
     // Background
-    if let Some(bg) = &style.background_color {
-        frame = frame.fill(to_color32(*bg));
+    if let Some(bg) = style
+        .background_color
+        .and_then(|bg| resolve_background_color_token(bg, style.text_color))
+    {
+        frame = frame.fill(to_color32_value(bg));
     }
 
     // Border radius
@@ -234,8 +270,11 @@ pub fn twill_button(
     }
 
     let mut btn = egui::Button::new(text);
-    if let Some(bg) = style.background_color {
-        btn = btn.fill(to_color32(bg));
+    if let Some(bg) = style
+        .background_color
+        .and_then(|bg| resolve_background_color_token(bg, style.text_color))
+    {
+        btn = btn.fill(to_color32_value(bg));
     }
     if let Some(radius) = style.border_radius {
         btn = btn.corner_radius(to_corner_radius(radius));

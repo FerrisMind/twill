@@ -17,7 +17,7 @@ pub fn view<'a>(is_dark: bool) -> Element<'a, Message> {
             ..Default::default()
         }),
         text("Utilities for controlling how flex items both grow and shrink.").size(16),
-        classes_section(is_dark),
+        variants_section(is_dark),
         number_section(is_dark),
         fraction_section(is_dark),
         initial_section(is_dark),
@@ -30,28 +30,27 @@ pub fn view<'a>(is_dark: bool) -> Element<'a, Message> {
     .into()
 }
 
-fn classes_section<'a>(is_dark: bool) -> Element<'a, Message> {
-    let code = r#"// Tailwind classes covered in Twill:
-// flex-<number>            -> Style::new().flex_number(n)
-// flex-<fraction>          -> Style::new().flex_fraction(num, den)
-// flex-auto                -> Style::new().flex_auto()
-// flex-initial             -> Style::new().flex_initial()
-// flex-none                -> Style::new().flex_none()
-// flex-(<custom-property>) -> Style::new().flex_custom_property("--var")
-// flex-[<value>]           -> Style::new().flex_arbitrary("3_1_auto")
+fn variants_section<'a>(is_dark: bool) -> Element<'a, Message> {
+    let code = r#"let examples = [
+    Style::new().flex_number(1),
+    Style::new().flex_fraction(1, 2),
+    Style::new().flex_auto(),
+    Style::new().flex_initial(),
+    Style::new().flex_none(),
+    Style::new().flex_custom_property("--var"),
+    Style::new().flex_arbitrary("3_1_auto"),
+];"#;
 
-let parsed = twill::Flex::from_tailwind_class("flex-1/2");"#;
+    let visual = text("Flex behavior is modeled with typed builder variants.").size(13);
 
-    let visual = text("All class forms from Tailwind `flex.mdx` are modeled explicitly.").size(13);
-
-    Snippet::new("Flex: Class Coverage", code, visual).view(is_dark)
+    Snippet::new("Flex: Variant Coverage", code, visual).view(is_dark)
 }
 
 fn number_section<'a>(is_dark: bool) -> Element<'a, Message> {
     let code = r#"let row = row![
     apply_flex_item(tile("01"), &Style::new().flex_none(), FlexDirection::Row),
-    apply_flex_item(tile("02"), &Style::new().flex_number(1), FlexDirection::Row), // flex-1
-    apply_flex_item(tile("03"), &Style::new().flex_number(2), FlexDirection::Row), // flex-2
+    apply_flex_item(tile("02"), &Style::new().flex_number(1), FlexDirection::Row),
+    apply_flex_item(tile("03"), &Style::new().flex_number(2), FlexDirection::Row),
 ];"#;
 
     let visual = preview_surface(
@@ -78,13 +77,13 @@ fn number_section<'a>(is_dark: bool) -> Element<'a, Message> {
         is_dark,
     );
 
-    Snippet::new("Flex: Number (`flex-<number>`)", code, visual).view(is_dark)
+    Snippet::new("Flex: Number", code, visual).view(is_dark)
 }
 
 fn fraction_section<'a>(is_dark: bool) -> Element<'a, Message> {
     let code = r#"let row = row![
-    apply_flex_item(tile("A"), &Style::new().flex_fraction(1, 2), FlexDirection::Row), // flex-1/2
-    apply_flex_item(tile("B"), &Style::new().flex_fraction(1, 2), FlexDirection::Row), // flex-1/2
+    apply_flex_item(tile("A"), &Style::new().flex_fraction(1, 2), FlexDirection::Row),
+    apply_flex_item(tile("B"), &Style::new().flex_fraction(1, 2), FlexDirection::Row),
 ];"#;
 
     let visual = preview_surface(
@@ -106,7 +105,7 @@ fn fraction_section<'a>(is_dark: bool) -> Element<'a, Message> {
         is_dark,
     );
 
-    Snippet::new("Flex: Fraction (`flex-<fraction>`)", code, visual).view(is_dark)
+    Snippet::new("Flex: Fraction", code, visual).view(is_dark)
 }
 
 fn initial_section<'a>(is_dark: bool) -> Element<'a, Message> {
@@ -224,7 +223,7 @@ fn none_section<'a>(is_dark: bool) -> Element<'a, Message> {
 }
 
 fn custom_property_section<'a>(is_dark: bool) -> Element<'a, Message> {
-    let code = r#"let style = Style::new().flex_custom_property("--my-flex"); // flex-(--my-flex)
+    let code = r#"let style = Style::new().flex_custom_property("--my-flex");
 
 let vars = [("--my-flex", "2")];
 let item = apply_flex_item_with_custom_properties(content, &style, FlexDirection::Row, &vars);
@@ -249,24 +248,19 @@ let item = apply_flex_item_with_custom_properties(content, &style, FlexDirection
             .width(Length::Fill),
             is_dark,
         ),
-        text("`flex-(<custom-property>)` resolves through provided variables in iced.").size(12),
+        text("Custom property values are resolved through provided variables in iced.").size(12),
     ]
     .spacing(8);
 
-    Snippet::new(
-        "Flex: Custom Property (`flex-(<custom-property>)`)",
-        code,
-        visual,
-    )
-    .view(is_dark)
+    Snippet::new("Flex: Custom Property", code, visual).view(is_dark)
 }
 
 fn arbitrary_section<'a>(is_dark: bool) -> Element<'a, Message> {
     let code = r#"let row = row![
-    apply_flex_item(tile("N"), &Style::new().flex_arbitrary("2"), FlexDirection::Row),       // flex-[2]
-    apply_flex_item(tile("F"), &Style::new().flex_arbitrary("1/2"), FlexDirection::Row),     // flex-[1/2]
-    apply_flex_item(tile("A"), &Style::new().flex_arbitrary("auto"), FlexDirection::Row),    // flex-[auto]
-    apply_flex_item(tile("R"), &Style::new().flex_arbitrary("3_1_auto"), FlexDirection::Row),// flex-[3_1_auto]
+    apply_flex_item(tile("N"), &Style::new().flex_arbitrary("2"), FlexDirection::Row),
+    apply_flex_item(tile("F"), &Style::new().flex_arbitrary("1/2"), FlexDirection::Row),
+    apply_flex_item(tile("A"), &Style::new().flex_arbitrary("auto"), FlexDirection::Row),
+    apply_flex_item(tile("R"), &Style::new().flex_arbitrary("3_1_auto"), FlexDirection::Row),
 ];
 "#;
 
@@ -303,7 +297,7 @@ fn arbitrary_section<'a>(is_dark: bool) -> Element<'a, Message> {
     ]
     .spacing(8);
 
-    Snippet::new("Flex: Arbitrary (`flex-[<value>]`)", code, visual).view(is_dark)
+    Snippet::new("Flex: Arbitrary", code, visual).view(is_dark)
 }
 
 fn preview_surface<'a>(

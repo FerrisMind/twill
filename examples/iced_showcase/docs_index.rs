@@ -38,6 +38,32 @@ const TYPOGRAPHY_TOC: &[TocEntry] = &[
     TocEntry { title: "Usage" },
 ];
 
+const FONT_WEIGHT_TOC: &[TocEntry] = &[
+    TocEntry { title: "Overview" },
+    TocEntry {
+        title: "Variant families",
+    },
+    TocEntry {
+        title: "Basic example",
+    },
+    TocEntry {
+        title: "Iced integration",
+    },
+];
+
+const TEXT_ALIGN_TOC: &[TocEntry] = &[
+    TocEntry { title: "Overview" },
+    TocEntry {
+        title: "Variant families",
+    },
+    TocEntry {
+        title: "Basic example",
+    },
+    TocEntry {
+        title: "Using logical properties",
+    },
+];
+
 const COLORS_TAILWIND_TOC: &[TocEntry] = &[
     TocEntry { title: "Overview" },
     TocEntry {
@@ -64,8 +90,48 @@ const OKLCH_TOC: &[TocEntry] = &[
 
 const SPACING_TOC: &[TocEntry] = &[
     TocEntry { title: "Overview" },
-    TocEntry { title: "Scale" },
-    TocEntry { title: "Examples" },
+    TocEntry {
+        title: "Variant families",
+    },
+    TocEntry { title: "All sides" },
+    TocEntry {
+        title: "Pixel token",
+    },
+    TocEntry {
+        title: "Axis utilities",
+    },
+    TocEntry {
+        title: "Per-side utilities",
+    },
+    TocEntry {
+        title: "Logical properties",
+    },
+    TocEntry {
+        title: "Custom property + arbitrary value",
+    },
+];
+
+const MARGIN_TOC: &[TocEntry] = &[
+    TocEntry { title: "Overview" },
+    TocEntry {
+        title: "Variant families",
+    },
+    TocEntry { title: "All sides" },
+    TocEntry {
+        title: "Axis utilities",
+    },
+    TocEntry {
+        title: "Per-side utilities",
+    },
+    TocEntry {
+        title: "Logical properties",
+    },
+    TocEntry {
+        title: "Negative values",
+    },
+    TocEntry {
+        title: "Custom values + auto",
+    },
 ];
 
 const ASPECT_RATIO_TOC: &[TocEntry] = &[
@@ -111,57 +177,149 @@ const DISPLAY_TOC: &[TocEntry] = &[
     },
 ];
 
+const GRID_TEMPLATE_COLUMNS_TOC: &[TocEntry] = &[
+    TocEntry { title: "Overview" },
+    TocEntry {
+        title: "Variant families",
+    },
+    TocEntry { title: "Count" },
+    TocEntry { title: "None" },
+    TocEntry { title: "Subgrid" },
+    TocEntry {
+        title: "Custom property",
+    },
+    TocEntry {
+        title: "Arbitrary value",
+    },
+];
+
 const FLEX_DIRECTION_TOC: &[TocEntry] = &[
     TocEntry { title: "Overview" },
     TocEntry {
-        title: "Class coverage",
+        title: "Variant coverage",
+    },
+    TocEntry { title: "Row" },
+    TocEntry {
+        title: "Row reverse",
+    },
+    TocEntry { title: "Column" },
+    TocEntry {
+        title: "Column reverse",
+    },
+];
+
+const GAP_TOC: &[TocEntry] = &[
+    TocEntry { title: "Overview" },
+    TocEntry {
+        title: "Variant families",
+    },
+    TocEntry { title: "Gap" },
+    TocEntry { title: "Gap X" },
+    TocEntry { title: "Gap Y" },
+    TocEntry {
+        title: "Axis mapping (iced)",
+    },
+];
+
+const ALIGN_ITEMS_TOC: &[TocEntry] = &[
+    TocEntry { title: "Overview" },
+    TocEntry {
+        title: "Variant coverage",
+    },
+    TocEntry { title: "Stretch" },
+    TocEntry { title: "Start" },
+    TocEntry { title: "Center" },
+    TocEntry { title: "End" },
+    TocEntry { title: "Baseline" },
+    TocEntry {
+        title: "Safe variants",
     },
     TocEntry {
-        title: "Row (`flex-row`)",
+        title: "Last baseline",
     },
+];
+
+const JUSTIFY_CONTENT_TOC: &[TocEntry] = &[
+    TocEntry { title: "Overview" },
     TocEntry {
-        title: "Row reverse (`flex-row-reverse`)",
+        title: "Variant coverage",
     },
+    TocEntry { title: "Start" },
+    TocEntry { title: "Center" },
+    TocEntry { title: "End" },
+    TocEntry { title: "Between" },
+    TocEntry { title: "Around" },
+    TocEntry { title: "Evenly" },
     TocEntry {
-        title: "Column (`flex-col`)",
+        title: "Safe variants",
     },
+    TocEntry { title: "Stretch" },
     TocEntry {
-        title: "Column reverse (`flex-col-reverse`)",
+        title: "Normal / Baseline",
     },
 ];
 
 const FLEX_TOC: &[TocEntry] = &[
     TocEntry { title: "Overview" },
     TocEntry {
-        title: "Class coverage",
+        title: "Variant coverage",
     },
+    TocEntry { title: "Number" },
+    TocEntry { title: "Fraction" },
+    TocEntry { title: "Initial" },
+    TocEntry { title: "Auto" },
+    TocEntry { title: "None" },
     TocEntry {
-        title: "Number (`flex-<number>`)",
+        title: "Custom property",
     },
-    TocEntry {
-        title: "Fraction (`flex-<fraction>`)",
-    },
-    TocEntry {
-        title: "Initial (`flex-initial`)",
-    },
-    TocEntry {
-        title: "Auto (`flex-auto`)",
-    },
-    TocEntry {
-        title: "None (`flex-none`)",
-    },
-    TocEntry {
-        title: "Custom property (`flex-(<custom-property>)`)",
-    },
-    TocEntry {
-        title: "Arbitrary (`flex-[<value>]`)",
-    },
+    TocEntry { title: "Arbitrary" },
 ];
 
 const OBJECT_FIT_TOC: &[TocEntry] = &[
     TocEntry { title: "Overview" },
     TocEntry {
         title: "Iced mapping",
+    },
+];
+
+const WIDTH_TOC: &[TocEntry] = &[
+    TocEntry { title: "Overview" },
+    TocEntry {
+        title: "Variant families",
+    },
+    TocEntry {
+        title: "Spacing scale",
+    },
+    TocEntry {
+        title: "Fraction + full width",
+    },
+    TocEntry {
+        title: "Container scale",
+    },
+    TocEntry {
+        title: "Viewport + intrinsic",
+    },
+    TocEntry {
+        title: "Custom property + typed arbitrary px",
+    },
+];
+
+const HEIGHT_TOC: &[TocEntry] = &[
+    TocEntry { title: "Overview" },
+    TocEntry {
+        title: "Variant families",
+    },
+    TocEntry {
+        title: "Spacing scale",
+    },
+    TocEntry {
+        title: "Fraction + full height",
+    },
+    TocEntry {
+        title: "Viewport + intrinsic",
+    },
+    TocEntry {
+        title: "Custom property + typed arbitrary px",
     },
 ];
 
@@ -233,9 +391,23 @@ const SHOWCASE_ENTRIES: &[ShowcaseEntry] = &[
         toc: TYPOGRAPHY_TOC,
     },
     ShowcaseEntry {
+        page: Page::FontWeight,
+        title: "font-weight",
+        description: "Typed font weight utilities and class-family mapping for iced text.",
+        category: "Typography",
+        toc: FONT_WEIGHT_TOC,
+    },
+    ShowcaseEntry {
+        page: Page::TextAlign,
+        title: "text-align",
+        description: "Typed text alignment utilities and direction-aware logical mapping for iced text.",
+        category: "Typography",
+        toc: TEXT_ALIGN_TOC,
+    },
+    ShowcaseEntry {
         page: Page::Colors,
-        title: "Colors (Tailwind)",
-        description: "Complete Tailwind-inspired palettes from neutral ramps to vivid accents.",
+        title: "Colors (Palette)",
+        description: "Complete color palettes from neutral ramps to vivid accents.",
         category: "General",
         toc: COLORS_TAILWIND_TOC,
     },
@@ -255,10 +427,17 @@ const SHOWCASE_ENTRIES: &[ShowcaseEntry] = &[
     },
     ShowcaseEntry {
         page: Page::Spacing,
-        title: "Spacing",
-        description: "Consistent spacing scale for composition, rhythm, and alignment.",
+        title: "padding",
+        description: "Typed utilities for controlling an element's padding in iced.",
         category: "Spacing",
         toc: SPACING_TOC,
+    },
+    ShowcaseEntry {
+        page: Page::Margin,
+        title: "margin",
+        description: "Typed utilities for controlling an element's outer spacing in iced.",
+        category: "Spacing",
+        toc: MARGIN_TOC,
     },
     ShowcaseEntry {
         page: Page::Borders,
@@ -303,11 +482,39 @@ const SHOWCASE_ENTRIES: &[ShowcaseEntry] = &[
         toc: DISPLAY_TOC,
     },
     ShowcaseEntry {
+        page: Page::GridTemplateColumns,
+        title: "grid-template-columns",
+        description: "Typed utilities for specifying the columns in a grid layout.",
+        category: "Flexbox & Grid",
+        toc: GRID_TEMPLATE_COLUMNS_TOC,
+    },
+    ShowcaseEntry {
         page: Page::FlexDirection,
         title: "flex-direction",
         description: "Utilities for controlling the direction of flex items.",
         category: "Flexbox & Grid",
         toc: FLEX_DIRECTION_TOC,
+    },
+    ShowcaseEntry {
+        page: Page::Gap,
+        title: "gap",
+        description: "Typed utilities for controlling gutters between flex and grid items.",
+        category: "Flexbox & Grid",
+        toc: GAP_TOC,
+    },
+    ShowcaseEntry {
+        page: Page::AlignItems,
+        title: "align-items",
+        description: "Typed utilities for controlling flex items along the cross axis.",
+        category: "Flexbox & Grid",
+        toc: ALIGN_ITEMS_TOC,
+    },
+    ShowcaseEntry {
+        page: Page::JustifyContent,
+        title: "justify-content",
+        description: "Typed utilities for controlling flex items along the main axis.",
+        category: "Flexbox & Grid",
+        toc: JUSTIFY_CONTENT_TOC,
     },
     ShowcaseEntry {
         page: Page::Flex,
@@ -322,6 +529,20 @@ const SHOWCASE_ENTRIES: &[ShowcaseEntry] = &[
         description: "Utilities for controlling how replaced content should be resized to fit its container.",
         category: "Layout",
         toc: OBJECT_FIT_TOC,
+    },
+    ShowcaseEntry {
+        page: Page::Width,
+        title: "width",
+        description: "Typed utilities for setting the width of an element in iced.",
+        category: "Sizing",
+        toc: WIDTH_TOC,
+    },
+    ShowcaseEntry {
+        page: Page::Height,
+        title: "height",
+        description: "Typed utilities for setting the height of an element in iced.",
+        category: "Sizing",
+        toc: HEIGHT_TOC,
     },
     ShowcaseEntry {
         page: Page::MaxWidth,
@@ -372,7 +593,7 @@ const DOCS_NAV_CATEGORIES: &[DocsCategory] = &[
         title: "General",
         entries: &[
             DocsNavEntry {
-                title: "Styling with utility classes",
+                title: "Styling primitives",
                 path: "/docs/styling-with-utility-classes",
                 page: None,
                 children: &[],
@@ -414,7 +635,7 @@ const DOCS_NAV_CATEGORIES: &[DocsCategory] = &[
                 children: &[],
             },
             DocsNavEntry {
-                title: "Detecting classes in source files",
+                title: "Detecting styles in source files",
                 path: "/docs/detecting-classes-in-source-files",
                 page: None,
                 children: &[],
@@ -594,7 +815,7 @@ const DOCS_NAV_CATEGORIES: &[DocsCategory] = &[
             DocsNavEntry {
                 title: "grid-template-columns",
                 path: "/docs/grid-template-columns",
-                page: None,
+                page: Some(Page::GridTemplateColumns),
                 children: &[],
             },
             DocsNavEntry {
@@ -636,13 +857,13 @@ const DOCS_NAV_CATEGORIES: &[DocsCategory] = &[
             DocsNavEntry {
                 title: "gap",
                 path: "/docs/gap",
-                page: None,
+                page: Some(Page::Gap),
                 children: &[],
             },
             DocsNavEntry {
                 title: "justify-content",
                 path: "/docs/justify-content",
-                page: None,
+                page: Some(Page::JustifyContent),
                 children: &[],
             },
             DocsNavEntry {
@@ -666,7 +887,7 @@ const DOCS_NAV_CATEGORIES: &[DocsCategory] = &[
             DocsNavEntry {
                 title: "align-items",
                 path: "/docs/align-items",
-                page: None,
+                page: Some(Page::AlignItems),
                 children: &[],
             },
             DocsNavEntry {
@@ -707,7 +928,7 @@ const DOCS_NAV_CATEGORIES: &[DocsCategory] = &[
             DocsNavEntry {
                 title: "margin",
                 path: "/docs/margin",
-                page: None,
+                page: Some(Page::Margin),
                 children: &[],
             },
         ],
@@ -718,7 +939,7 @@ const DOCS_NAV_CATEGORIES: &[DocsCategory] = &[
             DocsNavEntry {
                 title: "width",
                 path: "/docs/width",
-                page: None,
+                page: Some(Page::Width),
                 children: &[],
             },
             DocsNavEntry {
@@ -736,7 +957,7 @@ const DOCS_NAV_CATEGORIES: &[DocsCategory] = &[
             DocsNavEntry {
                 title: "height",
                 path: "/docs/height",
-                page: None,
+                page: Some(Page::Height),
                 children: &[],
             },
             DocsNavEntry {
@@ -819,7 +1040,7 @@ const DOCS_NAV_CATEGORIES: &[DocsCategory] = &[
             DocsNavEntry {
                 title: "font-weight",
                 path: "/docs/font-weight",
-                page: None,
+                page: Some(Page::FontWeight),
                 children: &[],
             },
             DocsNavEntry {
@@ -879,7 +1100,7 @@ const DOCS_NAV_CATEGORIES: &[DocsCategory] = &[
             DocsNavEntry {
                 title: "text-align",
                 path: "/docs/text-align",
-                page: None,
+                page: Some(Page::TextAlign),
                 children: &[],
             },
             DocsNavEntry {
@@ -998,7 +1219,7 @@ const DOCS_NAV_CATEGORIES: &[DocsCategory] = &[
             DocsNavEntry {
                 title: "background-color",
                 path: "/docs/background-color",
-                page: None,
+                page: Some(Page::BackgroundColor),
                 children: &[],
             },
             DocsNavEntry {
