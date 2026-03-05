@@ -491,25 +491,66 @@ pub fn to_content_fit(fit: ObjectFit) -> ContentFit {
 
 /// Convert twill Shadow to iced Shadow with an optional color override.
 pub fn to_shadow_with_color(shadow: Shadow, color: Option<Color>) -> iced::Shadow {
-    let (offset_y, blur, alpha) = match shadow {
-        Shadow::None => return iced::Shadow::default(),
-        Shadow::Xs2 => (1.0, 0.0, 0.05),
-        Shadow::Xs => (1.0, 2.0, 0.05),
-        Shadow::Sm => (1.0, 3.0, 0.1),
-        Shadow::Md => (4.0, 6.0, 0.1),
-        Shadow::Lg => (10.0, 15.0, 0.26),
-        Shadow::Xl => (20.0, 25.0, 0.26),
-        Shadow::S2xl => (25.0, 50.0, 0.63),
+    to_shadow_layers_with_color(shadow, color)
+        .into_iter()
+        .next()
+        .unwrap_or_default()
+}
+
+/// Convert twill Shadow to one or more iced shadows.
+///
+/// Tailwind defines multiple box-shadow layers for some tokens (`sm`, `md`, `lg`, `xl`).
+/// Iced supports only one shadow per container, so layered fidelity is achieved
+/// by wrapping content with multiple shadow containers.
+pub fn to_shadow_layers_with_color(shadow: Shadow, color: Option<Color>) -> Vec<iced::Shadow> {
+    let layers: &[(f32, f32, f32)] = match shadow {
+        Shadow::None => &[],
+        Shadow::Xs2 => &[(1.0, 0.0, 0.05)],
+        Shadow::Xs => &[(1.0, 2.0, 0.05)],
+        Shadow::Sm => &[(1.0, 3.0, 0.1), (1.0, 2.0, 0.1)],
+        Shadow::Md => &[(4.0, 6.0, 0.1), (2.0, 4.0, 0.1)],
+        Shadow::Lg => &[(10.0, 15.0, 0.1), (4.0, 6.0, 0.1)],
+        Shadow::Xl => &[(20.0, 25.0, 0.1), (8.0, 10.0, 0.1)],
+        Shadow::S2xl => &[(25.0, 50.0, 0.25)],
     };
 
-    let mut c = to_color(color.unwrap_or(Color::black()));
-    c.a = alpha;
+    let base = color.unwrap_or(Color::black());
+    layers
+        .iter()
+        .map(|(offset_y, blur, alpha)| {
+            let mut c = to_color(base);
+            c.a *= *alpha;
+            iced::Shadow {
+                color: c,
+                offset: iced::Vector::new(0.0, *offset_y),
+                blur_radius: *blur,
+            }
+        })
+        .collect()
+}
 
-    iced::Shadow {
-        color: c,
-        offset: iced::Vector::new(0.0, offset_y),
-        blur_radius: blur,
+fn wrap_with_shadow_layers<'a, Message: 'a>(
+    content: iced::Element<'a, Message>,
+    layers: &[iced::Shadow],
+    border_radius: f32,
+) -> iced::widget::Container<'a, Message> {
+    let mut current = content;
+
+    for shadow in layers.iter().copied().rev() {
+        current = iced::widget::container(current)
+            .style(move |_| iced::widget::container::Style {
+                border: iced::Border {
+                    radius: border_radius.into(),
+                    width: 0.0,
+                    color: iced::Color::TRANSPARENT,
+                },
+                shadow,
+                ..Default::default()
+            })
+            .into();
     }
+
+    iced::widget::container(current)
 }
 
 /// Convert twill Shadow to iced Shadow.
@@ -583,9 +624,9 @@ pub fn to_text_alignment_with_direction(
 /// Convert twill SemanticColor to iced Color based on the theme variant
 pub fn to_semantic_color(semantic: SemanticColor, is_dark: bool) -> iced::Color {
     let color = SemanticThemeVars::shadcn_neutral()
-        .resolve(semantic, is_dark)
-        .unwrap_or(Color::black());
-    to_color(color)
+        .resolve_value(semantic, is_dark)
+        .unwrap_or_else(|| Color::black().compute());
+    to_color_value(color)
 }
 
 /// Convert twill TransitionDuration to std::time::Duration for iced
@@ -729,9 +770,9 @@ pub fn styled_container_with_custom_properties<'a, Message: Clone + 'a>(
         .unwrap_or(iced::Color::TRANSPARENT);
     let border_style = style.border_style.unwrap_or(BorderStyle::Solid);
     let border_width = base_border_width;
-    let shadow = style
+    let shadow_layers = style
         .box_shadow
-        .map(|s| to_shadow_with_color(s, style.shadow_color))
+        .map(|s| to_shadow_layers_with_color(s, style.shadow_color))
         .unwrap_or_default();
 
     match border_style {
@@ -740,16 +781,17 @@ pub fn styled_container_with_custom_properties<'a, Message: Clone + 'a>(
             if let Some(p) = padding {
                 container = container.padding(p);
             }
-            container.style(move |_| iced::widget::container::Style {
+            let base = container.style(move |_| iced::widget::container::Style {
                 background: bg_color.map(iced::Background::Color),
                 border: iced::Border {
                     radius: border_radius.into(),
                     width: border_width,
                     color: border_color,
                 },
-                shadow,
                 ..Default::default()
-            })
+            });
+
+            wrap_with_shadow_layers(base.into(), &shadow_layers, border_radius)
         }
         _ => {
             let mut content_layer = iced::widget::container(content);
@@ -767,12 +809,8 @@ pub fn styled_container_with_custom_properties<'a, Message: Clone + 'a>(
             .width(iced::Length::Fill)
             .height(iced::Length::Fill);
 
-            iced::widget::container(stack![border_layer, content_layer]).style(move |_| {
-                iced::widget::container::Style {
-                    shadow,
-                    ..Default::default()
-                }
-            })
+            let base = iced::widget::container(stack![border_layer, content_layer]);
+            wrap_with_shadow_layers(base.into(), &shadow_layers, border_radius)
         }
     }
 }
@@ -3126,6 +3164,25 @@ mod tests {
     fn test_shadow_uses_custom_color() {
         let shadow = to_shadow_with_color(Shadow::Sm, Some(Color::red(Scale::S500)));
         assert!(shadow.color.r > shadow.color.g);
+    }
+
+    #[test]
+    fn test_shadow_layers_for_sm_are_two() {
+        let layers = to_shadow_layers_with_color(Shadow::Sm, None);
+        assert_eq!(layers.len(), 2);
+        assert!((layers[0].offset.y - 1.0).abs() < f32::EPSILON);
+        assert!((layers[1].offset.y - 1.0).abs() < f32::EPSILON);
+        assert!((layers[0].blur_radius - 3.0).abs() < f32::EPSILON);
+        assert!((layers[1].blur_radius - 2.0).abs() < f32::EPSILON);
+    }
+
+    #[test]
+    fn test_shadow_layers_for_2xl_are_single() {
+        let layers = to_shadow_layers_with_color(Shadow::S2xl, None);
+        assert_eq!(layers.len(), 1);
+        assert!((layers[0].offset.y - 25.0).abs() < f32::EPSILON);
+        assert!((layers[0].blur_radius - 50.0).abs() < f32::EPSILON);
+        assert!((layers[0].color.a - 0.25).abs() < f32::EPSILON);
     }
 
     #[test]

@@ -21,6 +21,11 @@ pub fn to_slint_color(color: Color) -> slint::Color {
     slint::Color::from_argb_u8((value.a * 255.0) as u8, value.r, value.g, value.b)
 }
 
+/// Convert twill ColorValue to Slint-compatible color.
+pub fn to_slint_color_value(value: crate::tokens::ColorValue) -> slint::Color {
+    slint::Color::from_argb_u8((value.a * 255.0) as u8, value.r, value.g, value.b)
+}
+
 /// Convert twill Spacing to Slint length (logical pixels).
 pub fn to_length(spacing: Spacing) -> f32 {
     spacing_to_px(spacing)
@@ -153,9 +158,9 @@ pub fn to_font_weight(weight: FontWeight) -> i32 {
 /// Convert twill SemanticColor to Slint Color based on the theme variant.
 pub fn to_semantic_color(semantic: SemanticColor, is_dark: bool) -> slint::Color {
     let color = SemanticThemeVars::shadcn_neutral()
-        .resolve(semantic, is_dark)
-        .unwrap_or(Color::black());
-    to_slint_color(color)
+        .resolve_value(semantic, is_dark)
+        .unwrap_or_else(|| Color::black().compute());
+    to_slint_color_value(color)
 }
 
 /// Convert twill TransitionDuration to i32 milliseconds for Slint.

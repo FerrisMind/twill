@@ -147,9 +147,9 @@ pub fn to_font_weight(_weight: FontWeight) -> egui::FontFamily {
 /// Convert twill SemanticColor to egui Color32 based on the theme variant.
 pub fn to_semantic_color32(semantic: SemanticColor, is_dark: bool) -> egui::Color32 {
     let color = SemanticThemeVars::shadcn_neutral()
-        .resolve(semantic, is_dark)
-        .unwrap_or(Color::black());
-    to_color32(color)
+        .resolve_value(semantic, is_dark)
+        .unwrap_or_else(|| Color::black().compute());
+    to_color32_value(color)
 }
 
 /// Convert twill TransitionDuration to std::time::Duration.

@@ -42,23 +42,6 @@ impl OklchConverter {
         let new_l = (l + amount).min(1.0);
         Self::to_rgb(new_l, c, h)
     }
-
-    /// Helper to convert a CSS-style OKLCH string if needed (optional)
-    /// Example: `oklch(0.6 0.1 250)`
-    pub fn from_css_string(css: &str) -> Option<(u8, u8, u8)> {
-        // Simplistic parser for demonstration, could be expanded
-        let content = css.strip_prefix("oklch(")?.strip_suffix(")")?;
-        let parts: Vec<&str> = content.split_whitespace().collect();
-
-        if parts.len() == 3 {
-            let l = parts[0].parse::<f32>().ok()?;
-            let c = parts[1].parse::<f32>().ok()?;
-            let h = parts[2].parse::<f32>().ok()?;
-            Some(Self::to_rgb(l, c, h))
-        } else {
-            None
-        }
-    }
 }
 
 #[cfg(test)]
