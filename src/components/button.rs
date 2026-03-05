@@ -182,7 +182,9 @@ mod tests {
         let style = btn.style();
         assert_eq!(
             style.background_color,
-            Some(crate::tokens::BackgroundColor::palette(Color::blue(Scale::S500)))
+            Some(crate::tokens::BackgroundColor::palette(Color::blue(
+                Scale::S500
+            )))
         );
     }
 

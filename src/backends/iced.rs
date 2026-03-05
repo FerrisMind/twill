@@ -149,7 +149,10 @@ pub fn to_color_value(value: crate::tokens::ColorValue) -> iced::Color {
     )
 }
 
-fn resolve_background_color_token(token: BackgroundColor, fallback_text: Option<Color>) -> Option<ColorValue> {
+fn resolve_background_color_token(
+    token: BackgroundColor,
+    fallback_text: Option<Color>,
+) -> Option<ColorValue> {
     match token {
         BackgroundColor::Inherit => None,
         BackgroundColor::Current => fallback_text.map(|text| text.compute()),

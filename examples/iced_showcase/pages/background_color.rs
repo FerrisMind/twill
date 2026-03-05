@@ -4,9 +4,7 @@ use iced::widget::{column, row, text};
 use iced::{Element, Length};
 use twill::iced::{styled_container, to_color, to_font_weight};
 use twill::style::Style;
-use twill::tokens::{
-    BackgroundColorVar, BorderRadius, Color, ColorValueToken, FontWeight, Scale,
-};
+use twill::tokens::{BackgroundColorVar, BorderRadius, Color, ColorValueToken, FontWeight, Scale};
 
 pub fn view<'a>(is_dark: bool) -> Element<'a, Message> {
     column![
@@ -86,10 +84,7 @@ let arbitrary = Style::new().bg_arbitrary(
 
 fn bg_chip<'a>(label: &'a str, style: Style) -> Element<'a, Message> {
     styled_container(
-        text(label)
-            .size(12)
-            .color(to_color(Color::white()))
-            .into(),
+        text(label).size(12).color(to_color(Color::white())).into(),
         &style.rounded(BorderRadius::Md),
     )
     .width(Length::Fixed(160.0))

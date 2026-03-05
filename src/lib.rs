@@ -61,9 +61,8 @@ pub use tokens::{
     DropShadow, DynamicSemanticTheme, Easing, FontFamily, FontSize, FontSizeVar, FontWeight,
     InsetShadow, LetterSpacing, LineHeight, MotionDefaults, OutlineStyle, Percentage, Perspective,
     RingWidth, Scale, SemanticColor, SemanticThemeVars, Shadow, Spacing, SpecialColor, TextAlign,
-    TextDecoration, TextOverflow,
-    TextShadow as TextShadowToken, TextTransform, TransitionDuration, TransitionProperty,
-    WhiteSpace, WordBreak,
+    TextDecoration, TextOverflow, TextShadow as TextShadowToken, TextTransform, TransitionDuration,
+    TransitionProperty, WhiteSpace, WordBreak,
 };
 
 // Utilities
