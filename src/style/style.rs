@@ -105,6 +105,11 @@ impl Style {
         Self::default()
     }
 
+    /// Returns `true` when no style fields are set.
+    pub fn is_empty(&self) -> bool {
+        self == &Self::default()
+    }
+
     // === Layout ===
 
     /// Set display type.
@@ -1654,6 +1659,42 @@ impl Merge<Self> for Style {
     }
 }
 
+impl From<Padding> for Style {
+    fn from(value: Padding) -> Self {
+        Self::new().padding(value)
+    }
+}
+
+impl From<Margin> for Style {
+    fn from(value: Margin) -> Self {
+        Self::new().margin(value)
+    }
+}
+
+impl From<Width> for Style {
+    fn from(value: Width) -> Self {
+        Self::new().width(value)
+    }
+}
+
+impl From<Height> for Style {
+    fn from(value: Height) -> Self {
+        Self::new().height(value)
+    }
+}
+
+impl From<FlexContainer> for Style {
+    fn from(value: FlexContainer) -> Self {
+        Self::new().display(Display::Flex).flex(value)
+    }
+}
+
+impl From<GridContainer> for Style {
+    fn from(value: GridContainer) -> Self {
+        Self::new().display(Display::Grid).grid(value)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1673,6 +1714,35 @@ mod tests {
             Some(BackgroundColor::palette(Color::blue(Scale::S500)))
         );
         assert_eq!(style.border_radius, Some(BorderRadius::Md));
+    }
+
+    #[test]
+    fn test_style_is_empty() {
+        assert!(Style::new().is_empty());
+        assert!(!Style::new().text_color(Color::blue(Scale::S500)).is_empty());
+    }
+
+    #[test]
+    fn test_style_standard_from_impls() {
+        let padding_style = Style::from(Padding::all(Spacing::S4));
+        assert_eq!(padding_style.padding, Some(Padding::all(Spacing::S4)));
+
+        let margin_style = Style::from(Margin::auto_x());
+        assert_eq!(margin_style.margin, Some(Margin::auto_x()));
+
+        let width_style = Style::from(Width::w_full());
+        assert_eq!(width_style.width, Some(Width::w_full()));
+
+        let height_style = Style::from(Height::h_screen());
+        assert_eq!(height_style.height, Some(Height::h_screen()));
+
+        let flex_style = Style::from(FlexContainer::row());
+        assert_eq!(flex_style.display, Some(Display::Flex));
+        assert_eq!(flex_style.flex, Some(FlexContainer::row()));
+
+        let grid_style = Style::from(GridContainer::cols_3());
+        assert_eq!(grid_style.display, Some(Display::Grid));
+        assert_eq!(grid_style.grid, Some(GridContainer::cols_3()));
     }
 
     #[test]

@@ -2,6 +2,8 @@
 //!
 //! Palette resolution is performed in OKLCH and converted for iced-compatible RGBA output.
 
+use std::fmt;
+
 use crate::traits::ComputeValue;
 
 /// Color scale values (50-950).
@@ -374,6 +376,24 @@ impl BackgroundColorVar {
 
     pub const fn as_str(self) -> &'static str {
         self.0
+    }
+}
+
+impl AsRef<str> for BackgroundColorVar {
+    fn as_ref(&self) -> &str {
+        self.0
+    }
+}
+
+impl From<&'static str> for BackgroundColorVar {
+    fn from(value: &'static str) -> Self {
+        Self::new(value)
+    }
+}
+
+impl fmt::Display for BackgroundColorVar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.0)
     }
 }
 
@@ -873,6 +893,13 @@ mod tests {
             scale[0].perceived_lightness_oklch() > scale[10].perceived_lightness_oklch(),
             "50 should be lighter than 950"
         );
+    }
+
+    #[test]
+    fn test_background_color_var_standard_string_traits() {
+        let var = BackgroundColorVar::from("--surface");
+        assert_eq!(var.as_ref(), "--surface");
+        assert_eq!(var.to_string(), "--surface");
     }
 
     #[test]

@@ -1,5 +1,7 @@
 //! Spacing utilities for padding and margin.
 
+use std::fmt;
+
 use crate::tokens::Spacing;
 use crate::traits::ComputeValue;
 
@@ -14,6 +16,24 @@ impl PaddingVar {
 
     pub const fn as_str(self) -> &'static str {
         self.0
+    }
+}
+
+impl AsRef<str> for PaddingVar {
+    fn as_ref(&self) -> &str {
+        self.0
+    }
+}
+
+impl From<&'static str> for PaddingVar {
+    fn from(value: &'static str) -> Self {
+        Self::new(value)
+    }
+}
+
+impl fmt::Display for PaddingVar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.0)
     }
 }
 
@@ -347,6 +367,24 @@ impl MarginVar {
 
     pub const fn as_str(self) -> &'static str {
         self.0
+    }
+}
+
+impl AsRef<str> for MarginVar {
+    fn as_ref(&self) -> &str {
+        self.0
+    }
+}
+
+impl From<&'static str> for MarginVar {
+    fn from(value: &'static str) -> Self {
+        Self::new(value)
+    }
+}
+
+impl fmt::Display for MarginVar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.0)
     }
 }
 
@@ -773,6 +811,24 @@ impl WidthVar {
     }
 }
 
+impl AsRef<str> for WidthVar {
+    fn as_ref(&self) -> &str {
+        self.0
+    }
+}
+
+impl From<&'static str> for WidthVar {
+    fn from(value: &'static str) -> Self {
+        Self::new(value)
+    }
+}
+
+impl fmt::Display for WidthVar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.0)
+    }
+}
+
 /// Named height variable for custom-property style mapping.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct HeightVar(&'static str);
@@ -784,6 +840,24 @@ impl HeightVar {
 
     pub const fn as_str(self) -> &'static str {
         self.0
+    }
+}
+
+impl AsRef<str> for HeightVar {
+    fn as_ref(&self) -> &str {
+        self.0
+    }
+}
+
+impl From<&'static str> for HeightVar {
+    fn from(value: &'static str) -> Self {
+        Self::new(value)
+    }
+}
+
+impl fmt::Display for HeightVar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.0)
     }
 }
 
@@ -1186,6 +1260,19 @@ mod tests {
         assert_eq!(p.right, Some(PaddingValue::Var(PAD)));
         assert_eq!(p.bottom, Some(PaddingValue::Var(PAD)));
         assert_eq!(p.left, Some(PaddingValue::Var(PAD)));
+    }
+
+    #[test]
+    fn test_variable_wrappers_support_standard_string_traits() {
+        let padding_var = PaddingVar::from("--pad");
+        let margin_var = MarginVar::from("--margin");
+        let width_var = WidthVar::from("--width");
+        let height_var = HeightVar::from("--height");
+
+        assert_eq!(padding_var.as_ref(), "--pad");
+        assert_eq!(margin_var.to_string(), "--margin");
+        assert_eq!(width_var.as_str(), "--width");
+        assert_eq!(height_var.to_string(), "--height");
     }
 
     #[test]

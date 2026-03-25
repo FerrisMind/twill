@@ -1,5 +1,7 @@
 //! Typography design tokens following a utility-first type scale.
 
+use std::fmt;
+
 /// Named font-size variable for custom-property style mapping.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct FontSizeVar(&'static str);
@@ -11,6 +13,24 @@ impl FontSizeVar {
 
     pub const fn as_str(self) -> &'static str {
         self.0
+    }
+}
+
+impl AsRef<str> for FontSizeVar {
+    fn as_ref(&self) -> &str {
+        self.0
+    }
+}
+
+impl From<&'static str> for FontSizeVar {
+    fn from(value: &'static str) -> Self {
+        Self::new(value)
+    }
+}
+
+impl fmt::Display for FontSizeVar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.0)
     }
 }
 
@@ -396,6 +416,13 @@ mod tests {
             Some(28.0)
         );
         assert_eq!(FontSize::px(18).resolve_px(&[]), Some(18.0));
+    }
+
+    #[test]
+    fn test_font_size_var_standard_string_traits() {
+        let var = FontSizeVar::from("--title-size");
+        assert_eq!(var.as_ref(), "--title-size");
+        assert_eq!(var.to_string(), "--title-size");
     }
 
     #[test]
