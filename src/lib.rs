@@ -22,7 +22,7 @@
 //! ## Quick Start
 //!
 //! ```rust
-//! use twill::{Style, Color, Scale, Spacing, Padding, BorderRadius};
+//! use twill::prelude::*;
 //!
 //! // Create a button style
 //! let button_style = Style::new()
@@ -35,7 +35,7 @@
 //! ## Components
 //!
 //! ```rust
-//! use twill::Button;
+//! use twill::prelude::*;
 //!
 //! // Create a primary button
 //! let btn = Button::primary().lg();
@@ -51,8 +51,34 @@ pub mod tokens;
 pub mod traits;
 pub mod utilities;
 
+/// Canonical import surface for day-to-day twill usage.
+pub mod prelude {
+    pub use crate::components::{Button, ButtonSize, ButtonVariant};
+    pub use crate::style::Style;
+    pub use crate::tokens::{
+        AnimationToken, BackgroundColor, BackgroundColorVar, BorderRadius, BorderStyle,
+        BorderWidth, Breakpoint, Color, ColorFamily, ColorValue, ColorValueToken, Container,
+        DivideWidth, DropShadow, DynamicSemanticTheme, Easing, FontFamily, FontSize, FontSizeVar,
+        FontWeight, InsetShadow, LetterSpacing, LineHeight, MotionDefaults, OutlineStyle,
+        Percentage, Perspective, RingWidth, Scale, SemanticColor, SemanticThemeVars, Shadow,
+        Spacing, SpecialColor, TextAlign, TextDecoration, TextOverflow, TextTransform,
+        TransitionDuration, TransitionProperty, WhiteSpace, WordBreak,
+    };
+    pub use crate::traits::{
+        ComputeValue, DefaultStyle, IntoStyle, Merge, Responsive, Sizable, ThemedStyle, Variants,
+    };
+    pub use crate::utilities::{
+        AlignItems, AlignSelf, Columns, Display, Flex, FlexContainer, FlexDirection, FlexWrap,
+        GridContainer, GridTemplate, Height, HeightVar, JustifyContent, Margin, MarginValue,
+        MarginVar, Overflow, Padding, PaddingValue, PaddingVar, Position, Size, SizeConstraints,
+        Width, WidthVar, ZIndex,
+    };
+}
+
 // Re-export commonly used types
-pub use traits::{ComputeValue, Merge};
+pub use traits::{
+    ComputeValue, DefaultStyle, IntoStyle, Merge, Responsive, Sizable, ThemedStyle, Variants,
+};
 
 // Tokens
 pub use tokens::{
@@ -69,7 +95,7 @@ pub use tokens::{
 pub use utilities::{
     AlignItems, AlignSelf, Columns, Display, Flex, FlexContainer, FlexDirection, FlexWrap,
     GridContainer, GridTemplate, Height, HeightVar, JustifyContent, Margin, MarginValue, MarginVar,
-    Overflow, Padding, PaddingValue, PaddingVar, Position, SizeConstraints, Width, WidthVar,
+    Overflow, Padding, PaddingValue, PaddingVar, Position, Size, SizeConstraints, Width, WidthVar,
     ZIndex,
 };
 
@@ -78,14 +104,6 @@ pub use style::Style;
 
 // Components
 pub use components::{Button, ButtonSize, ButtonVariant};
-
-// Backends (feature-gated)
-#[cfg(feature = "egui")]
-pub use backends::egui;
-#[cfg(feature = "iced")]
-pub use backends::iced;
-#[cfg(feature = "slint")]
-pub use backends::slint;
 
 // Color shortcuts
 pub mod colors {
@@ -233,6 +251,21 @@ mod tests {
     fn test_button_component() {
         let btn = Button::primary();
         let style = btn.style();
+        assert_eq!(
+            style.background_color,
+            Some(BackgroundColor::palette(Color::blue(Scale::S500)))
+        );
+    }
+
+    #[test]
+    fn test_prelude_merge_and_into_style() {
+        use crate::prelude::*;
+
+        let style = Style::new()
+            .with(Button::primary())
+            .merge(Padding::all(Spacing::S2));
+
+        assert_eq!(style.padding, Some(Padding::all(Spacing::S2)));
         assert_eq!(
             style.background_color,
             Some(BackgroundColor::palette(Color::blue(Scale::S500)))

@@ -918,11 +918,15 @@ impl Size {
 
 /// Width utility.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct Width(pub Option<Size>);
+pub struct Width(Option<Size>);
 
 impl Width {
     pub fn new(size: Size) -> Self {
         Self(Some(size))
+    }
+
+    pub const fn size(self) -> Option<Size> {
+        self.0
     }
 
     /// Width from spacing scale (`w-<number>` and `w-px`).
@@ -1041,13 +1045,41 @@ impl Width {
     }
 }
 
+impl From<Size> for Width {
+    fn from(value: Size) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<Spacing> for Width {
+    fn from(value: Spacing) -> Self {
+        Self::spacing(value)
+    }
+}
+
+impl From<crate::tokens::Percentage> for Width {
+    fn from(value: crate::tokens::Percentage) -> Self {
+        Self::fraction(value)
+    }
+}
+
+impl From<crate::tokens::Container> for Width {
+    fn from(value: crate::tokens::Container) -> Self {
+        Self::container(value)
+    }
+}
+
 /// Height utility.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub struct Height(pub Option<Size>);
+pub struct Height(Option<Size>);
 
 impl Height {
     pub fn new(size: Size) -> Self {
         Self(Some(size))
+    }
+
+    pub const fn size(self) -> Option<Size> {
+        self.0
     }
     /// Height from spacing scale (`h-<number>` and `h-px`).
     pub fn spacing(spacing: Spacing) -> Self {
@@ -1158,13 +1190,37 @@ impl Height {
     }
 }
 
+impl From<Size> for Height {
+    fn from(value: Size) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<Spacing> for Height {
+    fn from(value: Spacing) -> Self {
+        Self::spacing(value)
+    }
+}
+
+impl From<crate::tokens::Percentage> for Height {
+    fn from(value: crate::tokens::Percentage) -> Self {
+        Self::fraction(value)
+    }
+}
+
+impl From<crate::tokens::Container> for Height {
+    fn from(value: crate::tokens::Container) -> Self {
+        Self::new(Size::Container(value))
+    }
+}
+
 /// Min/Max width constraints.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct SizeConstraints {
-    pub min_width: Option<Size>,
-    pub max_width: Option<Size>,
-    pub min_height: Option<Size>,
-    pub max_height: Option<Size>,
+    pub(crate) min_width: Option<Size>,
+    pub(crate) max_width: Option<Size>,
+    pub(crate) min_height: Option<Size>,
+    pub(crate) max_height: Option<Size>,
 }
 
 impl SizeConstraints {
@@ -1187,6 +1243,22 @@ impl SizeConstraints {
     pub fn max_height(mut self, size: Size) -> Self {
         self.max_height = Some(size);
         self
+    }
+
+    pub const fn min_width_value(&self) -> Option<Size> {
+        self.min_width
+    }
+
+    pub const fn max_width_value(&self) -> Option<Size> {
+        self.max_width
+    }
+
+    pub const fn min_height_value(&self) -> Option<Size> {
+        self.min_height
+    }
+
+    pub const fn max_height_value(&self) -> Option<Size> {
+        self.max_height
     }
 }
 
@@ -1317,68 +1389,77 @@ mod tests {
 
     #[test]
     fn test_screen_size_value() {
-        assert_eq!(Width::screen().0, Some(Size::ScreenWidth));
-        assert_eq!(Height::screen().0, Some(Size::ScreenHeight));
+        assert_eq!(Width::screen().size(), Some(Size::ScreenWidth));
+        assert_eq!(Height::screen().size(), Some(Size::ScreenHeight));
     }
 
     #[test]
     fn test_width_family_constructors() {
-        assert_eq!(Width::w(Spacing::S24).0, Some(Size::Spacing(Spacing::S24)));
         assert_eq!(
-            Width::w_fraction(crate::tokens::Percentage::S1_2).0,
+            Width::w(Spacing::S24).size(),
+            Some(Size::Spacing(Spacing::S24))
+        );
+        assert_eq!(
+            Width::w_fraction(crate::tokens::Percentage::S1_2).size(),
             Some(Size::Percentage(crate::tokens::Percentage::S1_2))
         );
         assert_eq!(
-            Width::w_container(crate::tokens::Container::Md).0,
+            Width::w_container(crate::tokens::Container::Md).size(),
             Some(Size::Container(crate::tokens::Container::Md))
         );
-        assert_eq!(Width::w_px().0, Some(Size::Spacing(Spacing::Px)));
-        assert_eq!(Width::w_full().0, Some(Size::Full));
-        assert_eq!(Width::w_auto().0, Some(Size::Auto));
-        assert_eq!(Width::w_screen().0, Some(Size::ScreenWidth));
-        assert_eq!(Width::w_dvw().0, Some(Size::Dvw));
-        assert_eq!(Width::w_lvw().0, Some(Size::Lvw));
-        assert_eq!(Width::w_svw().0, Some(Size::Svw));
-        assert_eq!(Width::w_min().0, Some(Size::MinContent));
-        assert_eq!(Width::w_max().0, Some(Size::MaxContent));
-        assert_eq!(Width::w_fit().0, Some(Size::Fit));
+        assert_eq!(Width::w_px().size(), Some(Size::Spacing(Spacing::Px)));
+        assert_eq!(Width::w_full().size(), Some(Size::Full));
+        assert_eq!(Width::w_auto().size(), Some(Size::Auto));
+        assert_eq!(Width::w_screen().size(), Some(Size::ScreenWidth));
+        assert_eq!(Width::w_dvw().size(), Some(Size::Dvw));
+        assert_eq!(Width::w_lvw().size(), Some(Size::Lvw));
+        assert_eq!(Width::w_svw().size(), Some(Size::Svw));
+        assert_eq!(Width::w_min().size(), Some(Size::MinContent));
+        assert_eq!(Width::w_max().size(), Some(Size::MaxContent));
+        assert_eq!(Width::w_fit().size(), Some(Size::Fit));
     }
 
     #[test]
     fn test_width_custom_value_constructors() {
         const PANEL_W: WidthVar = WidthVar::new("--panel-w");
-        assert_eq!(Width::w_var(PANEL_W).0, Some(Size::Var(PANEL_W)));
-        assert_eq!(Width::w_px_value(280).0, Some(Size::Px(280)));
+        assert_eq!(Width::w_var(PANEL_W).size(), Some(Size::Var(PANEL_W)));
+        assert_eq!(Width::w_px_value(280).size(), Some(Size::Px(280)));
     }
 
     #[test]
     fn test_height_family_constructors() {
-        assert_eq!(Height::h(Spacing::S24).0, Some(Size::Spacing(Spacing::S24)));
         assert_eq!(
-            Height::h_fraction(crate::tokens::Percentage::S1_2).0,
+            Height::h(Spacing::S24).size(),
+            Some(Size::Spacing(Spacing::S24))
+        );
+        assert_eq!(
+            Height::h_fraction(crate::tokens::Percentage::S1_2).size(),
             Some(Size::Percentage(crate::tokens::Percentage::S1_2))
         );
-        assert_eq!(Height::h_px().0, Some(Size::Spacing(Spacing::Px)));
-        assert_eq!(Height::h_full().0, Some(Size::Full));
-        assert_eq!(Height::h_auto().0, Some(Size::Auto));
-        assert_eq!(Height::h_screen().0, Some(Size::ScreenHeight));
-        assert_eq!(Height::h_dvw().0, Some(Size::Dvw));
-        assert_eq!(Height::h_dvh().0, Some(Size::Dvh));
-        assert_eq!(Height::h_lvw().0, Some(Size::Lvw));
-        assert_eq!(Height::h_lvh().0, Some(Size::Lvh));
-        assert_eq!(Height::h_svw().0, Some(Size::Svw));
-        assert_eq!(Height::h_svh().0, Some(Size::Svh));
-        assert_eq!(Height::h_min().0, Some(Size::MinContent));
-        assert_eq!(Height::h_max().0, Some(Size::MaxContent));
-        assert_eq!(Height::h_fit().0, Some(Size::Fit));
-        assert_eq!(Height::h_lh().0, Some(Size::Lh));
+        assert_eq!(Height::h_px().size(), Some(Size::Spacing(Spacing::Px)));
+        assert_eq!(Height::h_full().size(), Some(Size::Full));
+        assert_eq!(Height::h_auto().size(), Some(Size::Auto));
+        assert_eq!(Height::h_screen().size(), Some(Size::ScreenHeight));
+        assert_eq!(Height::h_dvw().size(), Some(Size::Dvw));
+        assert_eq!(Height::h_dvh().size(), Some(Size::Dvh));
+        assert_eq!(Height::h_lvw().size(), Some(Size::Lvw));
+        assert_eq!(Height::h_lvh().size(), Some(Size::Lvh));
+        assert_eq!(Height::h_svw().size(), Some(Size::Svw));
+        assert_eq!(Height::h_svh().size(), Some(Size::Svh));
+        assert_eq!(Height::h_min().size(), Some(Size::MinContent));
+        assert_eq!(Height::h_max().size(), Some(Size::MaxContent));
+        assert_eq!(Height::h_fit().size(), Some(Size::Fit));
+        assert_eq!(Height::h_lh().size(), Some(Size::Lh));
     }
 
     #[test]
     fn test_height_custom_value_constructors() {
         const PANEL_H: HeightVar = HeightVar::new("--panel-h");
-        assert_eq!(Height::h_var(PANEL_H).0, Some(Size::HeightVar(PANEL_H)));
-        assert_eq!(Height::h_px_value(320).0, Some(Size::Px(320)));
+        assert_eq!(
+            Height::h_var(PANEL_H).size(),
+            Some(Size::HeightVar(PANEL_H))
+        );
+        assert_eq!(Height::h_px_value(320).size(), Some(Size::Px(320)));
     }
 
     #[test]

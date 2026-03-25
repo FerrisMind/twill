@@ -8,6 +8,112 @@ use crate::tokens::{
 use crate::traits::ComputeValue;
 use crate::utilities::PaddingValue;
 
+/// Canonical egui conversion trait for typed twill values.
+pub trait ToEgui {
+    type Output;
+
+    fn to_egui(self) -> Self::Output;
+}
+
+/// Direct egui rendering helpers for high-level twill components.
+pub trait EguiButtonExt {
+    fn render_egui(&self, ui: &mut egui::Ui, label: &str) -> egui::Response;
+}
+
+impl ToEgui for Color {
+    type Output = egui::Color32;
+
+    fn to_egui(self) -> Self::Output {
+        to_color32(self)
+    }
+}
+
+impl ToEgui for ColorValue {
+    type Output = egui::Color32;
+
+    fn to_egui(self) -> Self::Output {
+        to_color32_value(self)
+    }
+}
+
+impl ToEgui for Spacing {
+    type Output = egui::Vec2;
+
+    fn to_egui(self) -> Self::Output {
+        to_vec2(self)
+    }
+}
+
+impl ToEgui for BorderRadius {
+    type Output = f32;
+
+    fn to_egui(self) -> Self::Output {
+        to_corner_radius(self)
+    }
+}
+
+impl ToEgui for Blur {
+    type Output = f32;
+
+    fn to_egui(self) -> Self::Output {
+        to_blur_radius(self)
+    }
+}
+
+impl ToEgui for AspectRatio {
+    type Output = Option<f32>;
+
+    fn to_egui(self) -> Self::Output {
+        to_aspect_ratio(self)
+    }
+}
+
+impl ToEgui for Shadow {
+    type Output = Option<egui::epaint::Shadow>;
+
+    fn to_egui(self) -> Self::Output {
+        to_shadow(self)
+    }
+}
+
+impl ToEgui for FontSize {
+    type Output = f32;
+
+    fn to_egui(self) -> Self::Output {
+        to_font_size(self)
+    }
+}
+
+impl ToEgui for TransitionDuration {
+    type Output = std::time::Duration;
+
+    fn to_egui(self) -> Self::Output {
+        to_duration(self)
+    }
+}
+
+impl ToEgui for Cursor {
+    type Output = egui::CursorIcon;
+
+    fn to_egui(self) -> Self::Output {
+        to_cursor_icon(self)
+    }
+}
+
+impl ToEgui for &Style {
+    type Output = egui::Frame;
+
+    fn to_egui(self) -> Self::Output {
+        to_frame(self)
+    }
+}
+
+impl EguiButtonExt for crate::components::Button {
+    fn render_egui(&self, ui: &mut egui::Ui, label: &str) -> egui::Response {
+        twill_button(ui, self, label)
+    }
+}
+
 fn apply_opacity_to_color32(color: egui::Color32, opacity: f32) -> egui::Color32 {
     let alpha = if opacity.is_finite() {
         ((color.a() as f32) * opacity.clamp(0.0, 1.0)).round() as u8
@@ -332,7 +438,7 @@ pub fn twill_button(
         ));
     }
 
-    if button.disabled {
+    if button.is_disabled() {
         ui.add_enabled(false, btn)
     } else {
         ui.add(btn)
@@ -387,5 +493,21 @@ mod tests {
     fn test_shadow_uses_custom_color() {
         let shadow = to_shadow_with_color(Shadow::Sm, Some(Color::red(Scale::S500))).unwrap();
         assert!(shadow.color.r() > shadow.color.g());
+    }
+
+    #[test]
+    fn test_to_egui_trait_for_color() {
+        let color = Color::blue(Scale::S500).to_egui();
+        assert!(color.b() >= color.r());
+    }
+
+    #[test]
+    fn test_to_egui_trait_for_style() {
+        let style = Style::new().bg(Color::blue(Scale::S500));
+        let frame = style.to_egui();
+        assert_eq!(
+            frame.fill.b(),
+            Color::blue(Scale::S500).compute().to_rgb8().2
+        );
     }
 }

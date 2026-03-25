@@ -9,21 +9,11 @@ pub mod iced;
 #[cfg(feature = "slint")]
 pub mod slint;
 
-// Re-export common types
 #[cfg(feature = "egui")]
-pub use egui::{
-    to_color32, to_color32_value, to_corner_radius, to_frame, to_vec2,
-    twill_button as egui_twill_button,
-};
+pub use egui::{EguiButtonExt, ToEgui};
 
 #[cfg(feature = "iced")]
-pub use iced::{
-    to_color, to_color_value, to_text_alignment, to_text_alignment_with_direction,
-    twill_button as iced_twill_button,
-};
+pub use iced::{IcedButtonExt, ToIced};
 
 #[cfg(feature = "slint")]
-pub use slint::{
-    SlintColors, SlintRadius, SlintSpacing, to_length, to_radius,
-    to_shadow_with_color as to_slint_shadow_with_color, to_slint_color,
-};
+pub use slint::{SlintColors, SlintRadius, SlintSpacing, ToSlint};

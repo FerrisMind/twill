@@ -9,7 +9,7 @@ use crate::tokens::{
     MotionDefaults, OutlineStyle, Percentage, Perspective, RingWidth, Shadow, Spacing, TextAlign,
     TextDecoration, TextShadow, TextTransform, TransitionDuration, TransitionProperty,
 };
-use crate::traits::Merge;
+use crate::traits::{IntoStyle, Merge};
 use crate::utilities::{
     AlignItems, Columns, Display, Flex, FlexContainer, FlexDirection, GridContainer, GridTemplate,
     Height, HeightVar, JustifyContent, JustifyItems, JustifySelf, Margin, MarginValue, ObjectFit,
@@ -21,82 +21,82 @@ use crate::utilities::{
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Style {
     // Layout
-    pub display: Option<Display>,
-    pub visibility: Option<Visibility>,
-    pub position: Option<Position>,
-    pub z_index: Option<ZIndex>,
-    pub overflow: Option<Overflow>,
-    pub overflow_x: Option<Overflow>,
-    pub overflow_y: Option<Overflow>,
-    pub aspect_ratio: Option<AspectRatio>,
-    pub object_fit: Option<ObjectFit>,
-    pub columns: Option<Columns>,
-    pub column_gap: Option<Spacing>,
-    pub columns_max_count: Option<NonZeroU8>,
+    pub(crate) display: Option<Display>,
+    pub(crate) visibility: Option<Visibility>,
+    pub(crate) position: Option<Position>,
+    pub(crate) z_index: Option<ZIndex>,
+    pub(crate) overflow: Option<Overflow>,
+    pub(crate) overflow_x: Option<Overflow>,
+    pub(crate) overflow_y: Option<Overflow>,
+    pub(crate) aspect_ratio: Option<AspectRatio>,
+    pub(crate) object_fit: Option<ObjectFit>,
+    pub(crate) columns: Option<Columns>,
+    pub(crate) column_gap: Option<Spacing>,
+    pub(crate) columns_max_count: Option<NonZeroU8>,
 
     // Flex/Grid
-    pub flex: Option<FlexContainer>,
-    pub flex_item: Option<Flex>,
-    pub grid: Option<GridContainer>,
-    pub place_content: Option<PlaceContent>,
-    pub place_items: Option<PlaceItems>,
-    pub justify_items: Option<JustifyItems>,
-    pub justify_self: Option<JustifySelf>,
+    pub(crate) flex: Option<FlexContainer>,
+    pub(crate) flex_item: Option<Flex>,
+    pub(crate) grid: Option<GridContainer>,
+    pub(crate) place_content: Option<PlaceContent>,
+    pub(crate) place_items: Option<PlaceItems>,
+    pub(crate) justify_items: Option<JustifyItems>,
+    pub(crate) justify_self: Option<JustifySelf>,
 
     // Spacing
-    pub padding: Option<Padding>,
-    pub margin: Option<Margin>,
+    pub(crate) padding: Option<Padding>,
+    pub(crate) margin: Option<Margin>,
 
     // Size
-    pub width: Option<Width>,
-    pub height: Option<Height>,
-    pub constraints: Option<SizeConstraints>,
+    pub(crate) width: Option<Width>,
+    pub(crate) height: Option<Height>,
+    pub(crate) constraints: Option<SizeConstraints>,
 
     // Background
-    pub background_color: Option<BackgroundColor>,
-    pub opacity: Option<f32>,
+    pub(crate) background_color: Option<BackgroundColor>,
+    pub(crate) opacity: Option<f32>,
 
     // Effects
-    pub blur: Option<Blur>,
-    pub drop_shadow: Option<DropShadow>,
-    pub perspective: Option<Perspective>,
+    pub(crate) blur: Option<Blur>,
+    pub(crate) drop_shadow: Option<DropShadow>,
+    pub(crate) perspective: Option<Perspective>,
 
     // Border
-    pub border_radius: Option<BorderRadius>,
-    pub border_width: Option<BorderWidth>,
-    pub border_style: Option<BorderStyle>,
-    pub border_color: Option<Color>,
-    pub outline_width: Option<BorderWidth>,
-    pub outline_style: Option<OutlineStyle>,
-    pub outline_color: Option<Color>,
-    pub ring_width: Option<RingWidth>,
-    pub ring_color: Option<Color>,
+    pub(crate) border_radius: Option<BorderRadius>,
+    pub(crate) border_width: Option<BorderWidth>,
+    pub(crate) border_style: Option<BorderStyle>,
+    pub(crate) border_color: Option<Color>,
+    pub(crate) outline_width: Option<BorderWidth>,
+    pub(crate) outline_style: Option<OutlineStyle>,
+    pub(crate) outline_color: Option<Color>,
+    pub(crate) ring_width: Option<RingWidth>,
+    pub(crate) ring_color: Option<Color>,
 
     // Shadow
-    pub box_shadow: Option<Shadow>,
-    pub inset_shadow: Option<InsetShadow>,
-    pub shadow_color: Option<Color>,
+    pub(crate) box_shadow: Option<Shadow>,
+    pub(crate) inset_shadow: Option<InsetShadow>,
+    pub(crate) shadow_color: Option<Color>,
 
     // Typography
-    pub font_family: Option<FontFamily>,
-    pub font_size: Option<FontSize>,
-    pub font_weight: Option<FontWeight>,
-    pub letter_spacing: Option<LetterSpacing>,
-    pub line_height: Option<LineHeight>,
-    pub text_align: Option<TextAlign>,
-    pub text_decoration: Option<TextDecoration>,
-    pub text_transform: Option<TextTransform>,
-    pub text_color: Option<Color>,
-    pub text_shadow: Option<TextShadow>,
+    pub(crate) font_family: Option<FontFamily>,
+    pub(crate) font_size: Option<FontSize>,
+    pub(crate) font_weight: Option<FontWeight>,
+    pub(crate) letter_spacing: Option<LetterSpacing>,
+    pub(crate) line_height: Option<LineHeight>,
+    pub(crate) text_align: Option<TextAlign>,
+    pub(crate) text_decoration: Option<TextDecoration>,
+    pub(crate) text_transform: Option<TextTransform>,
+    pub(crate) text_color: Option<Color>,
+    pub(crate) text_shadow: Option<TextShadow>,
 
     // Motion (optional)
-    pub transition_property: Option<String>,
-    pub transition_duration: Option<TransitionDuration>,
-    pub transition_timing_function: Option<Easing>,
-    pub transition_delay: Option<TransitionDuration>,
-    pub animation: Option<AnimationToken>,
+    pub(crate) transition_property: Option<String>,
+    pub(crate) transition_duration: Option<TransitionDuration>,
+    pub(crate) transition_timing_function: Option<Easing>,
+    pub(crate) transition_delay: Option<TransitionDuration>,
+    pub(crate) animation: Option<AnimationToken>,
     // Interactivity
-    pub cursor: Option<Cursor>,
+    pub(crate) cursor: Option<Cursor>,
 }
 
 impl Style {
@@ -108,6 +108,94 @@ impl Style {
     /// Returns `true` when no style fields are set.
     pub fn is_empty(&self) -> bool {
         self == &Self::default()
+    }
+
+    /// Merge any style-like value into this style.
+    pub fn with<T>(self, other: T) -> Self
+    where
+        T: IntoStyle,
+    {
+        self.merge(other)
+    }
+
+    /// Returns the configured display mode, if any.
+    pub const fn display_mode(&self) -> Option<Display> {
+        self.display
+    }
+
+    /// Returns the configured flex container settings, if any.
+    pub const fn flex_container(&self) -> Option<&FlexContainer> {
+        self.flex.as_ref()
+    }
+
+    /// Returns the configured flex item settings, if any.
+    pub const fn flex_item_value(&self) -> Option<&Flex> {
+        self.flex_item.as_ref()
+    }
+
+    /// Returns the configured grid container settings, if any.
+    pub const fn grid_container(&self) -> Option<&GridContainer> {
+        self.grid.as_ref()
+    }
+
+    /// Returns the configured padding, if any.
+    pub const fn padding_value(&self) -> Option<&Padding> {
+        self.padding.as_ref()
+    }
+
+    /// Returns the configured margin, if any.
+    pub const fn margin_value(&self) -> Option<&Margin> {
+        self.margin.as_ref()
+    }
+
+    /// Returns the configured width token, if any.
+    pub const fn width_value(&self) -> Option<Width> {
+        self.width
+    }
+
+    /// Returns the configured height token, if any.
+    pub const fn height_value(&self) -> Option<Height> {
+        self.height
+    }
+
+    /// Returns the configured size constraints, if any.
+    pub const fn constraints_value(&self) -> Option<&SizeConstraints> {
+        self.constraints.as_ref()
+    }
+
+    /// Returns the configured background token, if any.
+    pub const fn background_color_value(&self) -> Option<BackgroundColor> {
+        self.background_color
+    }
+
+    /// Returns the configured opacity, if any.
+    pub const fn opacity_value(&self) -> Option<f32> {
+        self.opacity
+    }
+
+    /// Returns the configured border radius, if any.
+    pub const fn border_radius_value(&self) -> Option<BorderRadius> {
+        self.border_radius
+    }
+
+    /// Returns the configured border color, if any.
+    pub const fn border_color_value(&self) -> Option<Color> {
+        self.border_color
+    }
+
+    /// Returns the configured text color, if any.
+    pub const fn text_color_value(&self) -> Option<Color> {
+        self.text_color
+    }
+
+    /// Returns the configured font size, if any.
+    pub const fn font_size_value(&self) -> Option<FontSize> {
+        self.font_size
+    }
+
+    /// Returns the configured box shadow token, if any.
+    pub const fn box_shadow_value(&self) -> Option<Shadow> {
+        self.box_shadow
     }
 
     // === Layout ===
@@ -877,22 +965,31 @@ impl Style {
     }
 
     /// Set padding.
-    pub fn padding(mut self, padding: Padding) -> Self {
-        self.padding = Some(padding);
+    pub fn padding<P>(mut self, padding: P) -> Self
+    where
+        P: Into<Padding>,
+    {
+        self.padding = Some(padding.into());
         self
     }
 
     /// Set margin.
-    pub fn margin(mut self, margin: Margin) -> Self {
-        self.margin = Some(margin);
+    pub fn margin<M>(mut self, margin: M) -> Self
+    where
+        M: Into<Margin>,
+    {
+        self.margin = Some(margin.into());
         self
     }
 
     // === Size ===
 
     /// Set width.
-    pub fn width(mut self, width: Width) -> Self {
-        self.width = Some(width);
+    pub fn width<W>(mut self, width: W) -> Self
+    where
+        W: Into<Width>,
+    {
+        self.width = Some(width.into());
         self
     }
 
@@ -982,8 +1079,11 @@ impl Style {
     }
 
     /// Set height.
-    pub fn height(mut self, height: Height) -> Self {
-        self.height = Some(height);
+    pub fn height<H>(mut self, height: H) -> Self
+    where
+        H: Into<Height>,
+    {
+        self.height = Some(height.into());
         self
     }
 
@@ -1591,8 +1691,12 @@ fn merge_constraints(
     }
 }
 
-impl Merge<Self> for Style {
-    fn merge(&self, other: Self) -> Self {
+impl<T> Merge<T> for Style
+where
+    T: IntoStyle,
+{
+    fn merge(&self, other: T) -> Self {
+        let other = other.into_style();
         Self {
             display: other.display.or(self.display),
             visibility: other.visibility.or(self.visibility),
@@ -1692,6 +1796,28 @@ impl From<FlexContainer> for Style {
 impl From<GridContainer> for Style {
     fn from(value: GridContainer) -> Self {
         Self::new().display(Display::Grid).grid(value)
+    }
+}
+
+impl<T> Extend<T> for Style
+where
+    T: IntoStyle,
+{
+    fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
+        for item in iter {
+            *self = self.merge(item);
+        }
+    }
+}
+
+impl<T> std::iter::FromIterator<T> for Style
+where
+    T: IntoStyle,
+{
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let mut style = Self::new();
+        style.extend(iter);
+        style
     }
 }
 
@@ -2222,5 +2348,57 @@ mod tests {
                 max_height: Some(Size::ScreenHeight),
             })
         );
+    }
+
+    #[test]
+    fn test_style_getters_expose_public_state_without_public_fields() {
+        let style = Style::new()
+            .display(Display::Flex)
+            .padding(Padding::all(Spacing::S2))
+            .width(Spacing::S24)
+            .height(Size::ScreenHeight)
+            .bg(Color::blue(Scale::S500))
+            .text_color(Color::white())
+            .rounded(BorderRadius::Md)
+            .shadow(Shadow::Sm)
+            .opacity(0.5);
+
+        assert_eq!(style.display_mode(), Some(Display::Flex));
+        assert_eq!(style.padding_value(), Some(&Padding::all(Spacing::S2)));
+        assert_eq!(style.width_value(), Some(Width::from(Spacing::S24)));
+        assert_eq!(style.height_value(), Some(Height::from(Size::ScreenHeight)));
+        assert_eq!(
+            style.background_color_value(),
+            Some(BackgroundColor::palette(Color::blue(Scale::S500)))
+        );
+        assert_eq!(style.text_color_value(), Some(Color::white()));
+        assert_eq!(style.border_radius_value(), Some(BorderRadius::Md));
+        assert_eq!(style.box_shadow_value(), Some(Shadow::Sm));
+        assert_eq!(style.opacity_value(), Some(0.5));
+    }
+
+    #[test]
+    fn test_style_from_iterator_and_extend_accept_style_like_values() {
+        let style: Style = [
+            Padding::all(Spacing::S2).into_style(),
+            Width::from(Spacing::S24).into_style(),
+            Button::primary().into_style(),
+        ]
+        .into_iter()
+        .collect();
+
+        assert_eq!(style.padding_value(), Some(&Padding::all(Spacing::S2)));
+        assert_eq!(style.width_value(), Some(Width::from(Spacing::S24)));
+        assert_eq!(
+            style.background_color_value(),
+            Some(BackgroundColor::palette(Color::blue(Scale::S500)))
+        );
+
+        let mut extended = Style::new();
+        extended.extend([Padding::all(Spacing::S1), Margin::auto_x(), Button::ghost()]);
+
+        assert_eq!(extended.padding_value(), Some(&Padding::all(Spacing::S1)));
+        assert_eq!(extended.margin_value(), Some(&Margin::auto_x()));
+        assert_eq!(extended.text_color_value(), Some(Color::gray(Scale::S900)));
     }
 }

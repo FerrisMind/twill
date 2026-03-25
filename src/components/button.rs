@@ -4,7 +4,7 @@ use std::fmt;
 
 use crate::style::Style;
 use crate::tokens::{BorderRadius, Color, FontSize, FontWeight, Scale, Shadow, Spacing};
-use crate::traits::Merge;
+use crate::traits::{DefaultStyle, Merge, Sizable, Variants};
 
 /// Button variant.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
@@ -94,10 +94,10 @@ impl fmt::Display for ButtonSize {
 /// Button component.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct Button {
-    pub variant: ButtonVariant,
-    pub size: ButtonSize,
-    pub disabled: bool,
-    pub full_width: bool,
+    variant: ButtonVariant,
+    size: ButtonSize,
+    disabled: bool,
+    full_width: bool,
 }
 
 impl Button {
@@ -257,7 +257,7 @@ impl Button {
         }
 
         if self.disabled {
-            style.opacity = Some(0.5);
+            style = style.opacity(0.5);
         }
 
         style
@@ -331,6 +331,28 @@ impl Button {
 impl From<(ButtonVariant, ButtonSize)> for Button {
     fn from((variant, size): (ButtonVariant, ButtonSize)) -> Self {
         Self::new(variant, size)
+    }
+}
+
+impl Variants for Button {
+    type Variant = ButtonVariant;
+
+    fn from_variant(variant: Self::Variant) -> Self {
+        Self::new(variant, ButtonSize::Md)
+    }
+}
+
+impl Sizable for Button {
+    type Size = ButtonSize;
+
+    fn from_size(size: Self::Size) -> Self {
+        Self::new(ButtonVariant::Primary, size)
+    }
+}
+
+impl DefaultStyle for Button {
+    fn default_style() -> Style {
+        Self::default().style()
     }
 }
 
@@ -434,5 +456,17 @@ mod tests {
                 ButtonSize::Icon,
             ]
         );
+    }
+
+    #[test]
+    fn test_button_trait_based_api() {
+        let by_variant = Button::from_variant(ButtonVariant::Outline);
+        let by_size = Button::from_size(ButtonSize::Icon);
+
+        assert_eq!(by_variant.variant(), ButtonVariant::Outline);
+        assert_eq!(by_variant.size(), ButtonSize::Md);
+        assert_eq!(by_size.variant(), ButtonVariant::Primary);
+        assert_eq!(by_size.size(), ButtonSize::Icon);
+        assert_eq!(Button::default_style(), Button::default().style());
     }
 }

@@ -8,6 +8,93 @@ use crate::tokens::{
 };
 use crate::traits::ComputeValue;
 
+/// Canonical Slint conversion trait for typed twill values.
+pub trait ToSlint {
+    type Output;
+
+    fn to_slint(self) -> Self::Output;
+}
+
+impl ToSlint for Color {
+    type Output = slint::Color;
+
+    fn to_slint(self) -> Self::Output {
+        to_slint_color(self)
+    }
+}
+
+impl ToSlint for crate::tokens::ColorValue {
+    type Output = slint::Color;
+
+    fn to_slint(self) -> Self::Output {
+        to_slint_color_value(self)
+    }
+}
+
+impl ToSlint for Spacing {
+    type Output = f32;
+
+    fn to_slint(self) -> Self::Output {
+        to_length(self)
+    }
+}
+
+impl ToSlint for BorderRadius {
+    type Output = f32;
+
+    fn to_slint(self) -> Self::Output {
+        to_radius(self)
+    }
+}
+
+impl ToSlint for Blur {
+    type Output = f32;
+
+    fn to_slint(self) -> Self::Output {
+        to_blur_radius(self)
+    }
+}
+
+impl ToSlint for Cursor {
+    type Output = slint::private_unstable_api::re_exports::MouseCursor;
+
+    fn to_slint(self) -> Self::Output {
+        to_cursor_icon(self)
+    }
+}
+
+impl ToSlint for AspectRatio {
+    type Output = Option<f32>;
+
+    fn to_slint(self) -> Self::Output {
+        to_aspect_ratio(self)
+    }
+}
+
+impl ToSlint for FontSize {
+    type Output = f32;
+
+    fn to_slint(self) -> Self::Output {
+        to_font_size(self)
+    }
+}
+
+impl ToSlint for FontWeight {
+    type Output = i32;
+
+    fn to_slint(self) -> Self::Output {
+        to_font_weight(self)
+    }
+}
+
+impl ToSlint for TransitionDuration {
+    type Output = i32;
+
+    fn to_slint(self) -> Self::Output {
+        to_duration(self)
+    }
+}
+
 fn spacing_to_px(spacing: Spacing) -> f32 {
     match spacing.to_px() {
         Some(px) => px as f32,
@@ -325,5 +412,11 @@ mod tests {
     fn test_shadow_uses_custom_color() {
         let (_, _, c) = to_shadow_with_color(Shadow::Sm, Some(Color::red(Scale::S500)));
         assert!(c.red() > c.green());
+    }
+
+    #[test]
+    fn test_to_slint_trait_for_color() {
+        let color = Color::green(Scale::S500).to_slint();
+        assert!(color.green() >= color.red());
     }
 }

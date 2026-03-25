@@ -21,6 +21,136 @@ use iced::advanced::{Clipboard, Shell, Widget as AdvancedWidget};
 use iced::widget::{canvas, stack};
 use iced::{ContentFit, Length, Point, Rectangle, Renderer, Size, Theme, Vector, border, mouse};
 
+/// Canonical iced conversion trait for typed twill values.
+pub trait ToIced {
+    type Output;
+
+    fn to_iced(self) -> Self::Output;
+}
+
+/// Direct iced rendering helpers for high-level twill components.
+pub trait IcedButtonExt {
+    fn render_iced<'a, Message: Clone + 'a>(
+        &self,
+        label: &'a str,
+        on_press: Message,
+    ) -> iced::Element<'a, Message>;
+}
+
+impl ToIced for Color {
+    type Output = iced::Color;
+
+    fn to_iced(self) -> Self::Output {
+        to_color(self)
+    }
+}
+
+impl ToIced for ColorValue {
+    type Output = iced::Color;
+
+    fn to_iced(self) -> Self::Output {
+        to_color_value(self)
+    }
+}
+
+impl ToIced for Spacing {
+    type Output = iced::Padding;
+
+    fn to_iced(self) -> Self::Output {
+        to_padding(self)
+    }
+}
+
+impl ToIced for BorderRadius {
+    type Output = f32;
+
+    fn to_iced(self) -> Self::Output {
+        to_border_radius(self)
+    }
+}
+
+impl ToIced for Blur {
+    type Output = f32;
+
+    fn to_iced(self) -> Self::Output {
+        to_blur_radius(self)
+    }
+}
+
+impl ToIced for AspectRatio {
+    type Output = Option<f32>;
+
+    fn to_iced(self) -> Self::Output {
+        to_aspect_ratio(self)
+    }
+}
+
+impl ToIced for ObjectFit {
+    type Output = ContentFit;
+
+    fn to_iced(self) -> Self::Output {
+        to_content_fit(self)
+    }
+}
+
+impl ToIced for Shadow {
+    type Output = iced::Shadow;
+
+    fn to_iced(self) -> Self::Output {
+        to_shadow_with_color(self, None)
+    }
+}
+
+impl ToIced for FontSize {
+    type Output = f32;
+
+    fn to_iced(self) -> Self::Output {
+        to_font_size(self)
+    }
+}
+
+impl ToIced for FontWeight {
+    type Output = iced::font::Weight;
+
+    fn to_iced(self) -> Self::Output {
+        to_font_weight(self)
+    }
+}
+
+impl ToIced for TextAlign {
+    type Output = iced::widget::text::Alignment;
+
+    fn to_iced(self) -> Self::Output {
+        to_text_alignment(self)
+    }
+}
+
+impl ToIced for TransitionDuration {
+    type Output = std::time::Duration;
+
+    fn to_iced(self) -> Self::Output {
+        to_duration(self)
+    }
+}
+
+impl ToIced for Cursor {
+    type Output = iced::mouse::Interaction;
+
+    fn to_iced(self) -> Self::Output {
+        to_interaction(self)
+    }
+}
+
+impl IcedButtonExt for crate::components::Button {
+    fn render_iced<'a, Message: Clone + 'a>(
+        &self,
+        label: &'a str,
+        on_press: Message,
+    ) -> iced::Element<'a, Message> {
+        twill_button(self, label, on_press)
+    }
+}
+
 fn apply_opacity_to_color(mut color: iced::Color, opacity: f32) -> iced::Color {
     if opacity.is_finite() {
         color.a *= opacity.clamp(0.0, 1.0);
@@ -354,7 +484,7 @@ fn resolve_width(
     width: crate::utilities::Width,
     custom_properties: &[(&str, f32)],
 ) -> Option<ResolvedWidth> {
-    match width.0? {
+    match width.size()? {
         crate::utilities::Size::Spacing(spacing) => {
             Some(ResolvedWidth::Length(Length::Fixed(spacing_to_px(spacing))))
         }
@@ -405,7 +535,7 @@ fn resolve_height(
     height: crate::utilities::Height,
     custom_properties: &[(&str, f32)],
 ) -> Option<ResolvedHeight> {
-    match height.0? {
+    match height.size()? {
         crate::utilities::Size::Spacing(spacing) => Some(ResolvedHeight::Length(Length::Fixed(
             spacing_to_px(spacing),
         ))),
@@ -2869,7 +2999,7 @@ pub fn twill_button<'a, Message: Clone + 'a>(
             left: 16.0,
         });
 
-    let variant = button_cfg.variant;
+    let variant = button_cfg.variant();
     let base_bg_token = style.background_color;
 
     let mut widget = iced::widget::button(iced::widget::text(label).color(to_color(text_color)))
@@ -2932,7 +3062,7 @@ pub fn twill_button<'a, Message: Clone + 'a>(
             }
         });
 
-    if !button_cfg.disabled {
+    if !button_cfg.is_disabled() {
         widget = widget.on_press(on_press);
     }
 

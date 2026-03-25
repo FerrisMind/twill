@@ -2,6 +2,12 @@
 
 use crate::Style;
 
+mod private {
+    pub trait Sealed {}
+
+    impl<T> Sealed for T where T: Into<Style> {}
+}
+
 /// Trait for merging styles together.
 pub trait Merge<T> {
     /// Merge another style into this one, with other taking precedence.
@@ -9,9 +15,20 @@ pub trait Merge<T> {
 }
 
 /// Trait for types that can be converted into a Style.
-pub trait IntoStyle {
+///
+/// This trait is sealed. Implement [`Into<Style>`] for your type instead.
+pub trait IntoStyle: private::Sealed {
     /// Convert this value into a Style struct.
     fn into_style(self) -> Style;
+}
+
+impl<T> IntoStyle for T
+where
+    T: Into<Style>,
+{
+    fn into_style(self) -> Style {
+        self.into()
+    }
 }
 
 /// Trait for defining default styles for components.

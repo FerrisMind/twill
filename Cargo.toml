@@ -1,6 +1,6 @@
 [package]
 name = "twill"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 rust-version = "1.93"
 description = "Idiomatic Rust styling library inspired by Tailwind for native GUI"
