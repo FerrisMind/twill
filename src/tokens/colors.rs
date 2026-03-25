@@ -194,65 +194,66 @@ impl ComputeValue for Color {
     }
 }
 
-use palette::FromColor;
-
-/// RGBA color value.
+/// OKLCH color value with alpha.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ColorValue {
-    pub r: u8,
-    pub g: u8,
-    pub b: u8,
+    pub l: f32,
+    pub c: f32,
+    pub h: f32,
     pub a: f32,
 }
 
 impl ColorValue {
-    pub const TRANSPARENT: Self = Self::new(0, 0, 0, 0.0);
+    pub const TRANSPARENT: Self = Self::new(0.0, 0.0, 0.0, 0.0);
 
-    pub const fn new(r: u8, g: u8, b: u8, a: f32) -> Self {
-        Self { r, g, b, a }
+    pub const fn new(l: f32, c: f32, h: f32, a: f32) -> Self {
+        Self { l, c, h, a }
     }
 
-    pub const fn from_rgb(r: u8, g: u8, b: u8) -> Self {
-        Self::new(r, g, b, 1.0)
+    pub fn from_rgb(r: u8, g: u8, b: u8) -> Self {
+        let (l, c, h) = crate::tokens::oklch::OklchConverter::from_rgb(r, g, b);
+        Self::new(l, c, h, 1.0)
     }
 
     /// Creates a ColorValue from OKLCH parameters
-    pub fn from_oklch(l: f32, c: f32, h: f32) -> Self {
-        let (r, g, b) = crate::tokens::oklch::OklchConverter::to_rgb(l, c, h);
-        Self::from_rgb(r, g, b)
+    pub const fn from_oklch(l: f32, c: f32, h: f32) -> Self {
+        Self::new(l, c, h, 1.0)
     }
 
     fn oklch_components(&self) -> (f32, f32, f32) {
-        let srgb = palette::Srgb::new(
-            self.r as f32 / 255.0,
-            self.g as f32 / 255.0,
-            self.b as f32 / 255.0,
-        );
-        let oklch: palette::Oklch = palette::Oklch::from_color(srgb);
-        let hue = oklch.hue.into_inner();
-        let safe_hue = if hue.is_finite() { hue } else { 0.0 };
-        (oklch.l, oklch.chroma, safe_hue)
+        (self.l, self.c, self.h)
+    }
+
+    /// Converts the stored OKLCH value into displayable sRGB bytes.
+    pub fn to_rgb8(&self) -> (u8, u8, u8) {
+        crate::tokens::oklch::OklchConverter::to_rgb(self.l, self.c, self.h)
+    }
+
+    /// Converts the stored OKLCH value into displayable RGBA bytes.
+    pub fn to_rgba8(&self) -> (u8, u8, u8, u8) {
+        let (r, g, b) = self.to_rgb8();
+        let alpha = (self.a.clamp(0.0, 1.0) * 255.0).round() as u8;
+        (r, g, b, alpha)
     }
 
     /// Darkens the current color based on an OKLCH lightness transformation
     pub fn darken_oklch(&self, amount: f32) -> Self {
         let (l, c, h) = self.oklch_components();
-        let (r, g, b) = crate::tokens::oklch::OklchConverter::darken(l, c, h, amount);
-        Self::new(r, g, b, self.a)
+        let new_l = (l - amount).max(0.0);
+        Self::new(new_l, c, h, self.a)
     }
 
     /// Lightens the current color based on an OKLCH lightness transformation
     pub fn lighten_oklch(&self, amount: f32) -> Self {
         let (l, c, h) = self.oklch_components();
-        let (r, g, b) = crate::tokens::oklch::OklchConverter::lighten(l, c, h, amount);
-        Self::new(r, g, b, self.a)
+        let new_l = (l + amount).min(1.0);
+        Self::new(new_l, c, h, self.a)
     }
 
     /// Rebuilds the color with the same chroma/hue and a new OKLCH lightness.
     pub fn with_oklch_lightness(&self, lightness: f32) -> Self {
         let (_, c, h) = self.oklch_components();
-        let (r, g, b) = crate::tokens::oklch::OklchConverter::to_rgb(lightness, c, h);
-        Self::new(r, g, b, self.a)
+        Self::new(lightness, c, h, self.a)
     }
 
     /// OKLCH perceptual lightness (`L`, 0.0..1.0).
@@ -278,10 +279,9 @@ impl ColorValue {
         ];
         let (_, c, h) = self.oklch_components();
 
-        let mut out = [ColorValue::from_rgb(0, 0, 0); 11];
+        let mut out = [ColorValue::TRANSPARENT; 11];
         for (idx, l) in lightness_steps.iter().enumerate() {
-            let (r, g, b) = crate::tokens::oklch::OklchConverter::to_rgb(*l, c, h);
-            out[idx] = ColorValue::new(r, g, b, self.a);
+            out[idx] = ColorValue::new(*l, c, h, self.a);
         }
         out
     }
@@ -393,14 +393,14 @@ impl ColorValueToken {
 
 impl From<ColorValue> for ColorValueToken {
     fn from(value: ColorValue) -> Self {
-        let alpha = (value.a.clamp(0.0, 1.0) * 255.0).round() as u8;
-        Self(value.r, value.g, value.b, alpha)
+        let (r, g, b, a) = value.to_rgba8();
+        Self(r, g, b, a)
     }
 }
 
 impl From<ColorValueToken> for ColorValue {
     fn from(value: ColorValueToken) -> Self {
-        ColorValue::new(value.0, value.1, value.2, value.3 as f32 / 255.0)
+        ColorValue::from_rgb(value.0, value.1, value.2).with_alpha(value.3 as f32 / 255.0)
     }
 }
 
@@ -783,6 +783,44 @@ fn get_palette_oklch(family: ColorFamily, scale: Scale) -> (f32, f32, f32) {
 mod tests {
     use super::*;
 
+    fn assert_oklch_close(
+        actual: (f32, f32, f32),
+        expected: (f32, f32, f32),
+        lightness_tolerance: f32,
+        chroma_tolerance: f32,
+        hue_tolerance: f32,
+    ) {
+        let lightness_delta = (actual.0 - expected.0).abs();
+        let chroma_delta = (actual.1 - expected.1).abs();
+        let hue_delta = (actual.2 - expected.2)
+            .abs()
+            .min(360.0 - (actual.2 - expected.2).abs());
+
+        assert!(
+            lightness_delta <= lightness_tolerance,
+            "lightness mismatch: actual={}, expected={}, delta={}",
+            actual.0,
+            expected.0,
+            lightness_delta
+        );
+        assert!(
+            chroma_delta <= chroma_tolerance,
+            "chroma mismatch: actual={}, expected={}, delta={}",
+            actual.1,
+            expected.1,
+            chroma_delta
+        );
+        if expected.1 > 0.01 {
+            assert!(
+                hue_delta <= hue_tolerance,
+                "hue mismatch: actual={}, expected={}, delta={}",
+                actual.2,
+                expected.2,
+                hue_delta
+            );
+        }
+    }
+
     #[test]
     fn test_color_creation() {
         let blue = Color::blue(Scale::S500);
@@ -805,18 +843,13 @@ mod tests {
         let value = ColorValue::from_rgb(255, 0, 0);
         let (l, c, h) = value.to_oklch();
         let roundtrip = ColorValue::from_oklch(l, c, h);
-        assert_eq!(roundtrip.r, value.r);
-        assert_eq!(roundtrip.g, value.g);
-        assert_eq!(roundtrip.b, value.b);
+        assert_eq!(roundtrip.to_rgb8(), value.to_rgb8());
     }
 
     #[test]
     fn test_black_white_are_exact() {
-        assert_eq!(Color::black().compute(), ColorValue::from_rgb(0, 0, 0));
-        assert_eq!(
-            Color::white().compute(),
-            ColorValue::from_rgb(255, 255, 255)
-        );
+        assert_eq!(Color::black().compute().to_rgb8(), (0, 0, 0));
+        assert_eq!(Color::white().compute().to_rgb8(), (255, 255, 255));
     }
 
     #[test]
@@ -840,5 +873,64 @@ mod tests {
             scale[0].perceived_lightness_oklch() > scale[10].perceived_lightness_oklch(),
             "50 should be lighter than 950"
         );
+    }
+
+    #[test]
+    fn test_tailwind_palette_reference_entries_match_exact_oklch_values() {
+        let cases = [
+            (ColorFamily::Slate, Scale::S50, (0.984, 0.003, 247.858)),
+            (ColorFamily::Gray, Scale::S500, (0.551, 0.027, 264.364)),
+            (ColorFamily::Blue, Scale::S500, (0.623, 0.214, 259.815)),
+            (ColorFamily::Red, Scale::S950, (0.258, 0.092, 26.042)),
+            (ColorFamily::Emerald, Scale::S400, (0.765, 0.177, 163.223)),
+            (ColorFamily::Mauve, Scale::S500, (0.542, 0.034, 322.5)),
+            (ColorFamily::Olive, Scale::S950, (0.153, 0.006, 107.1)),
+            (ColorFamily::Mist, Scale::S300, (0.872, 0.007, 219.6)),
+            (ColorFamily::Taupe, Scale::S100, (0.96, 0.002, 17.2)),
+        ];
+
+        for (family, scale, expected) in cases {
+            assert_eq!(get_palette_oklch(family, scale), expected);
+        }
+    }
+
+    #[test]
+    fn test_all_tailwind_palette_entries_roundtrip_through_oklch() {
+        let families = [
+            ColorFamily::Slate,
+            ColorFamily::Gray,
+            ColorFamily::Zinc,
+            ColorFamily::Neutral,
+            ColorFamily::Stone,
+            ColorFamily::Red,
+            ColorFamily::Orange,
+            ColorFamily::Amber,
+            ColorFamily::Yellow,
+            ColorFamily::Lime,
+            ColorFamily::Green,
+            ColorFamily::Emerald,
+            ColorFamily::Teal,
+            ColorFamily::Cyan,
+            ColorFamily::Sky,
+            ColorFamily::Blue,
+            ColorFamily::Indigo,
+            ColorFamily::Violet,
+            ColorFamily::Purple,
+            ColorFamily::Fuchsia,
+            ColorFamily::Pink,
+            ColorFamily::Rose,
+            ColorFamily::Mauve,
+            ColorFamily::Olive,
+            ColorFamily::Mist,
+            ColorFamily::Taupe,
+        ];
+
+        for family in families {
+            for scale in Scale::ALL {
+                let expected = get_palette_oklch(family, scale);
+                let actual = Color::new(family, scale).compute().to_oklch();
+                assert_oklch_close(actual, expected, 0.02, 0.035, 6.0);
+            }
+        }
     }
 }

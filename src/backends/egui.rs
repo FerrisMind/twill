@@ -63,10 +63,11 @@ pub fn to_color32(color: Color) -> egui::Color32 {
 
 /// Convert twill ColorValue to egui Color32.
 pub fn to_color32_value(value: crate::tokens::ColorValue) -> egui::Color32 {
+    let (r, g, b) = value.to_rgb8();
     egui::Color32::from_rgba_premultiplied(
-        (value.r as f32 * value.a) as u8,
-        (value.g as f32 * value.a) as u8,
-        (value.b as f32 * value.a) as u8,
+        (r as f32 * value.a) as u8,
+        (g as f32 * value.a) as u8,
+        (b as f32 * value.a) as u8,
         (255.0 * value.a) as u8,
     )
 }
@@ -348,9 +349,10 @@ mod tests {
         let blue = Color::blue(Scale::S500);
         let c32 = to_color32(blue);
         let raw = blue.compute();
-        assert_eq!(c32.r(), raw.r);
-        assert_eq!(c32.g(), raw.g);
-        assert_eq!(c32.b(), raw.b);
+        let (r, g, b) = raw.to_rgb8();
+        assert_eq!(c32.r(), r);
+        assert_eq!(c32.g(), g);
+        assert_eq!(c32.b(), b);
     }
 
     #[test]
@@ -364,9 +366,10 @@ mod tests {
         let color = Color::blue(Scale::S500);
         let converted = to_color32(color);
         let raw = color.compute();
-        assert_eq!(converted.r(), raw.r);
-        assert_eq!(converted.g(), raw.g);
-        assert_eq!(converted.b(), raw.b);
+        let (r, g, b) = raw.to_rgb8();
+        assert_eq!(converted.r(), r);
+        assert_eq!(converted.g(), g);
+        assert_eq!(converted.b(), b);
     }
 
     #[test]

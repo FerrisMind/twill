@@ -18,12 +18,13 @@ fn spacing_to_px(spacing: Spacing) -> f32 {
 /// Convert twill Color to Slint-compatible hex string.
 pub fn to_slint_color(color: Color) -> slint::Color {
     let value = color.compute();
-    slint::Color::from_argb_u8((value.a * 255.0) as u8, value.r, value.g, value.b)
+    to_slint_color_value(value)
 }
 
 /// Convert twill ColorValue to Slint-compatible color.
 pub fn to_slint_color_value(value: crate::tokens::ColorValue) -> slint::Color {
-    slint::Color::from_argb_u8((value.a * 255.0) as u8, value.r, value.g, value.b)
+    let (r, g, b, a) = value.to_rgba8();
+    slint::Color::from_argb_u8(a, r, g, b)
 }
 
 /// Convert twill Spacing to Slint length (logical pixels).
@@ -128,11 +129,7 @@ pub fn to_shadow_with_color(shadow: Shadow, color: Option<Color>) -> (f32, f32, 
         Shadow::Lg | Shadow::Xl => 0.26,
         Shadow::S2xl => 0.63,
     };
-    (
-        offset,
-        blur,
-        slint::Color::from_argb_u8((value.a * 255.0) as u8, value.r, value.g, value.b),
-    )
+    (offset, blur, to_slint_color_value(value))
 }
 
 /// Convert twill FontSize to f32.
@@ -290,9 +287,10 @@ mod tests {
         let blue = Color::blue(Scale::S500);
         let slint_blue = to_slint_color(blue);
         let raw = blue.compute();
-        assert_eq!(slint_blue.red(), raw.r);
-        assert_eq!(slint_blue.green(), raw.g);
-        assert_eq!(slint_blue.blue(), raw.b);
+        let (r, g, b) = raw.to_rgb8();
+        assert_eq!(slint_blue.red(), r);
+        assert_eq!(slint_blue.green(), g);
+        assert_eq!(slint_blue.blue(), b);
     }
 
     #[test]
@@ -300,9 +298,10 @@ mod tests {
         let color = Color::blue(Scale::S500);
         let converted = to_slint_color(color);
         let raw = color.compute();
-        assert_eq!(converted.red(), raw.r);
-        assert_eq!(converted.green(), raw.g);
-        assert_eq!(converted.blue(), raw.b);
+        let (r, g, b) = raw.to_rgb8();
+        assert_eq!(converted.red(), r);
+        assert_eq!(converted.green(), g);
+        assert_eq!(converted.blue(), b);
     }
 
     #[test]

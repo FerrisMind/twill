@@ -159,10 +159,11 @@ pub fn to_color(color: Color) -> iced::Color {
 
 /// Convert twill ColorValue to iced Color.
 pub fn to_color_value(value: crate::tokens::ColorValue) -> iced::Color {
+    let (r, g, b) = value.to_rgb8();
     iced::Color::from_rgba(
-        value.r as f32 / 255.0,
-        value.g as f32 / 255.0,
-        value.b as f32 / 255.0,
+        r as f32 / 255.0,
+        g as f32 / 255.0,
+        b as f32 / 255.0,
         value.a,
     )
 }
@@ -2947,9 +2948,10 @@ mod tests {
         let blue = Color::blue(Scale::S500);
         let c = to_color(blue);
         let raw = blue.compute();
-        assert!((c.r - raw.r as f32 / 255.0).abs() < 0.01);
-        assert!((c.g - raw.g as f32 / 255.0).abs() < 0.01);
-        assert!((c.b - raw.b as f32 / 255.0).abs() < 0.01);
+        let (r, g, b) = raw.to_rgb8();
+        assert!((c.r - r as f32 / 255.0).abs() < 0.01);
+        assert!((c.g - g as f32 / 255.0).abs() < 0.01);
+        assert!((c.b - b as f32 / 255.0).abs() < 0.01);
     }
 
     #[test]
@@ -2957,9 +2959,10 @@ mod tests {
         let color = Color::blue(Scale::S500);
         let converted = to_color(color);
         let raw = color.compute();
-        assert!((converted.r - raw.r as f32 / 255.0).abs() < 0.001);
-        assert!((converted.g - raw.g as f32 / 255.0).abs() < 0.001);
-        assert!((converted.b - raw.b as f32 / 255.0).abs() < 0.001);
+        let (r, g, b) = raw.to_rgb8();
+        assert!((converted.r - r as f32 / 255.0).abs() < 0.001);
+        assert!((converted.g - g as f32 / 255.0).abs() < 0.001);
+        assert!((converted.b - b as f32 / 255.0).abs() < 0.001);
     }
 
     #[test]
