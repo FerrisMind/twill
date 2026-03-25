@@ -90,13 +90,21 @@ pub enum ColorFamily {
 /// A color with its family and scale.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Color {
-    pub family: ColorFamily,
-    pub scale: Scale,
+    pub(crate) family: ColorFamily,
+    pub(crate) scale: Scale,
 }
 
 impl Color {
     pub const fn new(family: ColorFamily, scale: Scale) -> Self {
         Self { family, scale }
+    }
+
+    pub const fn family(&self) -> ColorFamily {
+        self.family
+    }
+
+    pub const fn scale(&self) -> Scale {
+        self.scale
     }
 
     /// White color (`--color-white`).
@@ -199,10 +207,10 @@ impl ComputeValue for Color {
 /// OKLCH color value with alpha.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ColorValue {
-    pub l: f32,
-    pub c: f32,
-    pub h: f32,
-    pub a: f32,
+    pub(crate) l: f32,
+    pub(crate) c: f32,
+    pub(crate) h: f32,
+    pub(crate) a: f32,
 }
 
 impl ColorValue {
@@ -210,6 +218,22 @@ impl ColorValue {
 
     pub const fn new(l: f32, c: f32, h: f32, a: f32) -> Self {
         Self { l, c, h, a }
+    }
+
+    pub const fn lightness(&self) -> f32 {
+        self.l
+    }
+
+    pub const fn chroma(&self) -> f32 {
+        self.c
+    }
+
+    pub const fn hue(&self) -> f32 {
+        self.h
+    }
+
+    pub const fn alpha(&self) -> f32 {
+        self.a
     }
 
     pub fn from_rgb(r: u8, g: u8, b: u8) -> Self {

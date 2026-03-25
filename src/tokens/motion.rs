@@ -81,16 +81,27 @@ impl AnimationToken {
 /// Default transition tokens.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct MotionDefaults {
-    pub duration: TransitionDuration,
-    pub easing: Easing,
+    pub(crate) duration: TransitionDuration,
+    pub(crate) easing: Easing,
+}
+
+impl MotionDefaults {
+    pub const fn new(duration: TransitionDuration, easing: Easing) -> Self {
+        Self { duration, easing }
+    }
+
+    pub const fn duration(&self) -> TransitionDuration {
+        self.duration
+    }
+
+    pub const fn easing(&self) -> Easing {
+        self.easing
+    }
 }
 
 impl Default for MotionDefaults {
     fn default() -> Self {
-        Self {
-            duration: TransitionDuration::Ms150,
-            easing: Easing::InOut,
-        }
+        Self::new(TransitionDuration::Ms150, Easing::InOut)
     }
 }
 

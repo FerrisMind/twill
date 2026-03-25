@@ -43,6 +43,12 @@
 //! // Create an outline button
 //! let btn = Button::outline().sm();
 //! ```
+//!
+//! ## API Surface
+//!
+//! The root namespace intentionally stays small.
+//! Import day-to-day styling types from [`prelude`], and use module namespaces
+//! like [`tokens`], [`utilities`], [`components`], and [`backends`] for the rest.
 
 pub mod backends;
 pub mod components;
@@ -75,151 +81,15 @@ pub mod prelude {
     };
 }
 
-// Re-export commonly used types
-pub use traits::{
-    ComputeValue, DefaultStyle, IntoStyle, Merge, Responsive, Sizable, ThemedStyle, Variants,
-};
-
-// Tokens
-pub use tokens::{
-    AnimationToken, BackgroundColor, BackgroundColorVar, BorderRadius, BorderStyle, BorderWidth,
-    Breakpoint, Color, ColorFamily, ColorValue, ColorValueToken, Container, DivideWidth,
-    DropShadow, DynamicSemanticTheme, Easing, FontFamily, FontSize, FontSizeVar, FontWeight,
-    InsetShadow, LetterSpacing, LineHeight, MotionDefaults, OutlineStyle, Percentage, Perspective,
-    RingWidth, Scale, SemanticColor, SemanticThemeVars, Shadow, Spacing, SpecialColor, TextAlign,
-    TextDecoration, TextOverflow, TextShadow as TextShadowToken, TextTransform, TransitionDuration,
-    TransitionProperty, WhiteSpace, WordBreak,
-};
-
-// Utilities
-pub use utilities::{
-    AlignItems, AlignSelf, Columns, Display, Flex, FlexContainer, FlexDirection, FlexWrap,
-    GridContainer, GridTemplate, Height, HeightVar, JustifyContent, Margin, MarginValue, MarginVar,
-    Overflow, Padding, PaddingValue, PaddingVar, Position, Size, SizeConstraints, Width, WidthVar,
-    ZIndex,
-};
-
 // Style
 pub use style::Style;
 
 // Components
 pub use components::{Button, ButtonSize, ButtonVariant};
 
-// Color shortcuts
-pub mod colors {
-    pub use crate::tokens::{Color, ColorFamily, Scale, SpecialColor};
-
-    // Common color shortcuts
-    pub fn slate(s: Scale) -> Color {
-        Color::slate(s)
-    }
-    pub fn gray(s: Scale) -> Color {
-        Color::gray(s)
-    }
-    pub fn zinc(s: Scale) -> Color {
-        Color::zinc(s)
-    }
-    pub fn neutral(s: Scale) -> Color {
-        Color::neutral(s)
-    }
-    pub fn stone(s: Scale) -> Color {
-        Color::stone(s)
-    }
-    pub fn mauve(s: Scale) -> Color {
-        Color::mauve(s)
-    }
-    pub fn olive(s: Scale) -> Color {
-        Color::olive(s)
-    }
-    pub fn mist(s: Scale) -> Color {
-        Color::mist(s)
-    }
-    pub fn taupe(s: Scale) -> Color {
-        Color::taupe(s)
-    }
-    pub fn red(s: Scale) -> Color {
-        Color::red(s)
-    }
-    pub fn orange(s: Scale) -> Color {
-        Color::orange(s)
-    }
-    pub fn amber(s: Scale) -> Color {
-        Color::amber(s)
-    }
-    pub fn yellow(s: Scale) -> Color {
-        Color::yellow(s)
-    }
-    pub fn lime(s: Scale) -> Color {
-        Color::lime(s)
-    }
-    pub fn green(s: Scale) -> Color {
-        Color::green(s)
-    }
-    pub fn emerald(s: Scale) -> Color {
-        Color::emerald(s)
-    }
-    pub fn teal(s: Scale) -> Color {
-        Color::teal(s)
-    }
-    pub fn cyan(s: Scale) -> Color {
-        Color::cyan(s)
-    }
-    pub fn sky(s: Scale) -> Color {
-        Color::sky(s)
-    }
-    pub fn blue(s: Scale) -> Color {
-        Color::blue(s)
-    }
-    pub fn indigo(s: Scale) -> Color {
-        Color::indigo(s)
-    }
-    pub fn violet(s: Scale) -> Color {
-        Color::violet(s)
-    }
-    pub fn purple(s: Scale) -> Color {
-        Color::purple(s)
-    }
-    pub fn fuchsia(s: Scale) -> Color {
-        Color::fuchsia(s)
-    }
-    pub fn pink(s: Scale) -> Color {
-        Color::pink(s)
-    }
-    pub fn rose(s: Scale) -> Color {
-        Color::rose(s)
-    }
-
-    pub const TRANSPARENT: SpecialColor = SpecialColor::Transparent;
-    pub const CURRENT: SpecialColor = SpecialColor::Current;
-    pub const BLACK: SpecialColor = SpecialColor::Black;
-    pub const WHITE: SpecialColor = SpecialColor::White;
-}
-
-// Spacing shortcuts
-pub mod spacing {
-    pub use crate::tokens::Spacing;
-
-    pub const PX: Spacing = Spacing::Px;
-    pub const S0: Spacing = Spacing::S0;
-    pub const S1: Spacing = Spacing::S1;
-    pub const S2: Spacing = Spacing::S2;
-    pub const S3: Spacing = Spacing::S3;
-    pub const S4: Spacing = Spacing::S4;
-    pub const S5: Spacing = Spacing::S5;
-    pub const S6: Spacing = Spacing::S6;
-    pub const S8: Spacing = Spacing::S8;
-    pub const S10: Spacing = Spacing::S10;
-    pub const S12: Spacing = Spacing::S12;
-    pub const S16: Spacing = Spacing::S16;
-    pub const S20: Spacing = Spacing::S20;
-    pub const S24: Spacing = Spacing::S24;
-    pub const S32: Spacing = Spacing::S32;
-    pub const AUTO: Spacing = Spacing::Auto;
-}
-
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use crate::prelude::*;
 
     #[test]
     fn test_basic_style() {
@@ -252,22 +122,20 @@ mod tests {
         let btn = Button::primary();
         let style = btn.style();
         assert_eq!(
-            style.background_color,
+            style.background_color_value(),
             Some(BackgroundColor::palette(Color::blue(Scale::S500)))
         );
     }
 
     #[test]
     fn test_prelude_merge_and_into_style() {
-        use crate::prelude::*;
-
         let style = Style::new()
             .with(Button::primary())
             .merge(Padding::all(Spacing::S2));
 
-        assert_eq!(style.padding, Some(Padding::all(Spacing::S2)));
+        assert_eq!(style.padding_value(), Some(&Padding::all(Spacing::S2)));
         assert_eq!(
-            style.background_color,
+            style.background_color_value(),
             Some(BackgroundColor::palette(Color::blue(Scale::S500)))
         );
     }

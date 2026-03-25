@@ -82,14 +82,34 @@ impl SemanticColor {
 /// Semantic token set with light and dark variable definitions.
 #[derive(Debug, Clone)]
 pub struct SemanticThemeVars {
-    pub radius: &'static str,
-    pub light: Vec<(SemanticColor, Color)>,
-    pub dark: Vec<(SemanticColor, Color)>,
-    pub light_values: Vec<(SemanticColor, ColorValue)>,
-    pub dark_values: Vec<(SemanticColor, ColorValue)>,
+    pub(crate) radius: &'static str,
+    pub(crate) light: Vec<(SemanticColor, Color)>,
+    pub(crate) dark: Vec<(SemanticColor, Color)>,
+    pub(crate) light_values: Vec<(SemanticColor, ColorValue)>,
+    pub(crate) dark_values: Vec<(SemanticColor, ColorValue)>,
 }
 
 impl SemanticThemeVars {
+    pub const fn radius(&self) -> &'static str {
+        self.radius
+    }
+
+    pub fn light_tokens(&self) -> &[(SemanticColor, Color)] {
+        &self.light
+    }
+
+    pub fn dark_tokens(&self) -> &[(SemanticColor, Color)] {
+        &self.dark
+    }
+
+    pub fn light_values(&self) -> &[(SemanticColor, ColorValue)] {
+        &self.light_values
+    }
+
+    pub fn dark_values(&self) -> &[(SemanticColor, ColorValue)] {
+        &self.dark_values
+    }
+
     /// Default neutral semantic theme matching shadcn-ui / shadcn-svelte values.
     pub fn shadcn_neutral() -> Self {
         let light = vec![
@@ -261,11 +281,19 @@ impl SemanticThemeVars {
 /// Dynamic semantic theme generated from an arbitrary brand color using OKLCH.
 #[derive(Debug, Clone)]
 pub struct DynamicSemanticTheme {
-    pub light: Vec<(SemanticColor, ColorValue)>,
-    pub dark: Vec<(SemanticColor, ColorValue)>,
+    pub(crate) light: Vec<(SemanticColor, ColorValue)>,
+    pub(crate) dark: Vec<(SemanticColor, ColorValue)>,
 }
 
 impl DynamicSemanticTheme {
+    pub fn light_values(&self) -> &[(SemanticColor, ColorValue)] {
+        &self.light
+    }
+
+    pub fn dark_values(&self) -> &[(SemanticColor, ColorValue)] {
+        &self.dark
+    }
+
     fn scale_value(scale: &[(Scale, ColorValue); 11], target: Scale) -> ColorValue {
         scale
             .iter()

@@ -77,15 +77,54 @@ impl From<Spacing> for PaddingValue {
 /// Padding utility.
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Padding {
-    pub top: Option<PaddingValue>,
-    pub right: Option<PaddingValue>,
-    pub bottom: Option<PaddingValue>,
-    pub left: Option<PaddingValue>,
+    pub(crate) top: Option<PaddingValue>,
+    pub(crate) right: Option<PaddingValue>,
+    pub(crate) bottom: Option<PaddingValue>,
+    pub(crate) left: Option<PaddingValue>,
 }
 
 impl Padding {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub const fn is_empty(&self) -> bool {
+        self.top.is_none() && self.right.is_none() && self.bottom.is_none() && self.left.is_none()
+    }
+
+    pub const fn top_side(&self) -> Option<PaddingValue> {
+        self.top
+    }
+
+    pub const fn right_side(&self) -> Option<PaddingValue> {
+        self.right
+    }
+
+    pub const fn bottom_side(&self) -> Option<PaddingValue> {
+        self.bottom
+    }
+
+    pub const fn left_side(&self) -> Option<PaddingValue> {
+        self.left
+    }
+
+    pub const fn vertical_sides(&self) -> (Option<PaddingValue>, Option<PaddingValue>) {
+        (self.top, self.bottom)
+    }
+
+    pub const fn horizontal_sides(&self) -> (Option<PaddingValue>, Option<PaddingValue>) {
+        (self.left, self.right)
+    }
+
+    pub const fn sides(
+        &self,
+    ) -> (
+        Option<PaddingValue>,
+        Option<PaddingValue>,
+        Option<PaddingValue>,
+        Option<PaddingValue>,
+    ) {
+        (self.top, self.right, self.bottom, self.left)
     }
 
     /// `p-*` family: set padding on all sides.
@@ -448,15 +487,54 @@ impl From<Spacing> for MarginValue {
 /// Margin utility.
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Margin {
-    pub top: Option<MarginValue>,
-    pub right: Option<MarginValue>,
-    pub bottom: Option<MarginValue>,
-    pub left: Option<MarginValue>,
+    pub(crate) top: Option<MarginValue>,
+    pub(crate) right: Option<MarginValue>,
+    pub(crate) bottom: Option<MarginValue>,
+    pub(crate) left: Option<MarginValue>,
 }
 
 impl Margin {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub const fn is_empty(&self) -> bool {
+        self.top.is_none() && self.right.is_none() && self.bottom.is_none() && self.left.is_none()
+    }
+
+    pub const fn top_side(&self) -> Option<MarginValue> {
+        self.top
+    }
+
+    pub const fn right_side(&self) -> Option<MarginValue> {
+        self.right
+    }
+
+    pub const fn bottom_side(&self) -> Option<MarginValue> {
+        self.bottom
+    }
+
+    pub const fn left_side(&self) -> Option<MarginValue> {
+        self.left
+    }
+
+    pub const fn vertical_sides(&self) -> (Option<MarginValue>, Option<MarginValue>) {
+        (self.top, self.bottom)
+    }
+
+    pub const fn horizontal_sides(&self) -> (Option<MarginValue>, Option<MarginValue>) {
+        (self.left, self.right)
+    }
+
+    pub const fn sides(
+        &self,
+    ) -> (
+        Option<MarginValue>,
+        Option<MarginValue>,
+        Option<MarginValue>,
+        Option<MarginValue>,
+    ) {
+        (self.top, self.right, self.bottom, self.left)
     }
 
     /// `m-*` family: set all margin sides.
@@ -1285,6 +1363,39 @@ mod tests {
     }
 
     #[test]
+    fn test_padding_and_margin_accessors() {
+        let padding = Padding::symmetric(Spacing::S2, Spacing::S4);
+        assert!(!padding.is_empty());
+        assert_eq!(padding.top_side(), Some(PaddingValue::scale(Spacing::S2)));
+        assert_eq!(padding.right_side(), Some(PaddingValue::scale(Spacing::S4)));
+        assert_eq!(
+            padding.vertical_sides(),
+            (
+                Some(PaddingValue::scale(Spacing::S2)),
+                Some(PaddingValue::scale(Spacing::S2))
+            )
+        );
+        assert_eq!(
+            padding.horizontal_sides(),
+            (
+                Some(PaddingValue::scale(Spacing::S4)),
+                Some(PaddingValue::scale(Spacing::S4))
+            )
+        );
+
+        let margin = Margin::auto_x();
+        assert!(!margin.is_empty());
+        assert_eq!(margin.left_side(), Some(MarginValue::Auto));
+        assert_eq!(margin.right_side(), Some(MarginValue::Auto));
+        assert_eq!(
+            margin.sides(),
+            (None, Some(MarginValue::Auto), None, Some(MarginValue::Auto))
+        );
+        assert!(Padding::new().is_empty());
+        assert!(Margin::new().is_empty());
+    }
+
+    #[test]
     fn test_padding_family_aliases() {
         assert_eq!(Padding::p(Spacing::S4), Padding::all(Spacing::S4));
         assert_eq!(Padding::px(Spacing::S3), Padding::x(Spacing::S3));
@@ -1460,6 +1571,45 @@ mod tests {
             Some(Size::HeightVar(PANEL_H))
         );
         assert_eq!(Height::h_px_value(320).size(), Some(Size::Px(320)));
+    }
+
+    #[test]
+    fn test_width_and_height_from_standard_conversions() {
+        assert_eq!(Width::from(Spacing::S4), Width::w(Spacing::S4));
+        assert_eq!(
+            Width::from(crate::tokens::Percentage::S1_2),
+            Width::w_fraction(crate::tokens::Percentage::S1_2)
+        );
+        assert_eq!(
+            Width::from(crate::tokens::Container::Md),
+            Width::w_container(crate::tokens::Container::Md)
+        );
+        assert_eq!(Height::from(Spacing::S6), Height::h(Spacing::S6));
+        assert_eq!(
+            Height::from(crate::tokens::Percentage::S1_3),
+            Height::h_fraction(crate::tokens::Percentage::S1_3)
+        );
+        assert_eq!(
+            Height::from(crate::tokens::Container::Lg),
+            Height::new(Size::Container(crate::tokens::Container::Lg))
+        );
+    }
+
+    #[test]
+    fn test_size_constraints_getters() {
+        let constraints = SizeConstraints::new()
+            .min_width(Size::Spacing(Spacing::S2))
+            .max_width(Size::Prose)
+            .min_height(Size::ScreenHeight)
+            .max_height(Size::Px(320));
+
+        assert_eq!(
+            constraints.min_width_value(),
+            Some(Size::Spacing(Spacing::S2))
+        );
+        assert_eq!(constraints.max_width_value(), Some(Size::Prose));
+        assert_eq!(constraints.min_height_value(), Some(Size::ScreenHeight));
+        assert_eq!(constraints.max_height_value(), Some(Size::Px(320)));
     }
 
     #[test]

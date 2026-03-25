@@ -123,6 +123,61 @@ impl Style {
         self.display
     }
 
+    /// Returns the configured visibility, if any.
+    pub const fn visibility_value(&self) -> Option<Visibility> {
+        self.visibility
+    }
+
+    /// Returns the configured position mode, if any.
+    pub const fn position_value(&self) -> Option<Position> {
+        self.position
+    }
+
+    /// Returns the configured z-index, if any.
+    pub const fn z_index_value(&self) -> Option<ZIndex> {
+        self.z_index
+    }
+
+    /// Returns the configured overflow, if any.
+    pub const fn overflow_value(&self) -> Option<Overflow> {
+        self.overflow
+    }
+
+    /// Returns the configured horizontal overflow, if any.
+    pub const fn overflow_x_value(&self) -> Option<Overflow> {
+        self.overflow_x
+    }
+
+    /// Returns the configured vertical overflow, if any.
+    pub const fn overflow_y_value(&self) -> Option<Overflow> {
+        self.overflow_y
+    }
+
+    /// Returns the configured aspect ratio, if any.
+    pub const fn aspect_ratio_value(&self) -> Option<AspectRatio> {
+        self.aspect_ratio
+    }
+
+    /// Returns the configured object fit token, if any.
+    pub const fn object_fit_value(&self) -> Option<ObjectFit> {
+        self.object_fit
+    }
+
+    /// Returns the configured multi-column layout token, if any.
+    pub const fn columns_value(&self) -> Option<Columns> {
+        self.columns
+    }
+
+    /// Returns the configured multi-column gap token, if any.
+    pub const fn column_gap_value(&self) -> Option<Spacing> {
+        self.column_gap
+    }
+
+    /// Returns the configured column count limit, if any.
+    pub const fn columns_max_count_value(&self) -> Option<NonZeroU8> {
+        self.columns_max_count
+    }
+
     /// Returns the configured flex container settings, if any.
     pub const fn flex_container(&self) -> Option<&FlexContainer> {
         self.flex.as_ref()
@@ -136,6 +191,26 @@ impl Style {
     /// Returns the configured grid container settings, if any.
     pub const fn grid_container(&self) -> Option<&GridContainer> {
         self.grid.as_ref()
+    }
+
+    /// Returns the configured place-content token, if any.
+    pub const fn place_content_value(&self) -> Option<PlaceContent> {
+        self.place_content
+    }
+
+    /// Returns the configured place-items token, if any.
+    pub const fn place_items_value(&self) -> Option<PlaceItems> {
+        self.place_items
+    }
+
+    /// Returns the configured justify-items token, if any.
+    pub const fn justify_items_value(&self) -> Option<JustifyItems> {
+        self.justify_items
+    }
+
+    /// Returns the configured justify-self token, if any.
+    pub const fn justify_self_value(&self) -> Option<JustifySelf> {
+        self.justify_self
     }
 
     /// Returns the configured padding, if any.
@@ -173,9 +248,34 @@ impl Style {
         self.opacity
     }
 
+    /// Returns the configured blur token, if any.
+    pub const fn blur_value(&self) -> Option<Blur> {
+        self.blur
+    }
+
+    /// Returns the configured drop shadow token, if any.
+    pub const fn drop_shadow_value(&self) -> Option<DropShadow> {
+        self.drop_shadow
+    }
+
+    /// Returns the configured perspective token, if any.
+    pub const fn perspective_value(&self) -> Option<Perspective> {
+        self.perspective
+    }
+
     /// Returns the configured border radius, if any.
     pub const fn border_radius_value(&self) -> Option<BorderRadius> {
         self.border_radius
+    }
+
+    /// Returns the configured border width, if any.
+    pub const fn border_width_value(&self) -> Option<BorderWidth> {
+        self.border_width
+    }
+
+    /// Returns the configured border style, if any.
+    pub const fn border_style_value(&self) -> Option<BorderStyle> {
+        self.border_style
     }
 
     /// Returns the configured border color, if any.
@@ -183,9 +283,39 @@ impl Style {
         self.border_color
     }
 
+    /// Returns the configured outline width, if any.
+    pub const fn outline_width_value(&self) -> Option<BorderWidth> {
+        self.outline_width
+    }
+
+    /// Returns the configured outline style, if any.
+    pub const fn outline_style_value(&self) -> Option<OutlineStyle> {
+        self.outline_style
+    }
+
+    /// Returns the configured outline color, if any.
+    pub const fn outline_color_value(&self) -> Option<Color> {
+        self.outline_color
+    }
+
+    /// Returns the configured ring width, if any.
+    pub const fn ring_width_value(&self) -> Option<RingWidth> {
+        self.ring_width
+    }
+
+    /// Returns the configured ring color, if any.
+    pub const fn ring_color_value(&self) -> Option<Color> {
+        self.ring_color
+    }
+
     /// Returns the configured text color, if any.
     pub const fn text_color_value(&self) -> Option<Color> {
         self.text_color
+    }
+
+    /// Returns the configured font family, if any.
+    pub const fn font_family_value(&self) -> Option<FontFamily> {
+        self.font_family
     }
 
     /// Returns the configured font size, if any.
@@ -193,9 +323,84 @@ impl Style {
         self.font_size
     }
 
+    /// Returns the configured font weight, if any.
+    pub const fn font_weight_value(&self) -> Option<FontWeight> {
+        self.font_weight
+    }
+
+    /// Returns the configured letter spacing, if any.
+    pub const fn letter_spacing_value(&self) -> Option<LetterSpacing> {
+        self.letter_spacing
+    }
+
+    /// Returns the configured line height, if any.
+    pub const fn line_height_value(&self) -> Option<LineHeight> {
+        self.line_height
+    }
+
+    /// Returns the configured text alignment, if any.
+    pub const fn text_align_value(&self) -> Option<TextAlign> {
+        self.text_align
+    }
+
+    /// Returns the configured text decoration, if any.
+    pub const fn text_decoration_value(&self) -> Option<TextDecoration> {
+        self.text_decoration
+    }
+
+    /// Returns the configured text transform, if any.
+    pub const fn text_transform_value(&self) -> Option<TextTransform> {
+        self.text_transform
+    }
+
+    /// Returns the configured text shadow token, if any.
+    pub const fn text_shadow_value(&self) -> Option<TextShadow> {
+        self.text_shadow
+    }
+
     /// Returns the configured box shadow token, if any.
     pub const fn box_shadow_value(&self) -> Option<Shadow> {
         self.box_shadow
+    }
+
+    /// Returns the configured inset shadow token, if any.
+    pub const fn inset_shadow_value(&self) -> Option<InsetShadow> {
+        self.inset_shadow
+    }
+
+    /// Returns the configured shadow color, if any.
+    pub const fn shadow_color_value(&self) -> Option<Color> {
+        self.shadow_color
+    }
+
+    /// Returns the configured transition property, if any.
+    pub fn transition_property_value(&self) -> Option<&str> {
+        self.transition_property.as_deref()
+    }
+
+    /// Returns the configured transition duration, if any.
+    pub const fn transition_duration_value(&self) -> Option<TransitionDuration> {
+        self.transition_duration
+    }
+
+    /// Returns the configured transition timing function, if any.
+    pub const fn transition_timing_function_value(&self) -> Option<Easing> {
+        self.transition_timing_function
+    }
+
+    /// Returns the configured transition delay, if any.
+    pub const fn transition_delay_value(&self) -> Option<TransitionDuration> {
+        self.transition_delay
+    }
+
+    /// Returns the configured animation token, if any.
+    pub const fn animation_value(&self) -> Option<AnimationToken> {
+        self.animation
+    }
+
+    /// Returns the configured cursor token, if any.
+    pub const fn cursor_value(&self) -> Option<Cursor> {
+        self.cursor
     }
 
     // === Layout ===
@@ -1200,11 +1405,6 @@ impl Style {
         self
     }
 
-    /// Set background color (alias for bg).
-    pub fn background(self, color: Color) -> Self {
-        self.bg(color)
-    }
-
     /// Set background token directly.
     pub fn background_token(mut self, token: BackgroundColor) -> Self {
         self.background_color = Some(token);
@@ -1824,6 +2024,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::components::Button;
     use crate::tokens::{AnimationToken, Easing, Scale, TransitionDuration};
 
     #[test]
@@ -2354,16 +2555,67 @@ mod tests {
     fn test_style_getters_expose_public_state_without_public_fields() {
         let style = Style::new()
             .display(Display::Flex)
+            .visibility(Visibility::Hidden)
+            .position(Position::Relative)
+            .z_index(ZIndex::S30)
+            .overflow(Overflow::Auto)
+            .aspect_ratio(AspectRatio::Square)
+            .object_fit(ObjectFit::Cover)
+            .columns(Columns::count(3))
+            .column_gap(Spacing::S1)
+            .columns_max_count(4)
+            .place_content(PlaceContent::Center)
+            .place_items(PlaceItems::Center)
+            .justify_items(JustifyItems::Center)
+            .justify_self(JustifySelf::Center)
             .padding(Padding::all(Spacing::S2))
             .width(Spacing::S24)
             .height(Size::ScreenHeight)
             .bg(Color::blue(Scale::S500))
+            .blur(Blur::Sm)
+            .drop_shadow(DropShadow::Sm)
+            .perspective(Perspective::Midrange)
+            .border(
+                BorderWidth::S2,
+                BorderStyle::Solid,
+                Color::gray(Scale::S300),
+            )
             .text_color(Color::white())
+            .font(FontFamily::Sans)
+            .text_size(FontSize::Lg)
+            .font_weight(FontWeight::Bold)
+            .tracking(LetterSpacing::Wide)
+            .leading(LineHeight::Relaxed)
+            .text_align(TextAlign::Center)
+            .underline()
+            .uppercase()
+            .text_shadow(TextShadow::Sm)
             .rounded(BorderRadius::Md)
             .shadow(Shadow::Sm)
+            .inset_shadow(InsetShadow::Sm)
+            .shadow_color(Color::black())
+            .transition(TransitionProperty::All)
+            .transition_duration(TransitionDuration::Ms300)
+            .transition_ease(Easing::InOut)
+            .transition_delay(TransitionDuration::Ms150)
+            .animate(AnimationToken::Spin)
+            .cursor(Cursor::Pointer)
             .opacity(0.5);
 
         assert_eq!(style.display_mode(), Some(Display::Flex));
+        assert_eq!(style.visibility_value(), Some(Visibility::Hidden));
+        assert_eq!(style.position_value(), Some(Position::Relative));
+        assert_eq!(style.z_index_value(), Some(ZIndex::S30));
+        assert_eq!(style.overflow_value(), Some(Overflow::Auto));
+        assert_eq!(style.aspect_ratio_value(), Some(AspectRatio::Square));
+        assert_eq!(style.object_fit_value(), Some(ObjectFit::Cover));
+        assert_eq!(style.columns_value(), Some(Columns::count(3)));
+        assert_eq!(style.column_gap_value(), Some(Spacing::S1));
+        assert_eq!(style.columns_max_count_value(), NonZeroU8::new(4));
+        assert_eq!(style.place_content_value(), Some(PlaceContent::Center));
+        assert_eq!(style.place_items_value(), Some(PlaceItems::Center));
+        assert_eq!(style.justify_items_value(), Some(JustifyItems::Center));
+        assert_eq!(style.justify_self_value(), Some(JustifySelf::Center));
         assert_eq!(style.padding_value(), Some(&Padding::all(Spacing::S2)));
         assert_eq!(style.width_value(), Some(Width::from(Spacing::S24)));
         assert_eq!(style.height_value(), Some(Height::from(Size::ScreenHeight)));
@@ -2371,9 +2623,44 @@ mod tests {
             style.background_color_value(),
             Some(BackgroundColor::palette(Color::blue(Scale::S500)))
         );
+        assert_eq!(style.blur_value(), Some(Blur::Sm));
+        assert_eq!(style.drop_shadow_value(), Some(DropShadow::Sm));
+        assert_eq!(style.perspective_value(), Some(Perspective::Midrange));
+        assert_eq!(style.border_width_value(), Some(BorderWidth::S2));
+        assert_eq!(style.border_style_value(), Some(BorderStyle::Solid));
+        assert_eq!(style.border_color_value(), Some(Color::gray(Scale::S300)));
         assert_eq!(style.text_color_value(), Some(Color::white()));
+        assert_eq!(style.font_family_value(), Some(FontFamily::Sans));
+        assert_eq!(style.font_size_value(), Some(FontSize::Lg));
+        assert_eq!(style.font_weight_value(), Some(FontWeight::Bold));
+        assert_eq!(style.letter_spacing_value(), Some(LetterSpacing::Wide));
+        assert_eq!(style.line_height_value(), Some(LineHeight::Relaxed));
+        assert_eq!(style.text_align_value(), Some(TextAlign::Center));
+        assert_eq!(
+            style.text_decoration_value(),
+            Some(TextDecoration::Underline)
+        );
+        assert_eq!(style.text_transform_value(), Some(TextTransform::Uppercase));
+        assert_eq!(style.text_shadow_value(), Some(TextShadow::Sm));
         assert_eq!(style.border_radius_value(), Some(BorderRadius::Md));
         assert_eq!(style.box_shadow_value(), Some(Shadow::Sm));
+        assert_eq!(style.inset_shadow_value(), Some(InsetShadow::Sm));
+        assert_eq!(style.shadow_color_value(), Some(Color::black()));
+        assert_eq!(style.transition_property_value(), Some("all"));
+        assert_eq!(
+            style.transition_duration_value(),
+            Some(TransitionDuration::Ms300)
+        );
+        assert_eq!(
+            style.transition_timing_function_value(),
+            Some(Easing::InOut)
+        );
+        assert_eq!(
+            style.transition_delay_value(),
+            Some(TransitionDuration::Ms150)
+        );
+        assert_eq!(style.animation_value(), Some(AnimationToken::Spin));
+        assert_eq!(style.cursor_value(), Some(Cursor::Pointer));
         assert_eq!(style.opacity_value(), Some(0.5));
     }
 
@@ -2387,18 +2674,28 @@ mod tests {
         .into_iter()
         .collect();
 
-        assert_eq!(style.padding_value(), Some(&Padding::all(Spacing::S2)));
         assert_eq!(style.width_value(), Some(Width::from(Spacing::S24)));
         assert_eq!(
             style.background_color_value(),
             Some(BackgroundColor::palette(Color::blue(Scale::S500)))
         );
+        assert_eq!(
+            style.padding_value(),
+            Some(&Padding::symmetric(Spacing::S2, Spacing::S4))
+        );
 
         let mut extended = Style::new();
-        extended.extend([Padding::all(Spacing::S1), Margin::auto_x(), Button::ghost()]);
+        extended.extend([
+            Padding::all(Spacing::S1).into_style(),
+            Margin::auto_x().into_style(),
+            Button::ghost().into_style(),
+        ]);
 
-        assert_eq!(extended.padding_value(), Some(&Padding::all(Spacing::S1)));
         assert_eq!(extended.margin_value(), Some(&Margin::auto_x()));
         assert_eq!(extended.text_color_value(), Some(Color::gray(Scale::S900)));
+        assert_eq!(
+            extended.padding_value(),
+            Some(&Padding::symmetric(Spacing::S2, Spacing::S4))
+        );
     }
 }

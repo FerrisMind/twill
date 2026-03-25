@@ -263,18 +263,46 @@ impl Flex {
 /// Flex container utility.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct FlexContainer {
-    pub direction: Option<FlexDirection>,
-    pub wrap: Option<FlexWrap>,
-    pub justify: Option<JustifyContent>,
-    pub align: Option<AlignItems>,
-    pub gap: Option<Spacing>,
-    pub row_gap: Option<Spacing>,
-    pub col_gap: Option<Spacing>,
+    pub(crate) direction: Option<FlexDirection>,
+    pub(crate) wrap: Option<FlexWrap>,
+    pub(crate) justify: Option<JustifyContent>,
+    pub(crate) align: Option<AlignItems>,
+    pub(crate) gap: Option<Spacing>,
+    pub(crate) row_gap: Option<Spacing>,
+    pub(crate) col_gap: Option<Spacing>,
 }
 
 impl FlexContainer {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub const fn direction_value(&self) -> Option<FlexDirection> {
+        self.direction
+    }
+
+    pub const fn wrap_value(&self) -> Option<FlexWrap> {
+        self.wrap
+    }
+
+    pub const fn justify_value(&self) -> Option<JustifyContent> {
+        self.justify
+    }
+
+    pub const fn align_value(&self) -> Option<AlignItems> {
+        self.align
+    }
+
+    pub const fn gap_value(&self) -> Option<Spacing> {
+        self.gap
+    }
+
+    pub const fn row_gap_value(&self) -> Option<Spacing> {
+        self.row_gap
+    }
+
+    pub const fn col_gap_value(&self) -> Option<Spacing> {
+        self.col_gap
     }
 
     pub fn direction(mut self, direction: FlexDirection) -> Self {
@@ -515,18 +543,46 @@ impl Columns {
 /// Grid container utility.
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct GridContainer {
-    pub columns: Option<GridTemplate>,
-    pub rows: Option<GridTemplate>,
-    pub gap: Option<Spacing>,
-    pub row_gap: Option<Spacing>,
-    pub col_gap: Option<Spacing>,
-    pub justify: Option<JustifyContent>,
-    pub align: Option<AlignItems>,
+    pub(crate) columns: Option<GridTemplate>,
+    pub(crate) rows: Option<GridTemplate>,
+    pub(crate) gap: Option<Spacing>,
+    pub(crate) row_gap: Option<Spacing>,
+    pub(crate) col_gap: Option<Spacing>,
+    pub(crate) justify: Option<JustifyContent>,
+    pub(crate) align: Option<AlignItems>,
 }
 
 impl GridContainer {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub const fn columns_value(&self) -> Option<&GridTemplate> {
+        self.columns.as_ref()
+    }
+
+    pub const fn rows_value(&self) -> Option<&GridTemplate> {
+        self.rows.as_ref()
+    }
+
+    pub const fn gap_value(&self) -> Option<Spacing> {
+        self.gap
+    }
+
+    pub const fn row_gap_value(&self) -> Option<Spacing> {
+        self.row_gap
+    }
+
+    pub const fn col_gap_value(&self) -> Option<Spacing> {
+        self.col_gap
+    }
+
+    pub const fn justify_value(&self) -> Option<JustifyContent> {
+        self.justify
+    }
+
+    pub const fn align_value(&self) -> Option<AlignItems> {
+        self.align
     }
 
     pub fn columns(mut self, cols: GridTemplate) -> Self {

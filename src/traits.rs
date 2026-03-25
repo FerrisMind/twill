@@ -3,6 +3,8 @@
 use crate::Style;
 
 mod private {
+    use crate::Style;
+
     pub trait Sealed {}
 
     impl<T> Sealed for T where T: Into<Style> {}
