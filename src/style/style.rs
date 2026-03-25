@@ -1501,6 +1501,91 @@ impl Style {
     }
 }
 
+fn merge_flex_container(
+    base: Option<FlexContainer>,
+    override_value: Option<FlexContainer>,
+) -> Option<FlexContainer> {
+    match (base, override_value) {
+        (Some(base), Some(override_value)) => Some(FlexContainer {
+            direction: override_value.direction.or(base.direction),
+            wrap: override_value.wrap.or(base.wrap),
+            justify: override_value.justify.or(base.justify),
+            align: override_value.align.or(base.align),
+            gap: override_value.gap.or(base.gap),
+            row_gap: override_value.row_gap.or(base.row_gap),
+            col_gap: override_value.col_gap.or(base.col_gap),
+        }),
+        (None, Some(override_value)) => Some(override_value),
+        (Some(base), None) => Some(base),
+        (None, None) => None,
+    }
+}
+
+fn merge_grid_container(
+    base: Option<GridContainer>,
+    override_value: Option<GridContainer>,
+) -> Option<GridContainer> {
+    match (base, override_value) {
+        (Some(base), Some(override_value)) => Some(GridContainer {
+            columns: override_value.columns.or(base.columns),
+            rows: override_value.rows.or(base.rows),
+            gap: override_value.gap.or(base.gap),
+            row_gap: override_value.row_gap.or(base.row_gap),
+            col_gap: override_value.col_gap.or(base.col_gap),
+            justify: override_value.justify.or(base.justify),
+            align: override_value.align.or(base.align),
+        }),
+        (None, Some(override_value)) => Some(override_value),
+        (Some(base), None) => Some(base),
+        (None, None) => None,
+    }
+}
+
+fn merge_padding(base: Option<Padding>, override_value: Option<Padding>) -> Option<Padding> {
+    match (base, override_value) {
+        (Some(base), Some(override_value)) => Some(Padding {
+            top: override_value.top.or(base.top),
+            right: override_value.right.or(base.right),
+            bottom: override_value.bottom.or(base.bottom),
+            left: override_value.left.or(base.left),
+        }),
+        (None, Some(override_value)) => Some(override_value),
+        (Some(base), None) => Some(base),
+        (None, None) => None,
+    }
+}
+
+fn merge_margin(base: Option<Margin>, override_value: Option<Margin>) -> Option<Margin> {
+    match (base, override_value) {
+        (Some(base), Some(override_value)) => Some(Margin {
+            top: override_value.top.or(base.top),
+            right: override_value.right.or(base.right),
+            bottom: override_value.bottom.or(base.bottom),
+            left: override_value.left.or(base.left),
+        }),
+        (None, Some(override_value)) => Some(override_value),
+        (Some(base), None) => Some(base),
+        (None, None) => None,
+    }
+}
+
+fn merge_constraints(
+    base: Option<SizeConstraints>,
+    override_value: Option<SizeConstraints>,
+) -> Option<SizeConstraints> {
+    match (base, override_value) {
+        (Some(base), Some(override_value)) => Some(SizeConstraints {
+            min_width: override_value.min_width.or(base.min_width),
+            max_width: override_value.max_width.or(base.max_width),
+            min_height: override_value.min_height.or(base.min_height),
+            max_height: override_value.max_height.or(base.max_height),
+        }),
+        (None, Some(override_value)) => Some(override_value),
+        (Some(base), None) => Some(base),
+        (None, None) => None,
+    }
+}
+
 impl Merge<Self> for Style {
     fn merge(&self, other: Self) -> Self {
         Self {
@@ -1516,18 +1601,18 @@ impl Merge<Self> for Style {
             columns: other.columns.or(self.columns),
             column_gap: other.column_gap.or(self.column_gap),
             columns_max_count: other.columns_max_count.or(self.columns_max_count),
-            flex: other.flex.or(self.flex.clone()),
+            flex: merge_flex_container(self.flex.clone(), other.flex),
             flex_item: other.flex_item.or(self.flex_item.clone()),
-            grid: other.grid.or(self.grid.clone()),
+            grid: merge_grid_container(self.grid.clone(), other.grid),
             place_content: other.place_content.or(self.place_content),
             place_items: other.place_items.or(self.place_items),
             justify_items: other.justify_items.or(self.justify_items),
             justify_self: other.justify_self.or(self.justify_self),
-            padding: other.padding.or(self.padding),
-            margin: other.margin.or(self.margin),
+            padding: merge_padding(self.padding, other.padding),
+            margin: merge_margin(self.margin, other.margin),
             width: other.width.or(self.width),
             height: other.height.or(self.height),
-            constraints: other.constraints.or(self.constraints),
+            constraints: merge_constraints(self.constraints, other.constraints),
             background_color: other.background_color.or(self.background_color),
             opacity: other.opacity.or(self.opacity),
             blur: other.blur.or(self.blur),
@@ -2002,5 +2087,70 @@ mod tests {
         assert_eq!(style.columns, Some(Columns::width_px(280.0)));
         assert_eq!(style.column_gap, Some(Spacing::S4));
         assert_eq!(style.columns_max_count.map(NonZeroU8::get), Some(4));
+    }
+
+    #[test]
+    fn test_merge_preserves_partial_padding_and_margin() {
+        let merged = Style::new()
+            .px(Spacing::S4)
+            .mx(Spacing::S3)
+            .merge(Style::new().pt(Spacing::S2).mb(Spacing::S6));
+
+        assert_eq!(
+            merged.padding,
+            Some(Padding {
+                top: Some(PaddingValue::scale(Spacing::S2)),
+                right: Some(PaddingValue::scale(Spacing::S4)),
+                bottom: None,
+                left: Some(PaddingValue::scale(Spacing::S4)),
+            })
+        );
+        assert_eq!(
+            merged.margin,
+            Some(Margin {
+                top: None,
+                right: Some(MarginValue::scale(Spacing::S3)),
+                bottom: Some(MarginValue::scale(Spacing::S6)),
+                left: Some(MarginValue::scale(Spacing::S3)),
+            })
+        );
+    }
+
+    #[test]
+    fn test_merge_preserves_partial_flex_and_constraints() {
+        let merged = Style::new()
+            .flex(FlexContainer::row().justify(JustifyContent::Between))
+            .constraints(
+                SizeConstraints::new()
+                    .min_width(Size::Spacing(Spacing::S8))
+                    .max_width(Size::Prose),
+            )
+            .merge(
+                Style::new()
+                    .align_items(AlignItems::Center)
+                    .constraints(SizeConstraints::new().max_height(Size::ScreenHeight)),
+            );
+
+        assert_eq!(
+            merged.flex,
+            Some(FlexContainer {
+                direction: Some(FlexDirection::Row),
+                wrap: None,
+                justify: Some(JustifyContent::Between),
+                align: Some(AlignItems::Center),
+                gap: None,
+                row_gap: None,
+                col_gap: None,
+            })
+        );
+        assert_eq!(
+            merged.constraints,
+            Some(SizeConstraints {
+                min_width: Some(Size::Spacing(Spacing::S8)),
+                max_width: Some(Size::Prose),
+                min_height: None,
+                max_height: Some(Size::ScreenHeight),
+            })
+        );
     }
 }

@@ -65,15 +65,19 @@ where
         cursor: mouse::Cursor,
         viewport: &Rectangle,
     ) {
-        self.content.as_widget().draw(
-            &state.children[0],
-            renderer,
-            theme,
-            style,
-            layout.children().next().unwrap(),
-            cursor,
-            viewport,
-        )
+        if let (Some(child_state), Some(child_layout)) =
+            (state.children.first(), layout.children().next())
+        {
+            self.content.as_widget().draw(
+                child_state,
+                renderer,
+                theme,
+                style,
+                child_layout,
+                cursor,
+                viewport,
+            );
+        }
     }
 
     fn children(&self) -> Vec<Tree> {
@@ -91,12 +95,13 @@ where
         renderer: &Renderer,
         operation: &mut dyn widget::Operation,
     ) {
-        self.content.as_widget().operate(
-            &mut state.children[0],
-            layout.children().next().unwrap(),
-            renderer,
-            operation,
-        )
+        if let (Some(child_state), Some(child_layout)) =
+            (state.children.first_mut(), layout.children().next())
+        {
+            self.content
+                .as_widget()
+                .operate(child_state, child_layout, renderer, operation);
+        }
     }
 
     fn on_event(
@@ -110,16 +115,22 @@ where
         shell: &mut iced::advanced::Shell<'_, Message>,
         viewport: &Rectangle,
     ) -> iced::event::Status {
-        self.content.as_widget_mut().on_event(
-            &mut state.children[0],
-            event,
-            layout.children().next().unwrap(),
-            cursor,
-            renderer,
-            clipboard,
-            shell,
-            viewport,
-        )
+        if let (Some(child_state), Some(child_layout)) =
+            (state.children.first_mut(), layout.children().next())
+        {
+            self.content.as_widget_mut().on_event(
+                child_state,
+                event,
+                child_layout,
+                cursor,
+                renderer,
+                clipboard,
+                shell,
+                viewport,
+            )
+        } else {
+            iced::event::Status::Ignored
+        }
     }
 
     fn mouse_interaction(
@@ -130,13 +141,19 @@ where
         viewport: &Rectangle,
         renderer: &Renderer,
     ) -> mouse::Interaction {
-        self.content.as_widget().mouse_interaction(
-            &state.children[0],
-            layout.children().next().unwrap(),
-            cursor,
-            viewport,
-            renderer,
-        )
+        if let (Some(child_state), Some(child_layout)) =
+            (state.children.first(), layout.children().next())
+        {
+            self.content.as_widget().mouse_interaction(
+                child_state,
+                child_layout,
+                cursor,
+                viewport,
+                renderer,
+            )
+        } else {
+            mouse::Interaction::default()
+        }
     }
 
     fn overlay<'b>(
@@ -146,12 +163,15 @@ where
         renderer: &Renderer,
         translation: Vector,
     ) -> Option<iced::advanced::overlay::Element<'b, Message, Theme, Renderer>> {
-        self.content.as_widget_mut().overlay(
-            &mut state.children[0],
-            layout.children().next().unwrap(),
-            renderer,
-            translation,
-        )
+        let (Some(child_state), Some(child_layout)) =
+            (state.children.first_mut(), layout.children().next())
+        else {
+            return None;
+        };
+
+        self.content
+            .as_widget_mut()
+            .overlay(child_state, child_layout, renderer, translation)
     }
 }
 

@@ -8,6 +8,26 @@ use crate::tokens::{
 use crate::traits::ComputeValue;
 use crate::utilities::PaddingValue;
 
+fn apply_opacity_to_color32(color: egui::Color32, opacity: f32) -> egui::Color32 {
+    let alpha = if opacity.is_finite() {
+        ((color.a() as f32) * opacity.clamp(0.0, 1.0)).round() as u8
+    } else {
+        color.a()
+    };
+    egui::Color32::from_rgba_premultiplied(color.r(), color.g(), color.b(), alpha)
+}
+
+fn apply_opacity_to_color_value(mut color: ColorValue, opacity: f32) -> ColorValue {
+    if opacity.is_finite() {
+        color.a *= opacity.clamp(0.0, 1.0);
+    }
+    color
+}
+
+fn resolved_opacity(style: &Style) -> f32 {
+    style.opacity.unwrap_or(1.0).clamp(0.0, 1.0)
+}
+
 fn spacing_to_px(spacing: Spacing) -> f32 {
     match spacing.to_px() {
         Some(px) => px as f32,
@@ -139,6 +159,11 @@ pub fn to_font_size(size: FontSize) -> f32 {
     size.size_rem() * 16.0
 }
 
+/// Resolve twill FontSize to f32 with explicit custom properties.
+pub fn resolve_font_size(size: FontSize, custom_properties: &[(&str, f32)]) -> Option<f32> {
+    size.resolve_px(custom_properties)
+}
+
 /// Convert twill FontWeight to egui FontFamily (fallback).
 pub fn to_font_weight(_weight: FontWeight) -> egui::FontFamily {
     egui::FontFamily::Proportional
@@ -199,6 +224,7 @@ pub fn to_cursor_icon(cursor: Cursor) -> egui::CursorIcon {
 /// only owns inner spacing; outer spacing is controlled by parent layout code.
 pub fn to_frame(style: &Style) -> egui::Frame {
     let mut frame = egui::Frame::default();
+    let opacity = resolved_opacity(style);
 
     // Padding
     if let Some(p) = &style.padding {
@@ -220,7 +246,7 @@ pub fn to_frame(style: &Style) -> egui::Frame {
         .background_color
         .and_then(|bg| resolve_background_color_token(bg, style.text_color))
     {
-        frame = frame.fill(to_color32_value(bg));
+        frame = frame.fill(to_color32_value(apply_opacity_to_color_value(bg, opacity)));
     }
 
     // Border radius
@@ -237,13 +263,17 @@ pub fn to_frame(style: &Style) -> egui::Frame {
             crate::tokens::BorderWidth::S4 => 4.0,
             crate::tokens::BorderWidth::S8 => 8.0,
         };
-        frame = frame.stroke(egui::Stroke::new(w, to_color32(*color)));
+        frame = frame.stroke(egui::Stroke::new(
+            w,
+            apply_opacity_to_color32(to_color32(*color), opacity),
+        ));
     }
 
     // Shadow
     if let Some(s) = &style.box_shadow
-        && let Some(egui_shadow) = to_shadow_with_color(*s, style.shadow_color)
+        && let Some(mut egui_shadow) = to_shadow_with_color(*s, style.shadow_color)
     {
+        egui_shadow.color = apply_opacity_to_color32(egui_shadow.color, opacity);
         frame = frame.shadow(egui_shadow);
     }
 
@@ -257,14 +287,18 @@ pub fn twill_button(
     label: &str,
 ) -> egui::Response {
     let style = button.style();
+    let opacity = resolved_opacity(&style);
 
     let text_color = style
         .text_color
         .map(to_color32)
+        .map(|color| apply_opacity_to_color32(color, opacity))
         .unwrap_or(egui::Color32::WHITE);
     let mut text = egui::RichText::new(label).color(text_color);
-    if let Some(size) = style.font_size {
-        text = text.size(to_font_size(size));
+    if let Some(size) = style.font_size
+        && let Some(px) = resolve_font_size(size, &[])
+    {
+        text = text.size(px);
     }
     if let Some(weight) = style.font_weight
         && weight.value() >= 700
@@ -277,7 +311,7 @@ pub fn twill_button(
         .background_color
         .and_then(|bg| resolve_background_color_token(bg, style.text_color))
     {
-        btn = btn.fill(to_color32_value(bg));
+        btn = btn.fill(to_color32_value(apply_opacity_to_color_value(bg, opacity)));
     }
     if let Some(radius) = style.border_radius {
         btn = btn.corner_radius(to_corner_radius(radius));
@@ -291,7 +325,10 @@ pub fn twill_button(
             crate::tokens::BorderWidth::S4 => 4.0,
             crate::tokens::BorderWidth::S8 => 8.0,
         };
-        btn = btn.stroke(egui::Stroke::new(stroke_width, to_color32(color)));
+        btn = btn.stroke(egui::Stroke::new(
+            stroke_width,
+            apply_opacity_to_color32(to_color32(color), opacity),
+        ));
     }
 
     if button.disabled {
@@ -310,9 +347,10 @@ mod tests {
     fn test_color_conversion() {
         let blue = Color::blue(Scale::S500);
         let c32 = to_color32(blue);
-        assert_eq!(c32.r(), 59);
-        assert_eq!(c32.g(), 130);
-        assert_eq!(c32.b(), 246);
+        let raw = blue.compute();
+        assert_eq!(c32.r(), raw.r);
+        assert_eq!(c32.g(), raw.g);
+        assert_eq!(c32.b(), raw.b);
     }
 
     #[test]

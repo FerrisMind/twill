@@ -21,6 +21,24 @@ use iced::advanced::{Clipboard, Shell, Widget as AdvancedWidget};
 use iced::widget::{canvas, stack};
 use iced::{ContentFit, Length, Point, Rectangle, Renderer, Size, Theme, Vector, border, mouse};
 
+fn apply_opacity_to_color(mut color: iced::Color, opacity: f32) -> iced::Color {
+    if opacity.is_finite() {
+        color.a *= opacity.clamp(0.0, 1.0);
+    }
+    color
+}
+
+fn apply_opacity_to_color_value(mut color: ColorValue, opacity: f32) -> ColorValue {
+    if opacity.is_finite() {
+        color.a *= opacity.clamp(0.0, 1.0);
+    }
+    color
+}
+
+fn resolved_opacity(style: &Style) -> f32 {
+    style.opacity.unwrap_or(1.0).clamp(0.0, 1.0)
+}
+
 fn spacing_to_px(spacing: Spacing) -> f32 {
     match spacing.to_px() {
         Some(px) => px as f32,
@@ -529,6 +547,20 @@ pub fn to_shadow_layers_with_color(shadow: Shadow, color: Option<Color>) -> Vec<
         .collect()
 }
 
+fn shadow_layers_with_opacity(
+    shadow: Shadow,
+    color: Option<Color>,
+    opacity: f32,
+) -> Vec<iced::Shadow> {
+    to_shadow_layers_with_color(shadow, color)
+        .into_iter()
+        .map(|mut layer| {
+            layer.color = apply_opacity_to_color(layer.color, opacity);
+            layer
+        })
+        .collect()
+}
+
 fn wrap_with_shadow_layers<'a, Message: 'a>(
     content: iced::Element<'a, Message>,
     layers: &[iced::Shadow],
@@ -748,6 +780,7 @@ pub fn styled_container_with_custom_properties<'a, Message: Clone + 'a>(
     style: &Style,
     custom_properties: &[(&str, f32)],
 ) -> iced::widget::Container<'a, Message> {
+    let opacity = resolved_opacity(style);
     let padding = style
         .padding
         .map(|padding| to_style_padding(padding, custom_properties));
@@ -755,6 +788,7 @@ pub fn styled_container_with_custom_properties<'a, Message: Clone + 'a>(
     let bg_color = style
         .background_color
         .and_then(|bg| resolve_background_color_token(bg, style.text_color))
+        .map(|bg| apply_opacity_to_color_value(bg, opacity))
         .map(to_color_value);
     let base_border_width: f32 = style.border_width.map_or(0.0, |w| match w {
         crate::tokens::BorderWidth::S0 => 0.0,
@@ -767,12 +801,13 @@ pub fn styled_container_with_custom_properties<'a, Message: Clone + 'a>(
     let border_color = style
         .border_color
         .map(to_color)
+        .map(|color| apply_opacity_to_color(color, opacity))
         .unwrap_or(iced::Color::TRANSPARENT);
     let border_style = style.border_style.unwrap_or(BorderStyle::Solid);
     let border_width = base_border_width;
     let shadow_layers = style
         .box_shadow
-        .map(|s| to_shadow_layers_with_color(s, style.shadow_color))
+        .map(|s| shadow_layers_with_opacity(s, style.shadow_color, opacity))
         .unwrap_or_default();
 
     match border_style {
@@ -1095,9 +1130,9 @@ where
         if count == 1 {
             let mut y = 0.0_f32;
             for element in &mut self.elements {
-                let child = children
-                    .next()
-                    .expect("columns flow missing expected child state");
+                let Some(child) = children.next() else {
+                    break;
+                };
                 let mut node = element
                     .as_widget_mut()
                     .layout(child, renderer, &child_limits);
@@ -1108,9 +1143,9 @@ where
             heights[0] = y;
         } else {
             for element in &mut self.elements {
-                let child = children
-                    .next()
-                    .expect("columns flow missing expected child state");
+                let Some(child) = children.next() else {
+                    break;
+                };
                 let mut node = element
                     .as_widget_mut()
                     .layout(child, renderer, &child_limits);
@@ -1120,7 +1155,7 @@ where
                     .enumerate()
                     .min_by(|(_, a), (_, b)| a.total_cmp(b))
                     .map(|(index, height)| (index, *height))
-                    .expect("columns flow has at least one column");
+                    .unwrap_or((0, 0.0));
 
                 let x = column_index as f32 * (column_width + gap);
                 node.move_to_mut(Point::new(x, column_height));
@@ -1316,10 +1351,9 @@ where
             .width(Length::Fixed(width))
             .height(Length::Fixed(height));
 
-        let child_state = tree
-            .children
-            .first_mut()
-            .expect("aspect ratio box missing child state");
+        let Some(child_state) = tree.children.first_mut() else {
+            return Node::new(limits.resolve(self.width, self.height, Size::new(width, height)));
+        };
         let child_node = self
             .child
             .as_widget_mut()
@@ -1493,10 +1527,9 @@ where
         let limits = limits.width(self.width).height(self.height);
         let max = limits.max();
 
-        let child_state = tree
-            .children
-            .first_mut()
-            .expect("width ratio box missing child state");
+        let Some(child_state) = tree.children.first_mut() else {
+            return Node::new(limits.resolve(self.width, self.height, Size::ZERO));
+        };
 
         if !max.width.is_finite() {
             let child_node = self
@@ -1690,10 +1723,9 @@ where
         let limits = limits.width(self.width).height(self.height);
         let max = limits.max();
 
-        let child_state = tree
-            .children
-            .first_mut()
-            .expect("height ratio box missing child state");
+        let Some(child_state) = tree.children.first_mut() else {
+            return Node::new(limits.resolve(self.width, self.height, Size::ZERO));
+        };
 
         if !max.height.is_finite() {
             let child_node = self
@@ -1889,10 +1921,9 @@ where
         let shrink_height = self.margin.top.max(0.0) + self.margin.bottom.max(0.0);
         let child_limits = limits.shrink(Size::new(shrink_width, shrink_height));
 
-        let child_state = tree
-            .children
-            .first_mut()
-            .expect("margin box missing child state");
+        let Some(child_state) = tree.children.first_mut() else {
+            return Node::new(limits.resolve(self.width, self.height, Size::ZERO));
+        };
         let mut child_node =
             self.child
                 .as_widget_mut()
@@ -2173,6 +2204,18 @@ pub fn apply_layout_with_custom_properties<'a, Message: Clone + 'a>(
             Some(crate::utilities::Size::Prose) => {
                 // A rough heuristic for 65ch
                 container = container.max_width(520.0);
+            }
+            _ => {}
+        }
+
+        match constraints.max_height {
+            Some(crate::utilities::Size::Spacing(ref s)) => {
+                if let Some(px) = s.to_px() {
+                    container = container.max_height(px as f32);
+                }
+            }
+            Some(crate::utilities::Size::Prose) => {
+                container = container.max_height(520.0);
             }
             _ => {}
         }
@@ -2621,12 +2664,14 @@ pub fn apply_flex_item_with_custom_properties<'a, Message: Clone + 'a>(
     direction: FlexDirection,
     custom_properties: &[(&str, &str)],
 ) -> iced::Element<'a, Message> {
-    let mut numeric_custom_properties = Vec::new();
-    for (name, value) in custom_properties {
-        if let Ok(parsed) = value.parse::<f32>() {
-            numeric_custom_properties.push((*name, parsed));
-        }
-    }
+    let numeric_custom_properties = if style_uses_numeric_custom_properties(style) {
+        custom_properties
+            .iter()
+            .filter_map(|(name, value)| value.parse::<f32>().ok().map(|parsed| (*name, parsed)))
+            .collect::<Vec<_>>()
+    } else {
+        Vec::new()
+    };
 
     let element = apply_layout_with_custom_properties(content, style, &numeric_custom_properties);
     let Some(flex) = style.flex_item.as_ref() else {
@@ -2649,6 +2694,37 @@ pub fn apply_flex_item_with_custom_properties<'a, Message: Clone + 'a>(
     };
 
     wrapper.into()
+}
+
+fn style_uses_numeric_custom_properties(style: &Style) -> bool {
+    let padding_uses_var = style.padding.is_some_and(|padding| {
+        [padding.top, padding.right, padding.bottom, padding.left]
+            .into_iter()
+            .flatten()
+            .any(|value| matches!(value, PaddingValue::Var(_)))
+    });
+
+    let margin_uses_var = style.margin.is_some_and(|margin| {
+        [margin.top, margin.right, margin.bottom, margin.left]
+            .into_iter()
+            .flatten()
+            .any(|value| matches!(value, MarginValue::Var(_)))
+    });
+
+    let width_uses_var = style.width.is_some_and(|width| {
+        matches!(
+            width.0,
+            Some(crate::utilities::Size::Var(_)) | Some(crate::utilities::Size::HeightVar(_))
+        )
+    });
+    let height_uses_var = style.height.is_some_and(|height| {
+        matches!(
+            height.0,
+            Some(crate::utilities::Size::Var(_)) | Some(crate::utilities::Size::HeightVar(_))
+        )
+    });
+
+    padding_uses_var || margin_uses_var || width_uses_var || height_uses_var
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -2767,10 +2843,12 @@ pub fn twill_button<'a, Message: Clone + 'a>(
     on_press: Message,
 ) -> iced::Element<'a, Message> {
     let style = button_cfg.style();
+    let opacity = resolved_opacity(&style);
     let text_color = style.text_color.unwrap_or(Color::white());
     let border_color = style
         .border_color
         .map(to_color)
+        .map(|color| apply_opacity_to_color(color, opacity))
         .unwrap_or(iced::Color::TRANSPARENT);
     let border_width = style.border_width.map_or(0.0, |w| match w {
         crate::tokens::BorderWidth::S0 => 0.0,
@@ -2798,14 +2876,14 @@ pub fn twill_button<'a, Message: Clone + 'a>(
         .style(move |_theme, status| {
             let mut background_value =
                 base_bg_token.and_then(|bg| resolve_background_color_token(bg, Some(text_color)));
-            let mut resolved_text = to_color(text_color);
+            let mut resolved_text = apply_opacity_to_color(to_color(text_color), opacity);
 
             let is_dark_theme = matches!(_theme, iced::Theme::Dark);
             if matches!(variant, crate::components::ButtonVariant::Ghost) {
                 resolved_text = if is_dark_theme {
-                    to_color(Color::gray(Scale::S100))
+                    apply_opacity_to_color(to_color(Color::gray(Scale::S100)), opacity)
                 } else {
-                    to_color(Color::gray(Scale::S900))
+                    apply_opacity_to_color(to_color(Color::gray(Scale::S900)), opacity)
                 };
                 if matches!(
                     status,
@@ -2823,9 +2901,9 @@ pub fn twill_button<'a, Message: Clone + 'a>(
 
             if matches!(variant, crate::components::ButtonVariant::Outline) {
                 resolved_text = if is_dark_theme {
-                    to_color(Color::gray(Scale::S100))
+                    apply_opacity_to_color(to_color(Color::gray(Scale::S100)), opacity)
                 } else {
-                    to_color(Color::gray(Scale::S900))
+                    apply_opacity_to_color(to_color(Color::gray(Scale::S900)), opacity)
                 };
             }
 
@@ -2838,7 +2916,11 @@ pub fn twill_button<'a, Message: Clone + 'a>(
             }
 
             iced::widget::button::Style {
-                background: background_value.map(|v| iced::Background::Color(to_color_value(v))),
+                background: background_value.map(|v| {
+                    iced::Background::Color(to_color_value(apply_opacity_to_color_value(
+                        v, opacity,
+                    )))
+                }),
                 text_color: resolved_text,
                 border: iced::Border {
                     radius: border_radius.into(),
@@ -2864,9 +2946,10 @@ mod tests {
     fn test_color_conversion() {
         let blue = Color::blue(Scale::S500);
         let c = to_color(blue);
-        assert!((c.r - 59.0 / 255.0).abs() < 0.01);
-        assert!((c.g - 130.0 / 255.0).abs() < 0.01);
-        assert!((c.b - 246.0 / 255.0).abs() < 0.01);
+        let raw = blue.compute();
+        assert!((c.r - raw.r as f32 / 255.0).abs() < 0.01);
+        assert!((c.g - raw.g as f32 / 255.0).abs() < 0.01);
+        assert!((c.b - raw.b as f32 / 255.0).abs() < 0.01);
     }
 
     #[test]

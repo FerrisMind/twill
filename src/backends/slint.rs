@@ -289,10 +289,10 @@ mod tests {
     fn test_color_conversion() {
         let blue = Color::blue(Scale::S500);
         let slint_blue = to_slint_color(blue);
-        // Slint Color stores as ARGB
-        assert_eq!(slint_blue.red(), 59);
-        assert_eq!(slint_blue.green(), 130);
-        assert_eq!(slint_blue.blue(), 246);
+        let raw = blue.compute();
+        assert_eq!(slint_blue.red(), raw.r);
+        assert_eq!(slint_blue.green(), raw.g);
+        assert_eq!(slint_blue.blue(), raw.b);
     }
 
     #[test]
