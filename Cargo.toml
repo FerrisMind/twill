@@ -44,6 +44,3 @@ egui = ["dep:egui"]
 iced = ["dep:iced"]
 slint = ["dep:slint"]
 
-[[example]]
-name = "iced_showcase"
-required-features = ["iced"]

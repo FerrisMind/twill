@@ -37,9 +37,18 @@
 //!
 //! The root namespace intentionally stays small.
 //! Import day-to-day styling types from [`prelude`], and use module namespaces
-//! like [`tokens`], [`utilities`], [`components`], and [`backends`] for the rest.
+//! like [`tokens`], [`utilities`], and [`backends`] for the rest.
 
 pub mod backends;
+
+#[cfg(feature = "egui")]
+pub use backends::egui;
+
+#[cfg(feature = "iced")]
+pub use backends::iced;
+
+#[cfg(feature = "slint")]
+pub use backends::slint;
 pub mod style;
 pub mod tokens;
 pub mod traits;

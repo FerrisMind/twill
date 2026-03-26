@@ -10,10 +10,10 @@ pub mod iced;
 pub mod slint;
 
 #[cfg(feature = "egui")]
-pub use egui::{EguiButtonExt, ToEgui};
+pub use egui::ToEgui;
 
 #[cfg(feature = "iced")]
-pub use iced::{IcedButtonExt, ToIced};
+pub use iced::ToIced;
 
 #[cfg(feature = "slint")]
 pub use slint::{SlintColors, SlintRadius, SlintSpacing, ToSlint};

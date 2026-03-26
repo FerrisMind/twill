@@ -15,11 +15,6 @@ pub trait ToEgui {
     fn to_egui(self) -> Self::Output;
 }
 
-/// Direct egui rendering helpers for high-level twill components.
-pub trait EguiButtonExt {
-    fn render_egui(&self, ui: &mut egui::Ui, label: &str) -> egui::Response;
-}
-
 impl ToEgui for Color {
     type Output = egui::Color32;
 
@@ -105,12 +100,6 @@ impl ToEgui for &Style {
 
     fn to_egui(self) -> Self::Output {
         to_frame(self)
-    }
-}
-
-impl EguiButtonExt for crate::components::Button {
-    fn render_egui(&self, ui: &mut egui::Ui, label: &str) -> egui::Response {
-        twill_button(ui, self, label)
     }
 }
 
@@ -385,64 +374,6 @@ pub fn to_frame(style: &Style) -> egui::Frame {
     }
 
     frame
-}
-
-/// Render an `egui` button directly from `twill::Button`.
-pub fn twill_button(
-    ui: &mut egui::Ui,
-    button: &crate::components::Button,
-    label: &str,
-) -> egui::Response {
-    let style = button.style();
-    let opacity = resolved_opacity(&style);
-
-    let text_color = style
-        .text_color
-        .map(to_color32)
-        .map(|color| apply_opacity_to_color32(color, opacity))
-        .unwrap_or(egui::Color32::WHITE);
-    let mut text = egui::RichText::new(label).color(text_color);
-    if let Some(size) = style.font_size
-        && let Some(px) = resolve_font_size(size, &[])
-    {
-        text = text.size(px);
-    }
-    if let Some(weight) = style.font_weight
-        && weight.value() >= 700
-    {
-        text = text.strong();
-    }
-
-    let mut btn = egui::Button::new(text);
-    if let Some(bg) = style
-        .background_color
-        .and_then(|bg| resolve_background_color_token(bg, style.text_color))
-    {
-        btn = btn.fill(to_color32_value(apply_opacity_to_color_value(bg, opacity)));
-    }
-    if let Some(radius) = style.border_radius {
-        btn = btn.corner_radius(to_corner_radius(radius));
-    }
-
-    if let (Some(width), Some(color)) = (style.border_width, style.border_color) {
-        let stroke_width = match width {
-            crate::tokens::BorderWidth::S0 => 0.0,
-            crate::tokens::BorderWidth::S1 => 1.0,
-            crate::tokens::BorderWidth::S2 => 2.0,
-            crate::tokens::BorderWidth::S4 => 4.0,
-            crate::tokens::BorderWidth::S8 => 8.0,
-        };
-        btn = btn.stroke(egui::Stroke::new(
-            stroke_width,
-            apply_opacity_to_color32(to_color32(color), opacity),
-        ));
-    }
-
-    if button.is_disabled() {
-        ui.add_enabled(false, btn)
-    } else {
-        ui.add(btn)
-    }
 }
 
 #[cfg(test)]

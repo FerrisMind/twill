@@ -5,8 +5,8 @@
 use crate::style::Style;
 use crate::tokens::{
     AspectRatio, BackgroundColor, Blur, BorderRadius, BorderStyle, Color, ColorValue, Container,
-    Cursor, FontSize, FontWeight, Percentage, Scale, SemanticColor, SemanticThemeVars, Shadow,
-    Spacing, TextAlign, TransitionDuration,
+    Cursor, FontSize, FontWeight, Percentage, SemanticColor, SemanticThemeVars, Shadow, Spacing,
+    TextAlign, TransitionDuration,
 };
 use crate::traits::ComputeValue;
 use crate::utilities::{
@@ -26,15 +26,6 @@ pub trait ToIced {
     type Output;
 
     fn to_iced(self) -> Self::Output;
-}
-
-/// Direct iced rendering helpers for high-level twill components.
-pub trait IcedButtonExt {
-    fn render_iced<'a, Message: Clone + 'a>(
-        &self,
-        label: &'a str,
-        on_press: Message,
-    ) -> iced::Element<'a, Message>;
 }
 
 impl ToIced for Color {
@@ -138,16 +129,6 @@ impl ToIced for Cursor {
 
     fn to_iced(self) -> Self::Output {
         to_interaction(self)
-    }
-}
-
-impl IcedButtonExt for crate::components::Button {
-    fn render_iced<'a, Message: Clone + 'a>(
-        &self,
-        label: &'a str,
-        on_press: Message,
-    ) -> iced::Element<'a, Message> {
-        twill_button(self, label, on_press)
     }
 }
 
@@ -835,66 +816,6 @@ pub fn to_interaction(cursor: Cursor) -> iced::mouse::Interaction {
         Cursor::ZoomIn => iced::mouse::Interaction::ZoomIn,
         Cursor::ZoomOut => iced::mouse::Interaction::ZoomOut,
     }
-}
-
-/// Create a styled button using twill colors.
-pub fn styled_button<'a, Message: Clone + 'a>(
-    label: &'a str,
-    bg_color: Color,
-    text_color: Color,
-    on_press: Message,
-) -> iced::Element<'a, Message> {
-    let base_bg = bg_color.compute();
-    iced::widget::button(iced::widget::text(label).color(to_color(text_color)))
-        .style(
-            move |_theme: &iced::Theme, status: iced::widget::button::Status| {
-                let bg_value = match status {
-                    iced::widget::button::Status::Hovered => base_bg.darken_oklch(0.05),
-                    iced::widget::button::Status::Pressed => base_bg.darken_oklch(0.10),
-                    _ => base_bg,
-                };
-                iced::widget::button::Style {
-                    background: Some(iced::Background::Color(to_color_value(bg_value))),
-                    text_color: to_color(text_color),
-                    border: iced::Border {
-                        radius: 6.0.into(),
-                        ..Default::default()
-                    },
-                    ..Default::default()
-                }
-            },
-        )
-        .on_press(on_press)
-        .into()
-}
-
-/// Create a primary button (blue).
-pub fn primary_button<'a, Message: Clone + 'a>(
-    label: &'a str,
-    on_press: Message,
-) -> iced::Element<'a, Message> {
-    styled_button(label, Color::blue(Scale::S500), Color::white(), on_press)
-}
-
-/// Create a secondary button (gray).
-pub fn secondary_button<'a, Message: Clone + 'a>(
-    label: &'a str,
-    on_press: Message,
-) -> iced::Element<'a, Message> {
-    styled_button(
-        label,
-        Color::gray(Scale::S100),
-        Color::gray(Scale::S900),
-        on_press,
-    )
-}
-
-/// Create a danger button (red).
-pub fn danger_button<'a, Message: Clone + 'a>(
-    label: &'a str,
-    on_press: Message,
-) -> iced::Element<'a, Message> {
-    styled_button(label, Color::red(Scale::S500), Color::white(), on_press)
 }
 
 /// Create a styled container with twill Style.
@@ -2844,13 +2765,13 @@ fn style_uses_numeric_custom_properties(style: &Style) -> bool {
 
     let width_uses_var = style.width.is_some_and(|width| {
         matches!(
-            width.0,
+            width.size(),
             Some(crate::utilities::Size::Var(_)) | Some(crate::utilities::Size::HeightVar(_))
         )
     });
     let height_uses_var = style.height.is_some_and(|height| {
         matches!(
-            height.0,
+            height.size(),
             Some(crate::utilities::Size::Var(_)) | Some(crate::utilities::Size::HeightVar(_))
         )
     });
@@ -2967,111 +2888,10 @@ fn border_path(size: Size, inset: f32, radius: f32) -> canvas::Path {
     )
 }
 
-/// Create an `iced` button directly from `twill::Button`.
-pub fn twill_button<'a, Message: Clone + 'a>(
-    button_cfg: &crate::components::Button,
-    label: &'a str,
-    on_press: Message,
-) -> iced::Element<'a, Message> {
-    let style = button_cfg.style();
-    let opacity = resolved_opacity(&style);
-    let text_color = style.text_color.unwrap_or(Color::white());
-    let border_color = style
-        .border_color
-        .map(to_color)
-        .map(|color| apply_opacity_to_color(color, opacity))
-        .unwrap_or(iced::Color::TRANSPARENT);
-    let border_width = style.border_width.map_or(0.0, |w| match w {
-        crate::tokens::BorderWidth::S0 => 0.0,
-        crate::tokens::BorderWidth::S1 => 1.0,
-        crate::tokens::BorderWidth::S2 => 2.0,
-        crate::tokens::BorderWidth::S4 => 4.0,
-        crate::tokens::BorderWidth::S8 => 8.0,
-    });
-    let border_radius = style.border_radius.map_or(6.0, to_border_radius);
-    let padding = style
-        .padding
-        .map(|padding| to_style_padding(padding, &[]))
-        .unwrap_or(iced::Padding {
-            top: 8.0,
-            right: 16.0,
-            bottom: 8.0,
-            left: 16.0,
-        });
-
-    let variant = button_cfg.variant();
-    let base_bg_token = style.background_color;
-
-    let mut widget = iced::widget::button(iced::widget::text(label).color(to_color(text_color)))
-        .padding(padding)
-        .style(move |_theme, status| {
-            let mut background_value =
-                base_bg_token.and_then(|bg| resolve_background_color_token(bg, Some(text_color)));
-            let mut resolved_text = apply_opacity_to_color(to_color(text_color), opacity);
-
-            let is_dark_theme = matches!(_theme, iced::Theme::Dark);
-            if matches!(variant, crate::components::ButtonVariant::Ghost) {
-                resolved_text = if is_dark_theme {
-                    apply_opacity_to_color(to_color(Color::gray(Scale::S100)), opacity)
-                } else {
-                    apply_opacity_to_color(to_color(Color::gray(Scale::S900)), opacity)
-                };
-                if matches!(
-                    status,
-                    iced::widget::button::Status::Hovered | iced::widget::button::Status::Pressed
-                ) {
-                    background_value = Some(if is_dark_theme {
-                        Color::gray(Scale::S800).compute()
-                    } else {
-                        Color::gray(Scale::S100).compute()
-                    });
-                } else {
-                    background_value = None;
-                }
-            }
-
-            if matches!(variant, crate::components::ButtonVariant::Outline) {
-                resolved_text = if is_dark_theme {
-                    apply_opacity_to_color(to_color(Color::gray(Scale::S100)), opacity)
-                } else {
-                    apply_opacity_to_color(to_color(Color::gray(Scale::S900)), opacity)
-                };
-            }
-
-            if let Some(value) = background_value {
-                background_value = Some(match status {
-                    iced::widget::button::Status::Hovered => value.darken_oklch(0.05),
-                    iced::widget::button::Status::Pressed => value.darken_oklch(0.10),
-                    _ => value,
-                });
-            }
-
-            iced::widget::button::Style {
-                background: background_value.map(|v| {
-                    iced::Background::Color(to_color_value(apply_opacity_to_color_value(
-                        v, opacity,
-                    )))
-                }),
-                text_color: resolved_text,
-                border: iced::Border {
-                    radius: border_radius.into(),
-                    width: border_width,
-                    color: border_color,
-                },
-                ..Default::default()
-            }
-        });
-
-    if !button_cfg.is_disabled() {
-        widget = widget.on_press(on_press);
-    }
-
-    widget.into()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::tokens::Scale;
 
     #[test]
     fn test_color_conversion() {
