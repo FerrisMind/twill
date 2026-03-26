@@ -2024,7 +2024,6 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::components::Button;
     use crate::tokens::{AnimationToken, Easing, Scale, TransitionDuration};
 
     #[test]
@@ -2669,33 +2668,20 @@ mod tests {
         let style: Style = [
             Padding::all(Spacing::S2).into_style(),
             Width::from(Spacing::S24).into_style(),
-            Button::primary().into_style(),
         ]
         .into_iter()
         .collect();
 
         assert_eq!(style.width_value(), Some(Width::from(Spacing::S24)));
-        assert_eq!(
-            style.background_color_value(),
-            Some(BackgroundColor::palette(Color::blue(Scale::S500)))
-        );
-        assert_eq!(
-            style.padding_value(),
-            Some(&Padding::symmetric(Spacing::S2, Spacing::S4))
-        );
+        assert_eq!(style.padding_value(), Some(&Padding::all(Spacing::S2)));
 
         let mut extended = Style::new();
         extended.extend([
             Padding::all(Spacing::S1).into_style(),
             Margin::auto_x().into_style(),
-            Button::ghost().into_style(),
         ]);
 
         assert_eq!(extended.margin_value(), Some(&Margin::auto_x()));
-        assert_eq!(extended.text_color_value(), Some(Color::gray(Scale::S900)));
-        assert_eq!(
-            extended.padding_value(),
-            Some(&Padding::symmetric(Spacing::S2, Spacing::S4))
-        );
+        assert_eq!(extended.padding_value(), Some(&Padding::all(Spacing::S1)));
     }
 }

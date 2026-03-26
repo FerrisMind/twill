@@ -32,17 +32,6 @@
 //!     .rounded(BorderRadius::Md);
 //! ```
 //!
-//! ## Components
-//!
-//! ```rust
-//! use twill::prelude::*;
-//!
-//! // Create a primary button
-//! let btn = Button::primary().lg();
-//!
-//! // Create an outline button
-//! let btn = Button::outline().sm();
-//! ```
 //!
 //! ## API Surface
 //!
@@ -51,7 +40,6 @@
 //! like [`tokens`], [`utilities`], [`components`], and [`backends`] for the rest.
 
 pub mod backends;
-pub mod components;
 pub mod style;
 pub mod tokens;
 pub mod traits;
@@ -59,7 +47,6 @@ pub mod utilities;
 
 /// Canonical import surface for day-to-day twill usage.
 pub mod prelude {
-    pub use crate::components::{Button, ButtonSize, ButtonVariant};
     pub use crate::style::Style;
     pub use crate::tokens::{
         AnimationToken, BackgroundColor, BackgroundColorVar, BorderRadius, BorderStyle,
@@ -70,9 +57,7 @@ pub mod prelude {
         Spacing, SpecialColor, TextAlign, TextDecoration, TextOverflow, TextTransform,
         TransitionDuration, TransitionProperty, WhiteSpace, WordBreak,
     };
-    pub use crate::traits::{
-        ComputeValue, DefaultStyle, IntoStyle, Merge, Responsive, Sizable, ThemedStyle, Variants,
-    };
+    pub use crate::traits::{ComputeValue, IntoStyle, Merge, Responsive, ThemedStyle};
     pub use crate::utilities::{
         AlignItems, AlignSelf, Columns, Display, Flex, FlexContainer, FlexDirection, FlexWrap,
         GridContainer, GridTemplate, Height, HeightVar, JustifyContent, Margin, MarginValue,
@@ -83,9 +68,6 @@ pub mod prelude {
 
 // Style
 pub use style::Style;
-
-// Components
-pub use components::{Button, ButtonSize, ButtonVariant};
 
 #[cfg(test)]
 mod tests {
@@ -115,28 +97,5 @@ mod tests {
         assert_eq!(flex.justify, Some(JustifyContent::Center));
         assert_eq!(flex.align, Some(AlignItems::Center));
         assert_eq!(flex.gap, Some(Spacing::S4));
-    }
-
-    #[test]
-    fn test_button_component() {
-        let btn = Button::primary();
-        let style = btn.style();
-        assert_eq!(
-            style.background_color_value(),
-            Some(BackgroundColor::palette(Color::blue(Scale::S500)))
-        );
-    }
-
-    #[test]
-    fn test_prelude_merge_and_into_style() {
-        let style = Style::new()
-            .with(Button::primary())
-            .merge(Padding::all(Spacing::S2));
-
-        assert_eq!(style.padding_value(), Some(&Padding::all(Spacing::S2)));
-        assert_eq!(
-            style.background_color_value(),
-            Some(BackgroundColor::palette(Color::blue(Scale::S500)))
-        );
     }
 }

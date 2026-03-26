@@ -33,12 +33,6 @@ where
     }
 }
 
-/// Trait for defining default styles for components.
-pub trait DefaultStyle {
-    /// Get the default style for this component.
-    fn default_style() -> Style;
-}
-
 /// Trait for theme-aware styling.
 pub trait ThemedStyle {
     /// The theme type this style uses.
@@ -55,24 +49,6 @@ pub trait Responsive {
 
     /// Get style for a specific breakpoint.
     fn at_breakpoint(&self, breakpoint: Self::Breakpoint) -> Self;
-}
-
-/// Trait for style variants (e.g., button variants).
-pub trait Variants {
-    /// The variant enum type.
-    type Variant;
-
-    /// Create a style from a variant.
-    fn from_variant(variant: Self::Variant) -> Self;
-}
-
-/// Trait for sizes.
-pub trait Sizable {
-    /// The size enum type.
-    type Size;
-
-    /// Create a style from a size.
-    fn from_size(size: Self::Size) -> Self;
 }
 
 /// Trait for computing actual values from tokens.
