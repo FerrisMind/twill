@@ -1,15 +1,6 @@
 name: Build mdBook Branch
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "docs/**"
-      - ".github/workflows/deploy-mdbook.yml"
-      - "README.md"
-      - "README.RU.md"
-      - "README.PT_BR.md"
   workflow_dispatch:
 
 permissions:
