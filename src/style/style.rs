@@ -1,11 +1,11 @@
 //! Style builder for composing styles fluently.
 
-use std::num::NonZeroU8;
+use std::{collections::BTreeMap, num::NonZeroU8};
 
 use crate::tokens::{
     AnimationToken, AspectRatio, BackgroundColor, BackgroundColorVar, Blur, BorderRadius,
-    BorderStyle, BorderWidth, Color, ColorValueToken, Container, Cursor, DropShadow, Easing,
-    FontFamily, FontSize, FontSizeVar, FontWeight, InsetShadow, LetterSpacing, LineHeight,
+    BorderStyle, BorderWidth, Breakpoint, Color, ColorValueToken, Container, Cursor, DropShadow,
+    Easing, FontFamily, FontSize, FontSizeVar, FontWeight, InsetShadow, LetterSpacing, LineHeight,
     MotionDefaults, OutlineStyle, Percentage, Perspective, RingWidth, Shadow, Spacing, TextAlign,
     TextDecoration, TextShadow, TextTransform, TransitionDuration, TransitionProperty,
 };
@@ -97,6 +97,10 @@ pub struct Style {
     pub(crate) animation: Option<AnimationToken>,
     // Interactivity
     pub(crate) cursor: Option<Cursor>,
+    // State Styles
+    pub(crate) states: Option<Box<crate::style::state::StateStyles>>,
+    // Responsive Styles
+    pub(crate) responsive: Option<BTreeMap<Breakpoint, Style>>,
 }
 
 impl Style {
@@ -403,6 +407,258 @@ impl Style {
         self.cursor
     }
 
+    /// Returns the configured responsive style layers, if any.
+    pub const fn responsive_styles(&self) -> Option<&BTreeMap<Breakpoint, Style>> {
+        self.responsive.as_ref()
+    }
+
+    /// Returns the style registered for a specific breakpoint, if any.
+    pub fn breakpoint_style(&self, breakpoint: Breakpoint) -> Option<&Style> {
+        self.responsive
+            .as_ref()
+            .and_then(|responsive| responsive.get(&breakpoint))
+    }
+
+    /// Set styles to apply when the element is hovered.
+    pub fn hover<F>(mut self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        let mut states = self.states.unwrap_or_default();
+        let current = states.hover.unwrap_or_default();
+        states.hover = Some(build(current));
+        self.states = Some(states);
+        self
+    }
+
+    /// Set styles to apply when the element is focused.
+    pub fn focus<F>(mut self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        let mut states = self.states.unwrap_or_default();
+        let current = states.focus.unwrap_or_default();
+        states.focus = Some(build(current));
+        self.states = Some(states);
+        self
+    }
+
+    /// Set styles to apply when the element matches `:focus-visible`.
+    pub fn focus_visible<F>(mut self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        let mut states = self.states.unwrap_or_default();
+        let current = states.focus_visible.unwrap_or_default();
+        states.focus_visible = Some(build(current));
+        self.states = Some(states);
+        self
+    }
+
+    /// Set styles to apply when the element is active.
+    pub fn active<F>(mut self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        let mut states = self.states.unwrap_or_default();
+        let current = states.active.unwrap_or_default();
+        states.active = Some(build(current));
+        self.states = Some(states);
+        self
+    }
+
+    /// Set styles to apply when the element is disabled.
+    pub fn disabled<F>(mut self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        let mut states = self.states.unwrap_or_default();
+        let current = states.disabled.unwrap_or_default();
+        states.disabled = Some(build(current));
+        self.states = Some(states);
+        self
+    }
+
+    /// Set styles to apply when the element is selected.
+    pub fn selected<F>(mut self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        let mut states = self.states.unwrap_or_default();
+        let current = states.selected.unwrap_or_default();
+        states.selected = Some(build(current));
+        self.states = Some(states);
+        self
+    }
+
+    /// Set styles to apply when the element is checked.
+    pub fn checked<F>(mut self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        let mut states = self.states.unwrap_or_default();
+        let current = states.checked.unwrap_or_default();
+        states.checked = Some(build(current));
+        self.states = Some(states);
+        self
+    }
+
+    /// Set styles to apply when the element is open.
+    pub fn open<F>(mut self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        let mut states = self.states.unwrap_or_default();
+        let current = states.open.unwrap_or_default();
+        states.open = Some(build(current));
+        self.states = Some(states);
+        self
+    }
+
+    /// Set styles to apply when the element is closed.
+    pub fn closed<F>(mut self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        let mut states = self.states.unwrap_or_default();
+        let current = states.closed.unwrap_or_default();
+        states.closed = Some(build(current));
+        self.states = Some(states);
+        self
+    }
+
+    /// Set styles for an arbitrary `data-*` state hook, like `data-state=open`.
+    pub fn data_state<F>(mut self, name: impl Into<String>, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        let mut states = self.states.unwrap_or_default();
+        let name = name.into();
+        let current = states.data.remove(&name).unwrap_or_default();
+        states.data.insert(name, build(current));
+        self.states = Some(states);
+        self
+    }
+
+    /// Set styles for an arbitrary `aria-*` state hook, like `aria-selected=true`.
+    pub fn aria_state<F>(mut self, name: impl Into<String>, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        let mut states = self.states.unwrap_or_default();
+        let name = name.into();
+        let current = states.aria.remove(&name).unwrap_or_default();
+        states.aria.insert(name, build(current));
+        self.states = Some(states);
+        self
+    }
+
+    /// Get the hover nested style, if any.
+    pub fn hover_style(&self) -> Option<&Style> {
+        self.states.as_ref().and_then(|s| s.hover.as_ref())
+    }
+
+    /// Get the focus nested style, if any.
+    pub fn focus_style(&self) -> Option<&Style> {
+        self.states.as_ref().and_then(|s| s.focus.as_ref())
+    }
+
+    /// Get the focus-visible nested style, if any.
+    pub fn focus_visible_style(&self) -> Option<&Style> {
+        self.states.as_ref().and_then(|s| s.focus_visible.as_ref())
+    }
+
+    /// Get the active nested style, if any.
+    pub fn active_style(&self) -> Option<&Style> {
+        self.states.as_ref().and_then(|s| s.active.as_ref())
+    }
+
+    /// Get the disabled nested style, if any.
+    pub fn disabled_style(&self) -> Option<&Style> {
+        self.states.as_ref().and_then(|s| s.disabled.as_ref())
+    }
+
+    /// Get the selected nested style, if any.
+    pub fn selected_style(&self) -> Option<&Style> {
+        self.states.as_ref().and_then(|s| s.selected.as_ref())
+    }
+
+    /// Get the checked nested style, if any.
+    pub fn checked_style(&self) -> Option<&Style> {
+        self.states.as_ref().and_then(|s| s.checked.as_ref())
+    }
+
+    /// Get the open nested style, if any.
+    pub fn open_style(&self) -> Option<&Style> {
+        self.states.as_ref().and_then(|s| s.open.as_ref())
+    }
+
+    /// Get the closed nested style, if any.
+    pub fn closed_style(&self) -> Option<&Style> {
+        self.states.as_ref().and_then(|s| s.closed.as_ref())
+    }
+
+    /// Get a named `data-*` nested style, if any.
+    pub fn data_state_style(&self, name: &str) -> Option<&Style> {
+        self.states.as_ref().and_then(|s| s.data.get(name))
+    }
+
+    /// Get a named `aria-*` nested style, if any.
+    pub fn aria_state_style(&self, name: &str) -> Option<&Style> {
+        self.states.as_ref().and_then(|s| s.aria.get(name))
+    }
+
+    /// Set styles to apply at or above a breakpoint.
+    pub fn responsive<F>(mut self, breakpoint: Breakpoint, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        let responsive = self.responsive.get_or_insert_with(BTreeMap::new);
+        let current = responsive.remove(&breakpoint).unwrap_or_default();
+        responsive.insert(breakpoint, build(current));
+        self
+    }
+
+    /// Set styles to apply from the `sm` breakpoint upward.
+    pub fn sm<F>(self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        self.responsive(Breakpoint::Sm, build)
+    }
+
+    /// Set styles to apply from the `md` breakpoint upward.
+    pub fn md<F>(self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        self.responsive(Breakpoint::Md, build)
+    }
+
+    /// Set styles to apply from the `lg` breakpoint upward.
+    pub fn lg<F>(self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        self.responsive(Breakpoint::Lg, build)
+    }
+
+    /// Set styles to apply from the `xl` breakpoint upward.
+    pub fn xl<F>(self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        self.responsive(Breakpoint::Xl, build)
+    }
+
+    /// Set styles to apply from the `2xl` breakpoint upward.
+    pub fn s2xl<F>(self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        self.responsive(Breakpoint::S2xl, build)
+    }
+
     // === Layout ===
 
     /// Set display type.
@@ -495,40 +751,22 @@ impl Style {
 
     /// Set flex direction.
     pub fn flex_direction(mut self, direction: FlexDirection) -> Self {
-        if let Some(ref mut flex) = self.flex {
-            self.flex = Some(FlexContainer {
-                direction: Some(direction),
-                ..flex.clone()
-            });
-        } else {
-            self.flex = Some(FlexContainer::new().direction(direction));
-        }
+        let flex = self.flex.get_or_insert_with(FlexContainer::new);
+        flex.direction = Some(direction);
         self
     }
 
     /// Set align-items utility for flex containers.
     pub fn align_items(mut self, align: AlignItems) -> Self {
-        if let Some(ref mut flex) = self.flex {
-            self.flex = Some(FlexContainer {
-                align: Some(align),
-                ..flex.clone()
-            });
-        } else {
-            self.flex = Some(FlexContainer::new().align(align));
-        }
+        let flex = self.flex.get_or_insert_with(FlexContainer::new);
+        flex.align = Some(align);
         self
     }
 
     /// Set main-axis content distribution for a flex container.
     pub fn justify_content(mut self, justify: JustifyContent) -> Self {
-        if let Some(ref mut flex) = self.flex {
-            self.flex = Some(FlexContainer {
-                justify: Some(justify),
-                ..flex.clone()
-            });
-        } else {
-            self.flex = Some(FlexContainer::new().justify(justify));
-        }
+        let flex = self.flex.get_or_insert_with(FlexContainer::new);
+        flex.justify = Some(justify);
         self
     }
 
@@ -1959,7 +2197,33 @@ where
             transition_delay: other.transition_delay.or(self.transition_delay),
             animation: other.animation.or(self.animation),
             cursor: other.cursor.or(self.cursor),
+            states: match (&self.states, other.states) {
+                (Some(a), Some(b)) => Some(Box::new(a.as_ref().merge(*b))),
+                (None, Some(b)) => Some(b),
+                (Some(a), None) => Some(a.clone()),
+                (None, None) => None,
+            },
+            responsive: merge_responsive_layers(&self.responsive, other.responsive),
         }
+    }
+}
+
+impl crate::traits::Responsive for Style {
+    type Breakpoint = Breakpoint;
+
+    fn at_breakpoint(&self, breakpoint: Self::Breakpoint) -> Self {
+        let mut resolved = self.clone();
+        resolved.responsive = None;
+
+        if let Some(responsive) = &self.responsive {
+            for (layer_breakpoint, layer_style) in responsive {
+                if *layer_breakpoint <= breakpoint {
+                    resolved = resolved.merge(layer_style.clone());
+                }
+            }
+        }
+
+        resolved
     }
 }
 
@@ -2018,6 +2282,30 @@ where
         let mut style = Self::new();
         style.extend(iter);
         style
+    }
+}
+
+fn merge_responsive_layers(
+    current: &Option<BTreeMap<Breakpoint, Style>>,
+    incoming: Option<BTreeMap<Breakpoint, Style>>,
+) -> Option<BTreeMap<Breakpoint, Style>> {
+    match (current, incoming) {
+        (Some(current), Some(incoming)) => {
+            let mut merged = current.clone();
+
+            for (breakpoint, style) in incoming {
+                if let Some(existing) = merged.get(&breakpoint).cloned() {
+                    merged.insert(breakpoint, existing.merge(style));
+                } else {
+                    merged.insert(breakpoint, style);
+                }
+            }
+
+            Some(merged)
+        }
+        (None, Some(incoming)) => Some(incoming),
+        (Some(current), None) => Some(current.clone()),
+        (None, None) => None,
     }
 }
 
@@ -2469,6 +2757,102 @@ mod tests {
         let merged = base.merge(override_style);
         assert_eq!(merged.box_shadow, Some(Shadow::Sm));
         assert_eq!(merged.shadow_color, Some(Color::red(Scale::S500)));
+    }
+
+    #[test]
+    fn test_extended_state_styles_are_stored() {
+        let style = Style::new()
+            .focus_visible(|style| style.ring(RingWidth::S1, Color::blue(Scale::S500)))
+            .selected(|style| style.bg(Color::blue(Scale::S500)))
+            .checked(|style| {
+                style.border(
+                    BorderWidth::S1,
+                    BorderStyle::Solid,
+                    Color::green(Scale::S500),
+                )
+            })
+            .open(|style| style.opacity(1.0))
+            .closed(|style| style.opacity(0.5))
+            .data_state("state=open", |style| style.text_color(Color::white()))
+            .aria_state("selected", |style| style.font_weight(FontWeight::Bold));
+
+        assert_eq!(
+            style
+                .focus_visible_style()
+                .and_then(Style::ring_color_value),
+            Some(Color::blue(Scale::S500))
+        );
+        assert_eq!(
+            style
+                .selected_style()
+                .and_then(Style::background_color_value),
+            Some(BackgroundColor::palette(Color::blue(Scale::S500)))
+        );
+        assert_eq!(
+            style.checked_style().and_then(Style::border_color_value),
+            Some(Color::green(Scale::S500))
+        );
+        assert_eq!(style.open_style().and_then(Style::opacity_value), Some(1.0));
+        assert_eq!(
+            style.closed_style().and_then(Style::opacity_value),
+            Some(0.5)
+        );
+        assert_eq!(
+            style
+                .data_state_style("state=open")
+                .and_then(Style::text_color_value),
+            Some(Color::white())
+        );
+        assert_eq!(
+            style
+                .aria_state_style("selected")
+                .and_then(Style::font_weight_value),
+            Some(FontWeight::Bold)
+        );
+    }
+
+    #[test]
+    fn test_named_state_and_breakpoint_layers_merge() {
+        let merged = Style::new()
+            .data_state("state=open", |style| style.bg(Color::blue(Scale::S500)))
+            .sm(|style| style.w(Spacing::S24))
+            .merge(
+                Style::new()
+                    .data_state("state=open", |style| style.text_color(Color::white()))
+                    .sm(|style| style.h(Spacing::S12)),
+            );
+
+        let state = merged
+            .data_state_style("state=open")
+            .expect("data state layer should exist");
+        assert_eq!(
+            state.background_color_value(),
+            Some(BackgroundColor::palette(Color::blue(Scale::S500)))
+        );
+        assert_eq!(state.text_color_value(), Some(Color::white()));
+
+        let sm = merged
+            .breakpoint_style(Breakpoint::Sm)
+            .expect("sm layer should exist");
+        assert_eq!(sm.width_value(), Some(Width::from(Spacing::S24)));
+        assert_eq!(sm.height_value(), Some(Height::from(Spacing::S12)));
+    }
+
+    #[test]
+    fn test_responsive_trait_resolves_cascading_layers() {
+        let style = Style::new()
+            .w(Spacing::S12)
+            .sm(|style| style.w(Spacing::S24))
+            .lg(|style| style.h(Spacing::S32));
+
+        let md = crate::traits::Responsive::at_breakpoint(&style, Breakpoint::Md);
+        assert_eq!(md.width_value(), Some(Width::from(Spacing::S24)));
+        assert_eq!(md.height_value(), None);
+        assert!(md.responsive_styles().is_none());
+
+        let lg = crate::traits::Responsive::at_breakpoint(&style, Breakpoint::Lg);
+        assert_eq!(lg.width_value(), Some(Width::from(Spacing::S24)));
+        assert_eq!(lg.height_value(), Some(Height::from(Spacing::S32)));
     }
 
     #[test]

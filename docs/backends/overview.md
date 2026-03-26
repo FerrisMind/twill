@@ -12,7 +12,7 @@ Supported adapters:
 
 ```toml
 [dependencies]
-twill = { version = "0.2", features = ["egui", "iced", "slint"] }
+twill = { version = "0.3", features = ["egui", "iced", "slint"] }
 ```
 
 ## Backend modules
@@ -24,4 +24,3 @@ twill = { version = "0.2", features = ["egui", "iced", "slint"] }
 1. Build style/tokens in Twill.
 2. Convert via backend helper.
 3. Apply to widgets in that GUI framework.
-

@@ -1,23 +1,14 @@
-# Demo Applications
+# Demos And Verification
 
-Twill ships three GUI demos plus a generic style data demo:
+This repository currently focuses on the library crate itself. There are no checked-in example binaries under `examples/`.
 
-- `examples/demo-egui.rs`
-- `examples/demo-iced.rs`
-- `examples/demo-slint.rs`
-- `examples/demo.rs`
+Use the verification commands from the root crate instead:
 
-## Run all GUI demos
-
-```bash
-cargo run --example demo-egui --features egui
-cargo run --example demo-iced --features iced
-cargo run --example demo-slint --features slint
+```powershell
+& "$env:USERPROFILE\.cargo\bin\cargo.exe" fmt --all --check
+& "$env:USERPROFILE\.cargo\bin\cargo.exe" build
+& "$env:USERPROFILE\.cargo\bin\cargo.exe" clippy -- -D warnings
+& "$env:USERPROFILE\.cargo\bin\cargo.exe" test
 ```
 
-## What each demo shows
-- Tabs for different documentation areas
-- Color tokens and spacing/radius visual blocks
-- Typography and component variants
-- Motion token references
-- Semantic token behavior in light/dark mode
+If you add local demo applications, keep them layered on top of `Style` and backend adapters rather than introducing UI components into Twill itself.

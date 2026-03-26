@@ -7,7 +7,7 @@
 //! Applies utility-first styling ideas:
 //! - **Design Tokens** - type-safe base values (colors, spacing, sizes)
 //! - **Utility-first** - composable atomic styles
-//! - **Component Variants** - pre-built component variants
+//! - **State & Responsive Layers** - compose hover/focus/data/aria and breakpoint styles
 //!
 //! But implements them through Rust types for native GUI backends.
 //!
@@ -24,12 +24,14 @@
 //! ```rust
 //! use twill::prelude::*;
 //!
-//! // Create a button style
-//! let button_style = Style::new()
+//! // Create a reusable surface style
+//! let surface_style = Style::new()
 //!     .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
 //!     .bg(Color::blue(Scale::S500))
 //!     .text_color(Color::slate(Scale::S50))
-//!     .rounded(BorderRadius::Md);
+//!     .rounded(BorderRadius::Md)
+//!     .hover(|style| style.opacity(0.9))
+//!     .md(|style| style.padding(Padding::all(Spacing::S6)));
 //! ```
 //!
 //!

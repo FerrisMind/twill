@@ -5,7 +5,7 @@ Add `twill` to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-twill = "0.2"
+twill = "0.3"
 ```
 
 ## Enable GUI backends
@@ -13,32 +13,31 @@ Enable only the backends you use:
 
 ```toml
 [dependencies]
-twill = { version = "0.2", features = ["egui"] }
+twill = { version = "0.3", features = ["egui"] }
 # or
-twill = { version = "0.2", features = ["iced"] }
+twill = { version = "0.3", features = ["iced"] }
 # or
-twill = { version = "0.2", features = ["slint"] }
+twill = { version = "0.3", features = ["slint"] }
 ```
 
 You can combine features:
 
 ```toml
 [dependencies]
-twill = { version = "0.2", features = ["egui", "iced", "slint"] }
+twill = { version = "0.3", features = ["egui", "iced", "slint"] }
 ```
 
 ## Verify installation
 Run:
 
-```bash
-cargo check
+```powershell
+& "$env:USERPROFILE\.cargo\bin\cargo.exe" check
 ```
 
-If you enabled example backends, you can run:
+If you enabled backend features, you can verify the crate builds with:
 
-```bash
-cargo run --example demo-egui --features egui
-cargo run --example demo-iced --features iced
-cargo run --example demo-slint --features slint
+```powershell
+& "$env:USERPROFILE\.cargo\bin\cargo.exe" build --features egui
+& "$env:USERPROFILE\.cargo\bin\cargo.exe" build --features iced
+& "$env:USERPROFILE\.cargo\bin\cargo.exe" build --features slint
 ```
-

@@ -3,19 +3,12 @@
 Enable feature:
 
 ```toml
-twill = { version = "0.2", features = ["iced"] }
+twill = { version = "0.3", features = ["iced"] }
 ```
 
 ## What you get
 - color/style mapping helpers for `iced`,
 - compatibility with `iced` application architecture,
-- demo example: `examples/demo-iced.rs`.
+- typed translation from Twill values into `iced` primitives.
 
-## Run demo
-
-```bash
-cargo run --example demo-iced --features iced
-```
-
-Use the demo tabs to verify token rendering and theme switching behavior.
-
+Use `twill::backends::iced::ToIced` together with the helper functions in this module to feed `Style` data into your own `iced` widgets, layouts, and themes.

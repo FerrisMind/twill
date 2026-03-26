@@ -10,8 +10,11 @@ let style = Style::new()
 ```
 
 ```rust
-use twill::Button;
+use twill::prelude::*;
 
-let primary = Button::primary().lg();
-let outline = Button::outline().sm();
+let style = Style::new()
+    .padding(Padding::all(Spacing::S4))
+    .bg(Color::blue(Scale::S500))
+    .hover(|style| style.opacity(0.9))
+    .md(|style| style.padding(Padding::all(Spacing::S6)));
 ```

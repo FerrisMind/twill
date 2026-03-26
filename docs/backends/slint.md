@@ -3,19 +3,12 @@
 Enable feature:
 
 ```toml
-twill = { version = "0.2", features = ["slint"] }
+twill = { version = "0.3", features = ["slint"] }
 ```
 
 ## What you get
 - direct `Color -> slint::Color` conversion helpers,
 - integration with Slint property-based styling,
-- demo example: `examples/demo-slint.rs`.
+- typed translation from Twill values into `slint` primitives.
 
-## Run demo
-
-```bash
-cargo run --example demo-slint --features slint
-```
-
-In the demo, theme-dependent colors are resolved from Twill and pushed to Slint properties.
-
+Use `twill::backends::slint::{ToSlint, SlintColors, SlintSpacing, SlintRadius}` to bridge Twill tokens and style values into your own Slint components.

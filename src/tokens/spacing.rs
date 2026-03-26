@@ -314,7 +314,7 @@ impl Container {
 }
 
 /// Breakpoint tokens.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Breakpoint {
     Sm,
     Md,

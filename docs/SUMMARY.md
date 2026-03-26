@@ -7,7 +7,7 @@
 - [Concepts](concepts/README.md)
   - [Design Tokens](concepts/tokens.md)
   - [Style Builder](concepts/style-builder.md)
-  - [Components](concepts/components.md)
+  - [State And Responsive Layers](concepts/state-and-responsive.md)
   - [Semantic Tokens](concepts/semantic-tokens.md)
 - [Backends](backends/README.md)
   - [Overview](backends/overview.md)
