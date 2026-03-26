@@ -1,0 +1,46 @@
+name: Build mdBook Branch
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - ".github/workflows/deploy-mdbook.yml"
+      - "README.md"
+      - "README.RU.md"
+      - "README.PT_BR.md"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: "mdbook-build-branch"
+  cancel-in-progress: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install mdBook
+        uses: taiki-e/install-action@v2
+        with:
+          tool: mdbook
+
+      - name: Build documentation
+        run: mdbook build docs
+
+      - name: Publish build to gh-pages-build branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./mdbook-build
+          publish_branch: gh-pages-build
+          force_orphan: true
+          enable_jekyll: false
+          commit_message: "docs: update mdBook build"
