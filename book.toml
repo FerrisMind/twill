@@ -1,0 +1,15 @@
+[book]
+title = "Twill Documentation"
+description = "Type-safe styling library for Rust GUI apps."
+authors = ["Twill Contributors"]
+language = "en"
+src = "."
+
+[build]
+build-dir = "../mdbook-build"
+
+[output.html]
+default-theme = "rust"
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/FerrisMind/twill"
+edit-url-template = "https://github.com/FerrisMind/twill/edit/main/docs/{path}"
