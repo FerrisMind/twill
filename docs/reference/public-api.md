@@ -15,6 +15,8 @@
 Main token families:
 
 - `Color`, `ColorFamily`, `Scale`, `ColorValue`
+- `BackgroundColor`, `TextColor`, `BorderColor`, `OutlineColor`, `RingColor`
+- `ColorValueToken` and `*ColorVar` wrappers for typed arbitrary/custom-property values
 - `SemanticColor`, `SemanticThemeVars`, `DynamicSemanticTheme`
 - `ThemeVariant`
 - `Spacing`, `Percentage`, `Container`, `Breakpoint`
@@ -44,6 +46,7 @@ use twill::prelude::*;
 let card = Style::new()
     .padding(Padding::all(Spacing::S4))
     .bg(Color::slate(Scale::S50))
+    .text_color_arbitrary(ColorValueToken::from_rgb8(15, 23, 42))
     .rounded(BorderRadius::Lg)
     .hover(|style| style.shadow(Shadow::Md))
     .lg(|style| style.padding(Padding::all(Spacing::S6)));

@@ -18,6 +18,15 @@ Special colors:
 - `Color::black()`
 - `Color::transparent()`
 
+Typed arbitrary/custom-property escape hatches:
+- `ColorValueToken`
+- `BackgroundColorVar`
+- `TextColorVar`
+- `BorderColorVar`
+- `OutlineColorVar`
+- `RingColorVar`
+- `ShadowColorVar`
+
 ## Spacing tokens
 Use `Spacing` for paddings, margins, gaps:
 
@@ -41,6 +50,13 @@ let gap = Spacing::S2; // 0.5rem
 - `LetterSpacing`
 - `TextAlign`
 
+Typography also supports typed custom values:
+- `FontSizeVar`
+- `LetterSpacingVar`
+- `LineHeightVar`
+- `LetterSpacing::Em(...)`
+- `LineHeight::Number(...)`
+
 ## Shadow tokens
 - `Shadow`
 - `InsetShadow`
@@ -57,3 +73,9 @@ Motion is applied through `Style` methods:
 - `transition_duration(...)`
 - `transition_ease(...)`
 - `animate(...)`
+
+For edge cases there are typed arbitrary/custom paths such as:
+- `transition_custom(...)`
+- `transition_duration_ms(...)`
+- `blur_px(...)`
+- `perspective_px(...)`

@@ -3,18 +3,21 @@
 use std::{collections::BTreeMap, num::NonZeroU8};
 
 use crate::tokens::{
-    AnimationToken, AspectRatio, BackgroundColor, BackgroundColorVar, Blur, BorderRadius,
-    BorderStyle, BorderWidth, Breakpoint, Color, ColorValueToken, Container, Cursor, DropShadow,
-    Easing, FontFamily, FontSize, FontSizeVar, FontWeight, InsetShadow, LetterSpacing, LineHeight,
-    MotionDefaults, OutlineStyle, Percentage, Perspective, RingWidth, Shadow, Spacing, TextAlign,
-    TextDecoration, TextShadow, TextTransform, TransitionDuration, TransitionProperty,
+    AnimationToken, AspectRatio, BackgroundColor, BackgroundColorVar, Blur, BorderColor,
+    BorderColorVar, BorderRadius, BorderStyle, BorderWidth, Breakpoint, Color, ColorValueToken,
+    Container, Cursor, DropShadow, Easing, FontFamily, FontSize, FontSizeVar, FontWeight,
+    InsetShadow, LetterSpacing, LetterSpacingVar, LineHeight, LineHeightVar, MotionDefaults,
+    OutlineColor, OutlineColorVar, OutlineStyle, Percentage, Perspective, RingColor, RingColorVar,
+    RingWidth, Shadow, ShadowColorToken, ShadowColorVar, Spacing, TextAlign, TextColor,
+    TextColorVar, TextDecoration, TextShadow, TextTransform, TransitionDuration,
+    TransitionProperty,
 };
 use crate::traits::{IntoStyle, Merge};
 use crate::utilities::{
     AlignItems, Columns, Display, Flex, FlexContainer, FlexDirection, GridContainer, GridTemplate,
-    Height, HeightVar, JustifyContent, JustifyItems, JustifySelf, Margin, MarginValue, ObjectFit,
-    Overflow, Padding, PaddingValue, PlaceContent, PlaceItems, Position, SizeConstraints,
-    Visibility, Width, WidthSize, WidthVar, ZIndex,
+    Height, HeightSize, HeightVar, JustifyContent, JustifyItems, JustifySelf, Margin, MarginValue,
+    MarginVar, ObjectFit, Overflow, Padding, PaddingValue, PaddingVar, PlaceContent, PlaceItems,
+    Position, SizeConstraints, Visibility, Width, WidthSize, WidthVar, ZIndex,
 };
 
 /// A comprehensive style builder for composing native UI styles.
@@ -84,17 +87,17 @@ pub struct Style {
     pub(crate) border_radius: Option<BorderRadius>,
     pub(crate) border_width: Option<BorderWidth>,
     pub(crate) border_style: Option<BorderStyle>,
-    pub(crate) border_color: Option<Color>,
+    pub(crate) border_color: Option<BorderColor>,
     pub(crate) outline_width: Option<BorderWidth>,
     pub(crate) outline_style: Option<OutlineStyle>,
-    pub(crate) outline_color: Option<Color>,
+    pub(crate) outline_color: Option<OutlineColor>,
     pub(crate) ring_width: Option<RingWidth>,
-    pub(crate) ring_color: Option<Color>,
+    pub(crate) ring_color: Option<RingColor>,
 
     // Shadow
     pub(crate) box_shadow: Option<Shadow>,
     pub(crate) inset_shadow: Option<InsetShadow>,
-    pub(crate) shadow_color: Option<Color>,
+    pub(crate) shadow_color: Option<ShadowColorToken>,
 
     // Typography
     pub(crate) font_family: Option<FontFamily>,
@@ -105,7 +108,7 @@ pub struct Style {
     pub(crate) text_align: Option<TextAlign>,
     pub(crate) text_decoration: Option<TextDecoration>,
     pub(crate) text_transform: Option<TextTransform>,
-    pub(crate) text_color: Option<Color>,
+    pub(crate) text_color: Option<TextColor>,
     pub(crate) text_shadow: Option<TextShadow>,
 
     // Motion (optional)
@@ -303,6 +306,14 @@ impl Style {
 
     /// Returns the configured border color, if any.
     pub const fn border_color_value(&self) -> Option<Color> {
+        match self.border_color {
+            Some(token) => token.palette_value(),
+            None => None,
+        }
+    }
+
+    /// Returns the configured border color token, including arbitrary/custom values.
+    pub const fn border_color_token_value(&self) -> Option<BorderColor> {
         self.border_color
     }
 
@@ -318,6 +329,14 @@ impl Style {
 
     /// Returns the configured outline color, if any.
     pub const fn outline_color_value(&self) -> Option<Color> {
+        match self.outline_color {
+            Some(token) => token.palette_value(),
+            None => None,
+        }
+    }
+
+    /// Returns the configured outline color token, including arbitrary/custom values.
+    pub const fn outline_color_token_value(&self) -> Option<OutlineColor> {
         self.outline_color
     }
 
@@ -328,11 +347,27 @@ impl Style {
 
     /// Returns the configured ring color, if any.
     pub const fn ring_color_value(&self) -> Option<Color> {
+        match self.ring_color {
+            Some(token) => token.palette_value(),
+            None => None,
+        }
+    }
+
+    /// Returns the configured ring color token, including arbitrary/custom values.
+    pub const fn ring_color_token_value(&self) -> Option<RingColor> {
         self.ring_color
     }
 
     /// Returns the configured text color, if any.
     pub const fn text_color_value(&self) -> Option<Color> {
+        match self.text_color {
+            Some(token) => token.palette_value(),
+            None => None,
+        }
+    }
+
+    /// Returns the configured text color token, including arbitrary/custom values.
+    pub const fn text_color_token_value(&self) -> Option<TextColor> {
         self.text_color
     }
 
@@ -393,6 +428,14 @@ impl Style {
 
     /// Returns the configured shadow color, if any.
     pub const fn shadow_color_value(&self) -> Option<Color> {
+        match self.shadow_color {
+            Some(token) => token.palette_value(),
+            None => None,
+        }
+    }
+
+    /// Returns the configured shadow color token, including arbitrary/custom values.
+    pub const fn shadow_color_token_value(&self) -> Option<ShadowColorToken> {
         self.shadow_color
     }
 
@@ -1049,6 +1092,21 @@ impl Style {
         )
     }
 
+    /// `p-(<custom-property>)`.
+    pub fn p_var(self, var: PaddingVar) -> Self {
+        self.p_value(PaddingValue::var(var))
+    }
+
+    /// Typed pixel padding across all sides.
+    pub fn p_px(self, value: f32) -> Self {
+        self.p_value(PaddingValue::px(value))
+    }
+
+    /// Typed rem padding across all sides.
+    pub fn p_rem(self, value: f32) -> Self {
+        self.p_value(PaddingValue::rem(value))
+    }
+
     /// `px-*` family: set horizontal padding.
     pub fn px(self, spacing: Spacing) -> Self {
         self.px_value(spacing.into())
@@ -1063,6 +1121,21 @@ impl Style {
             },
             value,
         )
+    }
+
+    /// `px-(<custom-property>)`.
+    pub fn px_var(self, var: PaddingVar) -> Self {
+        self.px_value(PaddingValue::var(var))
+    }
+
+    /// Typed pixel horizontal padding.
+    pub fn px_px(self, value: f32) -> Self {
+        self.px_value(PaddingValue::px(value))
+    }
+
+    /// Typed rem horizontal padding.
+    pub fn px_rem(self, value: f32) -> Self {
+        self.px_value(PaddingValue::rem(value))
     }
 
     /// `py-*` family: set vertical padding.
@@ -1081,6 +1154,21 @@ impl Style {
         )
     }
 
+    /// `py-(<custom-property>)`.
+    pub fn py_var(self, var: PaddingVar) -> Self {
+        self.py_value(PaddingValue::var(var))
+    }
+
+    /// Typed pixel vertical padding.
+    pub fn py_px(self, value: f32) -> Self {
+        self.py_value(PaddingValue::px(value))
+    }
+
+    /// Typed rem vertical padding.
+    pub fn py_rem(self, value: f32) -> Self {
+        self.py_value(PaddingValue::rem(value))
+    }
+
     /// `ps-*` family (`padding-inline-start`) for default LTR mapping.
     pub fn ps(self, spacing: Spacing) -> Self {
         self.ps_value(spacing.into())
@@ -1094,6 +1182,21 @@ impl Style {
             },
             value,
         )
+    }
+
+    /// `ps-(<custom-property>)`.
+    pub fn ps_var(self, var: PaddingVar) -> Self {
+        self.ps_value(PaddingValue::var(var))
+    }
+
+    /// Typed pixel inline-start padding.
+    pub fn ps_px(self, value: f32) -> Self {
+        self.ps_value(PaddingValue::px(value))
+    }
+
+    /// Typed rem inline-start padding.
+    pub fn ps_rem(self, value: f32) -> Self {
+        self.ps_value(PaddingValue::rem(value))
     }
 
     /// `pe-*` family (`padding-inline-end`) for default LTR mapping.
@@ -1111,6 +1214,21 @@ impl Style {
         )
     }
 
+    /// `pe-(<custom-property>)`.
+    pub fn pe_var(self, var: PaddingVar) -> Self {
+        self.pe_value(PaddingValue::var(var))
+    }
+
+    /// Typed pixel inline-end padding.
+    pub fn pe_px(self, value: f32) -> Self {
+        self.pe_value(PaddingValue::px(value))
+    }
+
+    /// Typed rem inline-end padding.
+    pub fn pe_rem(self, value: f32) -> Self {
+        self.pe_value(PaddingValue::rem(value))
+    }
+
     /// `pbs-*` family (`padding-block-start`).
     pub fn pbs(self, spacing: Spacing) -> Self {
         self.pbs_value(spacing.into())
@@ -1124,6 +1242,21 @@ impl Style {
             },
             value,
         )
+    }
+
+    /// `pbs-(<custom-property>)`.
+    pub fn pbs_var(self, var: PaddingVar) -> Self {
+        self.pbs_value(PaddingValue::var(var))
+    }
+
+    /// Typed pixel block-start padding.
+    pub fn pbs_px(self, value: f32) -> Self {
+        self.pbs_value(PaddingValue::px(value))
+    }
+
+    /// Typed rem block-start padding.
+    pub fn pbs_rem(self, value: f32) -> Self {
+        self.pbs_value(PaddingValue::rem(value))
     }
 
     /// `pbe-*` family (`padding-block-end`).
@@ -1141,6 +1274,21 @@ impl Style {
         )
     }
 
+    /// `pbe-(<custom-property>)`.
+    pub fn pbe_var(self, var: PaddingVar) -> Self {
+        self.pbe_value(PaddingValue::var(var))
+    }
+
+    /// Typed pixel block-end padding.
+    pub fn pbe_px(self, value: f32) -> Self {
+        self.pbe_value(PaddingValue::px(value))
+    }
+
+    /// Typed rem block-end padding.
+    pub fn pbe_rem(self, value: f32) -> Self {
+        self.pbe_value(PaddingValue::rem(value))
+    }
+
     /// `pt-*` family.
     pub fn pt(self, spacing: Spacing) -> Self {
         self.pt_value(spacing.into())
@@ -1154,6 +1302,21 @@ impl Style {
             },
             value,
         )
+    }
+
+    /// `pt-(<custom-property>)`.
+    pub fn pt_var(self, var: PaddingVar) -> Self {
+        self.pt_value(PaddingValue::var(var))
+    }
+
+    /// Typed pixel top padding.
+    pub fn pt_px(self, value: f32) -> Self {
+        self.pt_value(PaddingValue::px(value))
+    }
+
+    /// Typed rem top padding.
+    pub fn pt_rem(self, value: f32) -> Self {
+        self.pt_value(PaddingValue::rem(value))
     }
 
     /// `pr-*` family.
@@ -1171,6 +1334,21 @@ impl Style {
         )
     }
 
+    /// `pr-(<custom-property>)`.
+    pub fn pr_var(self, var: PaddingVar) -> Self {
+        self.pr_value(PaddingValue::var(var))
+    }
+
+    /// Typed pixel right padding.
+    pub fn pr_px(self, value: f32) -> Self {
+        self.pr_value(PaddingValue::px(value))
+    }
+
+    /// Typed rem right padding.
+    pub fn pr_rem(self, value: f32) -> Self {
+        self.pr_value(PaddingValue::rem(value))
+    }
+
     /// `pb-*` family.
     pub fn pb(self, spacing: Spacing) -> Self {
         self.pb_value(spacing.into())
@@ -1186,6 +1364,21 @@ impl Style {
         )
     }
 
+    /// `pb-(<custom-property>)`.
+    pub fn pb_var(self, var: PaddingVar) -> Self {
+        self.pb_value(PaddingValue::var(var))
+    }
+
+    /// Typed pixel bottom padding.
+    pub fn pb_px(self, value: f32) -> Self {
+        self.pb_value(PaddingValue::px(value))
+    }
+
+    /// Typed rem bottom padding.
+    pub fn pb_rem(self, value: f32) -> Self {
+        self.pb_value(PaddingValue::rem(value))
+    }
+
     /// `pl-*` family.
     pub fn pl(self, spacing: Spacing) -> Self {
         self.pl_value(spacing.into())
@@ -1199,6 +1392,21 @@ impl Style {
             },
             value,
         )
+    }
+
+    /// `pl-(<custom-property>)`.
+    pub fn pl_var(self, var: PaddingVar) -> Self {
+        self.pl_value(PaddingValue::var(var))
+    }
+
+    /// Typed pixel left padding.
+    pub fn pl_px(self, value: f32) -> Self {
+        self.pl_value(PaddingValue::px(value))
+    }
+
+    /// Typed rem left padding.
+    pub fn pl_rem(self, value: f32) -> Self {
+        self.pl_value(PaddingValue::rem(value))
     }
 
     /// `m-*` family: set all margin sides.
@@ -1217,6 +1425,26 @@ impl Style {
             },
             value,
         )
+    }
+
+    /// `m-(<custom-property>)`.
+    pub fn m_var(self, var: MarginVar) -> Self {
+        self.m_value(MarginValue::var(var))
+    }
+
+    /// Typed pixel margin across all sides.
+    pub fn m_px(self, value: f32) -> Self {
+        self.m_value(MarginValue::px(value))
+    }
+
+    /// Typed rem margin across all sides.
+    pub fn m_rem(self, value: f32) -> Self {
+        self.m_value(MarginValue::rem(value))
+    }
+
+    /// `m-auto`.
+    pub fn m_auto(self) -> Self {
+        self.m_value(MarginValue::auto())
     }
 
     /// `-m-*` family.
@@ -1240,6 +1468,26 @@ impl Style {
         )
     }
 
+    /// `mx-(<custom-property>)`.
+    pub fn mx_var(self, var: MarginVar) -> Self {
+        self.mx_value(MarginValue::var(var))
+    }
+
+    /// Typed pixel horizontal margin.
+    pub fn mx_px(self, value: f32) -> Self {
+        self.mx_value(MarginValue::px(value))
+    }
+
+    /// Typed rem horizontal margin.
+    pub fn mx_rem(self, value: f32) -> Self {
+        self.mx_value(MarginValue::rem(value))
+    }
+
+    /// `mx-auto`.
+    pub fn mx_auto(self) -> Self {
+        self.mx_value(MarginValue::auto())
+    }
+
     /// `-mx-*` family.
     pub fn neg_mx(self, spacing: Spacing) -> Self {
         self.mx_value(MarginValue::neg_scale(spacing))
@@ -1259,6 +1507,26 @@ impl Style {
             },
             value,
         )
+    }
+
+    /// `my-(<custom-property>)`.
+    pub fn my_var(self, var: MarginVar) -> Self {
+        self.my_value(MarginValue::var(var))
+    }
+
+    /// Typed pixel vertical margin.
+    pub fn my_px(self, value: f32) -> Self {
+        self.my_value(MarginValue::px(value))
+    }
+
+    /// Typed rem vertical margin.
+    pub fn my_rem(self, value: f32) -> Self {
+        self.my_value(MarginValue::rem(value))
+    }
+
+    /// `my-auto`.
+    pub fn my_auto(self) -> Self {
+        self.my_value(MarginValue::auto())
     }
 
     /// `-my-*` family.
@@ -1281,6 +1549,26 @@ impl Style {
         )
     }
 
+    /// `ms-(<custom-property>)`.
+    pub fn ms_var(self, var: MarginVar) -> Self {
+        self.ms_value(MarginValue::var(var))
+    }
+
+    /// Typed pixel inline-start margin.
+    pub fn ms_px(self, value: f32) -> Self {
+        self.ms_value(MarginValue::px(value))
+    }
+
+    /// Typed rem inline-start margin.
+    pub fn ms_rem(self, value: f32) -> Self {
+        self.ms_value(MarginValue::rem(value))
+    }
+
+    /// `ms-auto`.
+    pub fn ms_auto(self) -> Self {
+        self.ms_value(MarginValue::auto())
+    }
+
     /// `-ms-*` family.
     pub fn neg_ms(self, spacing: Spacing) -> Self {
         self.ms_value(MarginValue::neg_scale(spacing))
@@ -1299,6 +1587,26 @@ impl Style {
             },
             value,
         )
+    }
+
+    /// `me-(<custom-property>)`.
+    pub fn me_var(self, var: MarginVar) -> Self {
+        self.me_value(MarginValue::var(var))
+    }
+
+    /// Typed pixel inline-end margin.
+    pub fn me_px(self, value: f32) -> Self {
+        self.me_value(MarginValue::px(value))
+    }
+
+    /// Typed rem inline-end margin.
+    pub fn me_rem(self, value: f32) -> Self {
+        self.me_value(MarginValue::rem(value))
+    }
+
+    /// `me-auto`.
+    pub fn me_auto(self) -> Self {
+        self.me_value(MarginValue::auto())
     }
 
     /// `-me-*` family.
@@ -1321,6 +1629,26 @@ impl Style {
         )
     }
 
+    /// `mbs-(<custom-property>)`.
+    pub fn mbs_var(self, var: MarginVar) -> Self {
+        self.mbs_value(MarginValue::var(var))
+    }
+
+    /// Typed pixel block-start margin.
+    pub fn mbs_px(self, value: f32) -> Self {
+        self.mbs_value(MarginValue::px(value))
+    }
+
+    /// Typed rem block-start margin.
+    pub fn mbs_rem(self, value: f32) -> Self {
+        self.mbs_value(MarginValue::rem(value))
+    }
+
+    /// `mbs-auto`.
+    pub fn mbs_auto(self) -> Self {
+        self.mbs_value(MarginValue::auto())
+    }
+
     /// `-mbs-*` family.
     pub fn neg_mbs(self, spacing: Spacing) -> Self {
         self.mbs_value(MarginValue::neg_scale(spacing))
@@ -1339,6 +1667,26 @@ impl Style {
             },
             value,
         )
+    }
+
+    /// `mbe-(<custom-property>)`.
+    pub fn mbe_var(self, var: MarginVar) -> Self {
+        self.mbe_value(MarginValue::var(var))
+    }
+
+    /// Typed pixel block-end margin.
+    pub fn mbe_px(self, value: f32) -> Self {
+        self.mbe_value(MarginValue::px(value))
+    }
+
+    /// Typed rem block-end margin.
+    pub fn mbe_rem(self, value: f32) -> Self {
+        self.mbe_value(MarginValue::rem(value))
+    }
+
+    /// `mbe-auto`.
+    pub fn mbe_auto(self) -> Self {
+        self.mbe_value(MarginValue::auto())
     }
 
     /// `-mbe-*` family.
@@ -1361,6 +1709,26 @@ impl Style {
         )
     }
 
+    /// `mt-(<custom-property>)`.
+    pub fn mt_var(self, var: MarginVar) -> Self {
+        self.mt_value(MarginValue::var(var))
+    }
+
+    /// Typed pixel top margin.
+    pub fn mt_px(self, value: f32) -> Self {
+        self.mt_value(MarginValue::px(value))
+    }
+
+    /// Typed rem top margin.
+    pub fn mt_rem(self, value: f32) -> Self {
+        self.mt_value(MarginValue::rem(value))
+    }
+
+    /// `mt-auto`.
+    pub fn mt_auto(self) -> Self {
+        self.mt_value(MarginValue::auto())
+    }
+
     /// `-mt-*` family.
     pub fn neg_mt(self, spacing: Spacing) -> Self {
         self.mt_value(MarginValue::neg_scale(spacing))
@@ -1379,6 +1747,26 @@ impl Style {
             },
             value,
         )
+    }
+
+    /// `mr-(<custom-property>)`.
+    pub fn mr_var(self, var: MarginVar) -> Self {
+        self.mr_value(MarginValue::var(var))
+    }
+
+    /// Typed pixel right margin.
+    pub fn mr_px(self, value: f32) -> Self {
+        self.mr_value(MarginValue::px(value))
+    }
+
+    /// Typed rem right margin.
+    pub fn mr_rem(self, value: f32) -> Self {
+        self.mr_value(MarginValue::rem(value))
+    }
+
+    /// `mr-auto`.
+    pub fn mr_auto(self) -> Self {
+        self.mr_value(MarginValue::auto())
     }
 
     /// `-mr-*` family.
@@ -1401,6 +1789,26 @@ impl Style {
         )
     }
 
+    /// `mb-(<custom-property>)`.
+    pub fn mb_var(self, var: MarginVar) -> Self {
+        self.mb_value(MarginValue::var(var))
+    }
+
+    /// Typed pixel bottom margin.
+    pub fn mb_px(self, value: f32) -> Self {
+        self.mb_value(MarginValue::px(value))
+    }
+
+    /// Typed rem bottom margin.
+    pub fn mb_rem(self, value: f32) -> Self {
+        self.mb_value(MarginValue::rem(value))
+    }
+
+    /// `mb-auto`.
+    pub fn mb_auto(self) -> Self {
+        self.mb_value(MarginValue::auto())
+    }
+
     /// `-mb-*` family.
     pub fn neg_mb(self, spacing: Spacing) -> Self {
         self.mb_value(MarginValue::neg_scale(spacing))
@@ -1419,6 +1827,26 @@ impl Style {
             },
             value,
         )
+    }
+
+    /// `ml-(<custom-property>)`.
+    pub fn ml_var(self, var: MarginVar) -> Self {
+        self.ml_value(MarginValue::var(var))
+    }
+
+    /// Typed pixel left margin.
+    pub fn ml_px(self, value: f32) -> Self {
+        self.ml_value(MarginValue::px(value))
+    }
+
+    /// Typed rem left margin.
+    pub fn ml_rem(self, value: f32) -> Self {
+        self.ml_value(MarginValue::rem(value))
+    }
+
+    /// `ml-auto`.
+    pub fn ml_auto(self) -> Self {
+        self.ml_value(MarginValue::auto())
     }
 
     /// `-ml-*` family.
@@ -1657,6 +2085,67 @@ impl Style {
         self
     }
 
+    /// `min-w-*` family via typed width sizes.
+    pub fn min_w(mut self, size: WidthSize) -> Self {
+        let constraints = self.constraints.unwrap_or_default().min_width(size);
+        self.constraints = Some(constraints);
+        self
+    }
+
+    /// `min-w-(<custom-property>)`.
+    pub fn min_w_var(self, var: WidthVar) -> Self {
+        self.min_w(WidthSize::Var(var))
+    }
+
+    /// Typed pixel min-width.
+    pub fn min_w_px(self, px: u16) -> Self {
+        self.min_w(WidthSize::Px(px))
+    }
+
+    /// `max-w-(<custom-property>)`.
+    pub fn max_w_var(self, var: WidthVar) -> Self {
+        self.max_w(WidthSize::Var(var))
+    }
+
+    /// Typed pixel max-width.
+    pub fn max_w_px(self, px: u16) -> Self {
+        self.max_w(WidthSize::Px(px))
+    }
+
+    /// `min-h-*` family via typed height sizes.
+    pub fn min_h(mut self, size: HeightSize) -> Self {
+        let constraints = self.constraints.unwrap_or_default().min_height(size);
+        self.constraints = Some(constraints);
+        self
+    }
+
+    /// `min-h-(<custom-property>)`.
+    pub fn min_h_var(self, var: HeightVar) -> Self {
+        self.min_h(HeightSize::Var(var))
+    }
+
+    /// Typed pixel min-height.
+    pub fn min_h_px(self, px: u16) -> Self {
+        self.min_h(HeightSize::Px(px))
+    }
+
+    /// `max-h-*` family via typed height sizes.
+    pub fn max_h(mut self, size: HeightSize) -> Self {
+        let constraints = self.constraints.unwrap_or_default().max_height(size);
+        self.constraints = Some(constraints);
+        self
+    }
+
+    /// `max-h-(<custom-property>)`.
+    pub fn max_h_var(self, var: HeightVar) -> Self {
+        self.max_h(HeightSize::Var(var))
+    }
+
+    /// Typed pixel max-height.
+    pub fn max_h_px(self, px: u16) -> Self {
+        self.max_h(HeightSize::Px(px))
+    }
+
     // === Background ===
 
     /// Set background color.
@@ -1710,6 +2199,11 @@ impl Style {
         self
     }
 
+    /// Set blur from a raw pixel radius.
+    pub fn blur_px(self, pixels: u16) -> Self {
+        self.blur(Blur::Custom(pixels))
+    }
+
     /// Set drop shadow (filter).
     pub fn drop_shadow(mut self, shadow: DropShadow) -> Self {
         self.drop_shadow = Some(shadow);
@@ -1720,6 +2214,11 @@ impl Style {
     pub fn perspective(mut self, perspective: Perspective) -> Self {
         self.perspective = Some(perspective);
         self
+    }
+
+    /// Set perspective from a raw pixel distance.
+    pub fn perspective_px(self, pixels: u16) -> Self {
+        self.perspective(Perspective::CustomPx(pixels))
     }
 
     // === Border ===
@@ -1734,23 +2233,71 @@ impl Style {
     pub fn border(mut self, width: BorderWidth, style: BorderStyle, color: Color) -> Self {
         self.border_width = Some(width);
         self.border_style = Some(style);
-        self.border_color = Some(color);
+        self.border_color = Some(BorderColor::palette(color));
         self
+    }
+
+    /// Set border color token directly.
+    pub fn border_color_token(mut self, token: BorderColor) -> Self {
+        self.border_color = Some(token);
+        self
+    }
+
+    /// `border-(<custom-property>)` equivalent.
+    pub fn border_color_var(self, var: BorderColorVar) -> Self {
+        self.border_color_token(BorderColor::custom_property(var))
+    }
+
+    /// `border-[<value>]` equivalent.
+    pub fn border_color_arbitrary(self, value: ColorValueToken) -> Self {
+        self.border_color_token(BorderColor::arbitrary(value))
     }
 
     /// Set outline style.
     pub fn outline(mut self, width: BorderWidth, style: OutlineStyle, color: Color) -> Self {
         self.outline_width = Some(width);
         self.outline_style = Some(style);
-        self.outline_color = Some(color);
+        self.outline_color = Some(OutlineColor::palette(color));
         self
+    }
+
+    /// Set outline color token directly.
+    pub fn outline_color_token(mut self, token: OutlineColor) -> Self {
+        self.outline_color = Some(token);
+        self
+    }
+
+    /// `outline-(<custom-property>)` equivalent.
+    pub fn outline_color_var(self, var: OutlineColorVar) -> Self {
+        self.outline_color_token(OutlineColor::custom_property(var))
+    }
+
+    /// `outline-[<value>]` equivalent.
+    pub fn outline_color_arbitrary(self, value: ColorValueToken) -> Self {
+        self.outline_color_token(OutlineColor::arbitrary(value))
     }
 
     /// Set ring (focus-ring-like box shadow).
     pub fn ring(mut self, width: RingWidth, color: Color) -> Self {
         self.ring_width = Some(width);
-        self.ring_color = Some(color);
+        self.ring_color = Some(RingColor::palette(color));
         self
+    }
+
+    /// Set ring color token directly.
+    pub fn ring_color_token(mut self, token: RingColor) -> Self {
+        self.ring_color = Some(token);
+        self
+    }
+
+    /// `ring-(<custom-property>)` equivalent.
+    pub fn ring_color_var(self, var: RingColorVar) -> Self {
+        self.ring_color_token(RingColor::custom_property(var))
+    }
+
+    /// `ring-[<value>]` equivalent.
+    pub fn ring_color_arbitrary(self, value: ColorValueToken) -> Self {
+        self.ring_color_token(RingColor::arbitrary(value))
     }
 
     // === Shadow ===
@@ -1769,14 +2316,30 @@ impl Style {
 
     /// Set shadow color.
     pub fn shadow_color(mut self, color: Color) -> Self {
-        self.shadow_color = Some(color);
+        self.shadow_color = Some(ShadowColorToken::palette(color));
         self
+    }
+
+    /// Set shadow color token directly.
+    pub fn shadow_color_token(mut self, token: ShadowColorToken) -> Self {
+        self.shadow_color = Some(token);
+        self
+    }
+
+    /// `shadow-(<custom-property>)` equivalent for shadow tint.
+    pub fn shadow_color_var(self, var: ShadowColorVar) -> Self {
+        self.shadow_color_token(ShadowColorToken::custom_property(var))
+    }
+
+    /// `shadow-[<value>]` equivalent for shadow tint.
+    pub fn shadow_color_arbitrary(self, value: ColorValueToken) -> Self {
+        self.shadow_color_token(ShadowColorToken::arbitrary(value))
     }
 
     /// Set box shadow and color together.
     pub fn shadow_with_color(mut self, shadow: Shadow, color: Color) -> Self {
         self.box_shadow = Some(shadow);
-        self.shadow_color = Some(color);
+        self.shadow_color = Some(ShadowColorToken::palette(color));
         self
     }
 
@@ -1863,9 +2426,33 @@ impl Style {
         self
     }
 
+    /// `tracking-(<custom-property>)`.
+    pub fn tracking_var(mut self, var: LetterSpacingVar) -> Self {
+        self.letter_spacing = Some(LetterSpacing::var(var));
+        self
+    }
+
+    /// Typed arbitrary em letter spacing (`tracking-[<value>]`).
+    pub fn tracking_em(mut self, em: f32) -> Self {
+        self.letter_spacing = Some(LetterSpacing::em(em));
+        self
+    }
+
     /// Set line height.
     pub fn leading(mut self, height: LineHeight) -> Self {
         self.line_height = Some(height);
+        self
+    }
+
+    /// `leading-(<custom-property>)`.
+    pub fn leading_var(mut self, var: LineHeightVar) -> Self {
+        self.line_height = Some(LineHeight::var(var));
+        self
+    }
+
+    /// Typed arbitrary numeric line height (`leading-[<value>]`).
+    pub fn leading_number(mut self, value: f32) -> Self {
+        self.line_height = Some(LineHeight::number(value));
         self
     }
 
@@ -1919,8 +2506,24 @@ impl Style {
 
     /// Set text color.
     pub fn text_color(mut self, color: Color) -> Self {
-        self.text_color = Some(color);
+        self.text_color = Some(TextColor::palette(color));
         self
+    }
+
+    /// Set text color token directly.
+    pub fn text_color_token(mut self, token: TextColor) -> Self {
+        self.text_color = Some(token);
+        self
+    }
+
+    /// `text-(<custom-property>)` equivalent.
+    pub fn text_color_var(self, var: TextColorVar) -> Self {
+        self.text_color_token(TextColor::custom_property(var))
+    }
+
+    /// `text-[<value>]` equivalent.
+    pub fn text_color_arbitrary(self, value: ColorValueToken) -> Self {
+        self.text_color_token(TextColor::arbitrary(value))
     }
 
     /// Set text shadow.
@@ -1948,6 +2551,11 @@ impl Style {
         self
     }
 
+    /// Set transition property with a free-form value for backend-specific cases.
+    pub fn transition_custom(self, value: impl Into<String>) -> Self {
+        self.transition(TransitionProperty::Custom(value.into()))
+    }
+
     /// Apply default transition preset.
     pub fn transition_default(mut self) -> Self {
         let defaults = MotionDefaults::default();
@@ -1963,6 +2571,11 @@ impl Style {
         self
     }
 
+    /// Set transition duration from raw milliseconds.
+    pub fn transition_duration_ms(self, milliseconds: u16) -> Self {
+        self.transition_duration(TransitionDuration::CustomMs(milliseconds))
+    }
+
     /// Set transition timing function using easing tokens.
     pub fn transition_ease(mut self, easing: Easing) -> Self {
         self.transition_timing_function = Some(easing);
@@ -1973,6 +2586,11 @@ impl Style {
     pub fn transition_delay(mut self, delay: TransitionDuration) -> Self {
         self.transition_delay = Some(delay);
         self
+    }
+
+    /// Set transition delay from raw milliseconds.
+    pub fn transition_delay_ms(self, milliseconds: u16) -> Self {
+        self.transition_delay(TransitionDuration::CustomMs(milliseconds))
     }
 
     /// Set animation token.
@@ -2343,7 +2961,11 @@ fn merge_responsive_layers(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::tokens::{AnimationToken, Easing, Scale, TransitionDuration};
+    use crate::tokens::{
+        AnimationToken, BorderColor, BorderColorVar, ColorValueToken, Easing, LetterSpacingVar,
+        LineHeightVar, OutlineColor, Perspective, RingColor, RingColorVar, Scale, ShadowColorToken,
+        TextColor, TransitionDuration,
+    };
 
     #[test]
     fn test_style_builder_fields() {
@@ -2787,7 +3409,10 @@ mod tests {
         let override_style = Style::new().shadow_color(Color::red(Scale::S500));
         let merged = base.merge(override_style);
         assert_eq!(merged.box_shadow, Some(Shadow::Sm));
-        assert_eq!(merged.shadow_color, Some(Color::red(Scale::S500)));
+        assert_eq!(
+            merged.shadow_color,
+            Some(ShadowColorToken::palette(Color::red(Scale::S500)))
+        );
     }
 
     #[test]
@@ -3061,6 +3686,10 @@ mod tests {
         assert_eq!(style.box_shadow_value(), Some(Shadow::Sm));
         assert_eq!(style.inset_shadow_value(), Some(InsetShadow::Sm));
         assert_eq!(style.shadow_color_value(), Some(Color::black()));
+        assert_eq!(
+            style.shadow_color_token_value(),
+            Some(ShadowColorToken::palette(Color::black()))
+        );
         assert_eq!(style.transition_property_value(), Some("all"));
         assert_eq!(
             style.transition_duration_value(),
@@ -3077,6 +3706,121 @@ mod tests {
         assert_eq!(style.animation_value(), Some(AnimationToken::Spin));
         assert_eq!(style.cursor_value(), Some(Cursor::Pointer));
         assert_eq!(style.opacity_value(), Some(0.5));
+    }
+
+    #[test]
+    fn test_arbitrary_color_token_builders_and_getters() {
+        let text = TextColor::arbitrary(ColorValueToken::from_rgb8(240, 248, 255));
+        let border = BorderColor::custom_property(BorderColorVar::new("--border"));
+        let outline = OutlineColor::arbitrary(ColorValueToken::from_rgba8(255, 0, 0, 128));
+        let ring = RingColor::custom_property(RingColorVar::new("--ring"));
+        let shadow = ShadowColorToken::arbitrary(ColorValueToken::from_rgb8(17, 24, 39));
+
+        let style = Style::new()
+            .text_color_token(text)
+            .border_color_token(border)
+            .outline_color_token(outline)
+            .ring_color_token(ring)
+            .shadow_color_token(shadow);
+
+        assert_eq!(style.text_color_token_value(), Some(text));
+        assert_eq!(style.border_color_token_value(), Some(border));
+        assert_eq!(style.outline_color_token_value(), Some(outline));
+        assert_eq!(style.ring_color_token_value(), Some(ring));
+        assert_eq!(style.shadow_color_token_value(), Some(shadow));
+        assert_eq!(style.text_color_value(), None);
+        assert_eq!(style.border_color_value(), None);
+        assert_eq!(style.shadow_color_value(), None);
+    }
+
+    #[test]
+    fn test_custom_motion_builders() {
+        let style = Style::new()
+            .blur_px(22)
+            .perspective_px(960)
+            .transition_custom("filter, transform")
+            .transition_duration_ms(240)
+            .transition_delay_ms(60);
+
+        assert_eq!(style.blur_value(), Some(Blur::Custom(22)));
+        assert_eq!(style.perspective_value(), Some(Perspective::CustomPx(960)));
+        assert_eq!(style.transition_property_value(), Some("filter, transform"));
+        assert_eq!(
+            style.transition_duration_value(),
+            Some(TransitionDuration::CustomMs(240))
+        );
+        assert_eq!(
+            style.transition_delay_value(),
+            Some(TransitionDuration::CustomMs(60))
+        );
+    }
+
+    #[test]
+    fn test_custom_typography_builders() {
+        let style = Style::new()
+            .tracking_var(LetterSpacingVar::new("--tracking"))
+            .tracking_em(0.035)
+            .leading_var(LineHeightVar::new("--leading"))
+            .leading_number(1.75);
+
+        assert_eq!(style.letter_spacing_value(), Some(LetterSpacing::Em(0.035)));
+        assert_eq!(style.line_height_value(), Some(LineHeight::Number(1.75)));
+    }
+
+    #[test]
+    fn test_custom_spacing_shortcuts() {
+        const PAD_X: crate::utilities::PaddingVar = crate::utilities::PaddingVar::new("--pad-x");
+        const MARGIN_X: crate::utilities::MarginVar =
+            crate::utilities::MarginVar::new("--margin-x");
+
+        let style = Style::new()
+            .px_var(PAD_X)
+            .pt_px(6.0)
+            .pb_rem(1.25)
+            .mx_var(MARGIN_X)
+            .mt_px(8.0)
+            .mb_auto();
+
+        assert_eq!(
+            style.padding_value(),
+            Some(&Padding {
+                top: Some(PaddingValue::px(6.0)),
+                right: Some(PaddingValue::var(PAD_X)),
+                bottom: Some(PaddingValue::rem(1.25)),
+                left: Some(PaddingValue::var(PAD_X)),
+            })
+        );
+        assert_eq!(
+            style.margin_value(),
+            Some(&Margin {
+                top: Some(MarginValue::px(8.0)),
+                right: Some(MarginValue::var(MARGIN_X)),
+                bottom: Some(MarginValue::auto()),
+                left: Some(MarginValue::var(MARGIN_X)),
+            })
+        );
+    }
+
+    #[test]
+    fn test_constraint_shortcuts_for_custom_sizes() {
+        const MIN_W: WidthVar = WidthVar::new("--panel-min-w");
+        const MIN_H: HeightVar = HeightVar::new("--panel-min-h");
+
+        let style = Style::new()
+            .min_w_var(MIN_W)
+            .max_w_px(480)
+            .min_h_var(MIN_H)
+            .max_h_px(640);
+
+        assert_eq!(
+            style.constraints_value(),
+            Some(&SizeConstraints {
+                min_width: Some(crate::utilities::Size::Var(MIN_W)),
+                max_width: Some(crate::utilities::Size::Px(480)),
+                min_height: Some(crate::utilities::Size::HeightVar(MIN_H)),
+                max_height: Some(crate::utilities::Size::Px(640)),
+            })
+        );
     }
 
     #[test]

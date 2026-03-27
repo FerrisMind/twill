@@ -69,6 +69,10 @@ name = "semantic_theme"
 path = "examples/05_semantic_theme.rs"
 
 [[example]]
+name = "arbitrary_values"
+path = "examples/06_arbitrary_values.rs"
+
+[[example]]
 name = "backend_egui"
 path = "examples/10_backend_egui.rs"
 required-features = ["egui"]

@@ -22,6 +22,7 @@ Twill is a backend-agnostic style system for Rust UI code. It provides:
 
 - typed design tokens for color, spacing, typography, shadows, motion, and semantic theme aliases;
 - a fluent `Style` builder for utility-style composition;
+- typed arbitrary/custom-property escape hatches for key utility families, inspired by Tailwind's arbitrary values;
 - state/style layers such as `hover`, `focus`, `focus_visible`, `selected`, `checked`, `open`, `closed`, `data_*`, and `aria_*`;
 - breakpoint-based responsive composition via `sm`, `md`, `lg`, `xl`, and `s2xl`;
 - backend adapters for `egui`, `iced`, and `slint`.
@@ -56,6 +57,23 @@ let style = Style::new()
     .focus_visible(|style| style.ring(RingWidth::S2, Color::blue(Scale::S300)))
     .data_state("state=open", |style| style.shadow(Shadow::Lg))
     .md(|style| style.padding(Padding::all(Spacing::S6)));
+```
+
+Typed escape hatches stay in the style layer:
+
+```rust
+use twill::prelude::*;
+
+let style = Style::new()
+    .text_color_arbitrary(ColorValueToken::from_rgb8(248, 250, 252))
+    .px_var(PaddingVar::new("--panel-pad-x"))
+    .pb_rem(1.25)
+    .border_color_var(BorderColorVar::new("--panel-border"))
+    .min_w_var(WidthVar::new("--panel-min-w"))
+    .tracking_em(0.035)
+    .leading_number(1.75)
+    .transition_custom("filter, transform")
+    .transition_duration_ms(240);
 ```
 
 ## Core API

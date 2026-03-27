@@ -13,6 +13,8 @@ use twill::tokens::Cursor;
 #[cfg(feature = "slint")]
 fn main() {
     let color = Color::emerald(Scale::S500).to_slint();
+    let arbitrary =
+        slint::to_slint_color_value(ColorValueToken::from_rgba8(56, 189, 248, 180).into());
     let spacing = Spacing::S4.to_slint();
     let radius = BorderRadius::Lg.to_slint();
     let semantic = slint::to_semantic_color(SemanticColor::Primary, ThemeVariant::Dark);
@@ -24,6 +26,7 @@ fn main() {
 
     println!("== slint adapter ==");
     println!("brand color: {:?}", color);
+    println!("arbitrary color: {:?}", arbitrary);
     println!("spacing: {:?}", spacing);
     println!("radius: {:?}", radius);
     println!("semantic primary (dark): {:?}", semantic);

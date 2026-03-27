@@ -13,6 +13,7 @@ use twill::tokens::Cursor;
 #[cfg(feature = "iced")]
 fn main() {
     let color = Color::blue(Scale::S500).to_iced();
+    let arbitrary = iced::to_color_value(ColorValueToken::from_rgba8(56, 189, 248, 180).into());
     let padding = Spacing::S4.to_iced();
     let semantic = iced::to_semantic_color(SemanticColor::Primary, ThemeVariant::Dark);
     let cursor = Cursor::Pointer.to_iced();
@@ -24,6 +25,7 @@ fn main() {
     println!("== iced adapter ==");
     println!("surface bg: {:?}", surface_style().background_color_value());
     println!("brand color: {:?}", color);
+    println!("arbitrary color: {:?}", arbitrary);
     println!("padding: {:?}", padding);
     println!("semantic primary (dark): {:?}", semantic);
     println!("cursor: {:?}", cursor);

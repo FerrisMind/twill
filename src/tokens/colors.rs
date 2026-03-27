@@ -436,6 +436,95 @@ impl From<Color> for BackgroundColor {
     }
 }
 
+macro_rules! define_palette_color_token {
+    (
+        $(#[$meta:meta])*
+        $token:ident,
+        $var:ident
+    ) => {
+        $(#[$meta])*
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        pub enum $token {
+            Inherit,
+            Current,
+            Transparent,
+            Palette(Color),
+            CustomProperty($var),
+            Arbitrary(ColorValueToken),
+        }
+
+        impl $token {
+            pub const fn inherit() -> Self {
+                Self::Inherit
+            }
+
+            pub const fn current() -> Self {
+                Self::Current
+            }
+
+            pub const fn transparent() -> Self {
+                Self::Transparent
+            }
+
+            pub const fn palette(color: Color) -> Self {
+                Self::Palette(color)
+            }
+
+            pub const fn custom_property(var: $var) -> Self {
+                Self::CustomProperty(var)
+            }
+
+            pub const fn arbitrary(value: ColorValueToken) -> Self {
+                Self::Arbitrary(value)
+            }
+
+            pub const fn palette_value(self) -> Option<Color> {
+                match self {
+                    Self::Palette(color) => Some(color),
+                    _ => None,
+                }
+            }
+        }
+
+        impl From<Color> for $token {
+            fn from(value: Color) -> Self {
+                Self::Palette(value)
+            }
+        }
+
+        #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+        pub struct $var(&'static str);
+
+        impl $var {
+            pub const fn new(name: &'static str) -> Self {
+                Self(name)
+            }
+
+            pub const fn as_str(self) -> &'static str {
+                self.0
+            }
+        }
+
+        impl AsRef<str> for $var {
+            fn as_ref(&self) -> &str {
+                self.0
+            }
+        }
+
+        impl From<&'static str> for $var {
+            fn from(value: &'static str) -> Self {
+                Self::new(value)
+            }
+        }
+
+        impl fmt::Display for $var {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                f.write_str(self.0)
+            }
+        }
+    };
+}
+
 /// Typed CSS custom-property reference for background-color tokens.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct BackgroundColorVar(&'static str);
@@ -514,6 +603,36 @@ impl From<ColorValueToken> for ColorValue {
         ColorValue::from_rgb(value.0, value.1, value.2).with_alpha(value.3 as f32 / 255.0)
     }
 }
+
+define_palette_color_token!(
+    /// Typed text-color token family (`text-*` in Tailwind reference semantics).
+    TextColor,
+    TextColorVar
+);
+
+define_palette_color_token!(
+    /// Typed border-color token family (`border-*` in Tailwind reference semantics).
+    BorderColor,
+    BorderColorVar
+);
+
+define_palette_color_token!(
+    /// Typed outline-color token family (`outline-*` in Tailwind reference semantics).
+    OutlineColor,
+    OutlineColorVar
+);
+
+define_palette_color_token!(
+    /// Typed ring-color token family (`ring-*` in Tailwind reference semantics).
+    RingColor,
+    RingColorVar
+);
+
+define_palette_color_token!(
+    /// Typed shadow-color token family for shadow tint overrides.
+    ShadowColorToken,
+    ShadowColorVar
+);
 
 impl ComputeValue for ColorValue {
     type Output = ColorValue;
@@ -991,6 +1110,22 @@ mod tests {
         let var = BackgroundColorVar::from("--surface");
         assert_eq!(var.as_ref(), "--surface");
         assert_eq!(var.to_string(), "--surface");
+    }
+
+    #[test]
+    fn test_additional_color_tokens_support_palette_var_and_arbitrary_values() {
+        let text = TextColor::palette(Color::blue(Scale::S500));
+        assert_eq!(text.palette_value(), Some(Color::blue(Scale::S500)));
+
+        let ring = RingColor::custom_property(RingColorVar::new("--ring"));
+        assert_eq!(ring.palette_value(), None);
+        assert_eq!(RingColorVar::new("--ring").to_string(), "--ring");
+
+        let shadow = ShadowColorToken::arbitrary(ColorValueToken::from_rgba8(10, 20, 30, 40));
+        match shadow {
+            ShadowColorToken::Arbitrary(value) => assert_eq!(value.to_rgba8(), (10, 20, 30, 40)),
+            _ => panic!("expected arbitrary shadow color"),
+        }
     }
 
     #[test]

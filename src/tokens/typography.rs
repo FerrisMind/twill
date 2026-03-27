@@ -229,8 +229,40 @@ impl fmt::Display for FontWeight {
     }
 }
 
-/// Letter spacing (tracking) tokens.
+/// Named letter-spacing variable for custom-property style mapping.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct LetterSpacingVar(&'static str);
+
+impl LetterSpacingVar {
+    pub const fn new(name: &'static str) -> Self {
+        Self(name)
+    }
+
+    pub const fn as_str(self) -> &'static str {
+        self.0
+    }
+}
+
+impl AsRef<str> for LetterSpacingVar {
+    fn as_ref(&self) -> &str {
+        self.0
+    }
+}
+
+impl From<&'static str> for LetterSpacingVar {
+    fn from(value: &'static str) -> Self {
+        Self::new(value)
+    }
+}
+
+impl fmt::Display for LetterSpacingVar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.0)
+    }
+}
+
+/// Letter spacing (tracking) tokens.
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum LetterSpacing {
     /// -0.05em
     Tighter,
@@ -244,23 +276,84 @@ pub enum LetterSpacing {
     Wider,
     /// 0.1em
     Widest,
+    /// Custom property (e.g. `var(--tracking)`).
+    Var(LetterSpacingVar),
+    /// Typed arbitrary em value (e.g. `0.035em`).
+    Em(f32),
 }
 
 impl LetterSpacing {
-    pub fn value(&self) -> &'static str {
+    pub const fn var(name: LetterSpacingVar) -> Self {
+        Self::Var(name)
+    }
+
+    pub const fn em(value: f32) -> Self {
+        Self::Em(value)
+    }
+
+    pub fn value(&self) -> String {
         match self {
-            LetterSpacing::Tighter => "-0.05em",
-            LetterSpacing::Tight => "-0.025em",
-            LetterSpacing::Normal => "0em",
-            LetterSpacing::Wide => "0.025em",
-            LetterSpacing::Wider => "0.05em",
-            LetterSpacing::Widest => "0.1em",
+            LetterSpacing::Tighter => "-0.05em".to_string(),
+            LetterSpacing::Tight => "-0.025em".to_string(),
+            LetterSpacing::Normal => "0em".to_string(),
+            LetterSpacing::Wide => "0.025em".to_string(),
+            LetterSpacing::Wider => "0.05em".to_string(),
+            LetterSpacing::Widest => "0.1em".to_string(),
+            LetterSpacing::Var(var) => format!("var({})", var.as_str()),
+            LetterSpacing::Em(value) => format!("{value}em"),
         }
     }
 }
 
-/// Line height (leading) tokens.
+impl fmt::Display for LetterSpacing {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            LetterSpacing::Tighter => f.write_str("-0.05em"),
+            LetterSpacing::Tight => f.write_str("-0.025em"),
+            LetterSpacing::Normal => f.write_str("0em"),
+            LetterSpacing::Wide => f.write_str("0.025em"),
+            LetterSpacing::Wider => f.write_str("0.05em"),
+            LetterSpacing::Widest => f.write_str("0.1em"),
+            LetterSpacing::Var(var) => write!(f, "var({var})"),
+            LetterSpacing::Em(value) => write!(f, "{value}em"),
+        }
+    }
+}
+
+/// Named line-height variable for custom-property style mapping.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct LineHeightVar(&'static str);
+
+impl LineHeightVar {
+    pub const fn new(name: &'static str) -> Self {
+        Self(name)
+    }
+
+    pub const fn as_str(self) -> &'static str {
+        self.0
+    }
+}
+
+impl AsRef<str> for LineHeightVar {
+    fn as_ref(&self) -> &str {
+        self.0
+    }
+}
+
+impl From<&'static str> for LineHeightVar {
+    fn from(value: &'static str) -> Self {
+        Self::new(value)
+    }
+}
+
+impl fmt::Display for LineHeightVar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.0)
+    }
+}
+
+/// Line height (leading) tokens.
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum LineHeight {
     /// 1.25
     Tight,
@@ -272,11 +365,21 @@ pub enum LineHeight {
     Relaxed,
     /// 2
     Loose,
-    /// Numeric value (e.g., 1, 2, 3, etc.)
-    Numeric(u8),
+    /// Numeric value (e.g. `1.75`).
+    Number(f32),
+    /// Custom property (e.g. `var(--leading)`).
+    Var(LineHeightVar),
 }
 
 impl LineHeight {
+    pub const fn number(value: f32) -> Self {
+        Self::Number(value)
+    }
+
+    pub const fn var(name: LineHeightVar) -> Self {
+        Self::Var(name)
+    }
+
     pub fn value(&self) -> String {
         match self {
             LineHeight::Tight => "1.25".to_string(),
@@ -284,7 +387,8 @@ impl LineHeight {
             LineHeight::Normal => "1.5".to_string(),
             LineHeight::Relaxed => "1.625".to_string(),
             LineHeight::Loose => "2".to_string(),
-            LineHeight::Numeric(n) => n.to_string(),
+            LineHeight::Number(n) => n.to_string(),
+            LineHeight::Var(var) => format!("var({})", var.as_str()),
         }
     }
 }
@@ -297,7 +401,8 @@ impl fmt::Display for LineHeight {
             LineHeight::Normal => f.write_str("1.5"),
             LineHeight::Relaxed => f.write_str("1.625"),
             LineHeight::Loose => f.write_str("2"),
-            LineHeight::Numeric(n) => write!(f, "{n}"),
+            LineHeight::Number(n) => write!(f, "{n}"),
+            LineHeight::Var(var) => write!(f, "var({var})"),
         }
     }
 }
@@ -463,5 +568,33 @@ mod tests {
     #[test]
     fn test_letter_spacing() {
         assert_eq!(LetterSpacing::Tight.value(), "-0.025em");
+        assert_eq!(
+            LetterSpacing::var(LetterSpacingVar::new("--tracking")).value(),
+            "var(--tracking)"
+        );
+        assert_eq!(LetterSpacing::em(0.035).value(), "0.035em");
+    }
+
+    #[test]
+    fn test_letter_spacing_var_standard_string_traits() {
+        let var = LetterSpacingVar::new("--tracking");
+        assert_eq!(var.as_ref(), "--tracking");
+        assert_eq!(var.to_string(), "--tracking");
+    }
+
+    #[test]
+    fn test_line_height_custom_values() {
+        assert_eq!(LineHeight::number(1.75).value(), "1.75");
+        assert_eq!(
+            LineHeight::var(LineHeightVar::new("--leading")).value(),
+            "var(--leading)"
+        );
+    }
+
+    #[test]
+    fn test_line_height_var_standard_string_traits() {
+        let var = LineHeightVar::new("--leading");
+        assert_eq!(var.as_ref(), "--leading");
+        assert_eq!(var.to_string(), "--leading");
     }
 }

@@ -5,9 +5,9 @@
 use crate::backends::ShadowColor;
 use crate::style::Style;
 use crate::tokens::{
-    AspectRatio, BackgroundColor, Blur, BorderRadius, Color, ColorValue, Cursor, FontSize,
-    FontWeight, SemanticColor, SemanticThemeVars, Shadow, Spacing, ThemeVariant,
-    TransitionDuration,
+    AspectRatio, BackgroundColor, Blur, BorderColor, BorderRadius, Color, ColorValue, Cursor,
+    FontSize, FontWeight, SemanticColor, SemanticThemeVars, Shadow, ShadowColorToken, Spacing,
+    TextColor, ThemeVariant, TransitionDuration,
 };
 use crate::traits::ComputeValue;
 use crate::utilities::PaddingValue;
@@ -210,13 +210,46 @@ pub fn to_color32_value(value: crate::tokens::ColorValue) -> egui::Color32 {
     )
 }
 
+fn resolve_text_color_token(token: TextColor) -> Option<ColorValue> {
+    match token {
+        TextColor::Inherit => None,
+        TextColor::Current => None,
+        TextColor::Transparent => Some(ColorValue::TRANSPARENT),
+        TextColor::Palette(color) => Some(color.compute()),
+        TextColor::CustomProperty(_) => None,
+        TextColor::Arbitrary(value) => Some(value.into()),
+    }
+}
+
+fn resolve_border_color_token(token: BorderColor) -> Option<ColorValue> {
+    match token {
+        BorderColor::Inherit => None,
+        BorderColor::Current => None,
+        BorderColor::Transparent => Some(ColorValue::TRANSPARENT),
+        BorderColor::Palette(color) => Some(color.compute()),
+        BorderColor::CustomProperty(_) => None,
+        BorderColor::Arbitrary(value) => Some(value.into()),
+    }
+}
+
+fn resolve_shadow_color_token(token: ShadowColorToken) -> Option<ColorValue> {
+    match token {
+        ShadowColorToken::Inherit => None,
+        ShadowColorToken::Current => None,
+        ShadowColorToken::Transparent => Some(ColorValue::TRANSPARENT),
+        ShadowColorToken::Palette(color) => Some(color.compute()),
+        ShadowColorToken::CustomProperty(_) => None,
+        ShadowColorToken::Arbitrary(value) => Some(value.into()),
+    }
+}
+
 fn resolve_background_color_token(
     token: BackgroundColor,
-    fallback_text: Option<Color>,
+    fallback_text: Option<ColorValue>,
 ) -> Option<ColorValue> {
     match token {
         BackgroundColor::Inherit => None,
-        BackgroundColor::Current => fallback_text.map(|text| text.compute()),
+        BackgroundColor::Current => fallback_text,
         BackgroundColor::Transparent => Some(ColorValue::TRANSPARENT),
         BackgroundColor::Palette(color) => Some(color.compute()),
         BackgroundColor::CustomProperty(_) => None,
@@ -278,10 +311,9 @@ pub fn to_shadow_with_color(
     };
 
     let mut value = match shadow_color {
-        ShadowColor::Default => Color::black(),
-        ShadowColor::Explicit(color) => color,
-    }
-    .compute();
+        ShadowColor::Default => Color::black().compute(),
+        ShadowColor::Explicit(color) => color.compute(),
+    };
     value.a *= alpha;
 
     Some(egui::epaint::Shadow {
@@ -385,10 +417,9 @@ pub fn to_frame(style: &Style) -> egui::Frame {
     }
 
     // Background
-    if let Some(bg) = style
-        .background_color
-        .and_then(|bg| resolve_background_color_token(bg, style.text_color))
-    {
+    if let Some(bg) = style.background_color.and_then(|bg| {
+        resolve_background_color_token(bg, style.text_color.and_then(resolve_text_color_token))
+    }) {
         frame = frame.fill(to_color32_value(apply_opacity_to_color_value(bg, opacity)));
     }
 
@@ -406,19 +437,25 @@ pub fn to_frame(style: &Style) -> egui::Frame {
             crate::tokens::BorderWidth::S4 => 4.0,
             crate::tokens::BorderWidth::S8 => 8.0,
         };
-        frame = frame.stroke(egui::Stroke::new(
-            w,
-            apply_opacity_to_color32(to_color32(*color), opacity),
-        ));
+        if let Some(color) = resolve_border_color_token(*color) {
+            frame = frame.stroke(egui::Stroke::new(
+                w,
+                apply_opacity_to_color32(to_color32_value(color), opacity),
+            ));
+        }
     }
 
     // Shadow
-    if let Some(s) = &style.box_shadow
-        && let Some(mut egui_shadow) =
-            to_shadow_with_color(*s, ShadowColor::from(style.shadow_color))
-    {
-        egui_shadow.color = apply_opacity_to_color32(egui_shadow.color, opacity);
-        frame = frame.shadow(egui_shadow);
+    if let Some(s) = &style.box_shadow {
+        let shadow_color = style
+            .shadow_color
+            .and_then(resolve_shadow_color_token)
+            .map(to_color32_value)
+            .unwrap_or_else(|| to_color32(Color::black()));
+        if let Some(mut egui_shadow) = to_shadow(*s) {
+            egui_shadow.color = apply_opacity_to_color32(shadow_color, opacity);
+            frame = frame.shadow(egui_shadow);
+        }
     }
 
     frame

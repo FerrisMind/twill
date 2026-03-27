@@ -14,6 +14,8 @@ use twill::tokens::Cursor;
 fn main() {
     let frame = surface_style().to_egui();
     let color = Color::blue(Scale::S500).to_egui();
+    let arbitrary = ColorValueToken::from_rgba8(56, 189, 248, 180);
+    let arbitrary_color = egui::to_color32_value(arbitrary.into());
     let semantic = egui::to_semantic_color32(SemanticColor::Primary, ThemeVariant::Dark);
     let cursor = Cursor::Pointer.to_egui();
     let shadow = interactive_style()
@@ -24,6 +26,7 @@ fn main() {
     println!("== egui adapter ==");
     println!("frame fill: {:?}", frame.fill);
     println!("brand color: {:?}", color);
+    println!("arbitrary color: {:?}", arbitrary_color);
     println!("semantic primary (dark): {:?}", semantic);
     println!("cursor: {:?}", cursor);
     println!("shadow: {:?}", shadow);

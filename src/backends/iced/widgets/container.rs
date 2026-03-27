@@ -5,8 +5,10 @@ use iced::{Point, Rectangle, Renderer, Size, Theme, border, mouse};
 
 use super::common::{apply_opacity_to_color, apply_opacity_to_color_value, resolved_opacity};
 use super::conversions::{
-    resolve_background_color_token, shadow_layers_with_opacity, to_border_radius, to_color,
-    to_color_value, to_style_padding, wrap_with_shadow_layers,
+    resolve_background_color_token, resolve_border_color_token, resolve_shadow_color_token,
+    resolve_text_color_token, shadow_layers_with_color_value_and_opacity,
+    shadow_layers_with_opacity, to_border_radius, to_color_value, to_style_padding,
+    wrap_with_shadow_layers,
 };
 use crate::backends::ShadowColor;
 
@@ -30,7 +32,9 @@ pub fn styled_container_with_custom_properties<'a, Message: Clone + 'a>(
 
     let bg_color = style
         .background_color
-        .and_then(|bg| resolve_background_color_token(bg, style.text_color))
+        .and_then(|bg| {
+            resolve_background_color_token(bg, style.text_color.and_then(resolve_text_color_token))
+        })
         .map(|bg| apply_opacity_to_color_value(bg, opacity))
         .map(to_color_value);
     let base_border_width: f32 = style.border_width.map_or(0.0, |w| match w {
@@ -43,14 +47,21 @@ pub fn styled_container_with_custom_properties<'a, Message: Clone + 'a>(
     let border_radius = style.border_radius.map_or(0.0, to_border_radius);
     let border_color = style
         .border_color
-        .map(to_color)
+        .and_then(resolve_border_color_token)
+        .map(to_color_value)
         .map(|color| apply_opacity_to_color(color, opacity))
         .unwrap_or(iced::Color::TRANSPARENT);
     let border_style = style.border_style.unwrap_or(BorderStyle::Solid);
     let border_width = base_border_width;
     let shadow_layers = style
         .box_shadow
-        .map(|s| shadow_layers_with_opacity(s, ShadowColor::from(style.shadow_color), opacity))
+        .map(|s| {
+            if let Some(shadow_color) = style.shadow_color.and_then(resolve_shadow_color_token) {
+                shadow_layers_with_color_value_and_opacity(s, shadow_color, opacity)
+            } else {
+                shadow_layers_with_opacity(s, ShadowColor::Default, opacity)
+            }
+        })
         .unwrap_or_default();
 
     match border_style {

@@ -20,6 +20,7 @@
   - [States Example](examples/states.md)
   - [Responsive Example](examples/responsive.md)
   - [Semantic Theme Example](examples/themes.md)
+  - [Arbitrary Values Example](examples/arbitrary-values.md)
   - [Backend Adapter Examples](examples/backends.md)
   - [egui Showcase](examples/showcase-egui.md)
   - [iced Showcase](examples/showcase-iced.md)

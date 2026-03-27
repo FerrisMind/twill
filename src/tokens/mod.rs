@@ -27,8 +27,9 @@ pub use aspect_ratio::AspectRatio;
 pub use blur::Blur;
 pub use borders::{BorderRadius, BorderStyle, BorderWidth, DivideWidth, OutlineStyle, RingWidth};
 pub use colors::{
-    BackgroundColor, BackgroundColorVar, Color, ColorFamily, ColorValue, ColorValueToken, Scale,
-    SpecialColor,
+    BackgroundColor, BackgroundColorVar, BorderColor, BorderColorVar, Color, ColorFamily,
+    ColorValue, ColorValueToken, OutlineColor, OutlineColorVar, RingColor, RingColorVar, Scale,
+    ShadowColorToken, ShadowColorVar, SpecialColor, TextColor, TextColorVar,
 };
 pub use cursor::Cursor;
 pub use motion::{AnimationToken, Easing, MotionDefaults, TransitionDuration, TransitionProperty};
@@ -38,6 +39,6 @@ pub use semantic::{DynamicSemanticTheme, SemanticColor, SemanticThemeVars, Theme
 pub use shadows::{DropShadow, InsetShadow, Shadow, TextShadow};
 pub use spacing::{Breakpoint, Container, Percentage, Spacing};
 pub use typography::{
-    FontFamily, FontSize, FontSizeVar, FontWeight, LetterSpacing, LineHeight, TextAlign,
-    TextDecoration, TextOverflow, TextTransform, WhiteSpace, WordBreak,
+    FontFamily, FontSize, FontSizeVar, FontWeight, LetterSpacing, LetterSpacingVar, LineHeight,
+    LineHeightVar, TextAlign, TextDecoration, TextOverflow, TextTransform, WhiteSpace, WordBreak,
 };

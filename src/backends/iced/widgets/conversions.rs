@@ -1,8 +1,8 @@
 use crate::backends::ShadowColor;
 use crate::tokens::{
-    AspectRatio, BackgroundColor, Blur, BorderRadius, Color, ColorValue, Cursor, FontSize,
-    FontWeight, Percentage, SemanticColor, SemanticThemeVars, Shadow, Spacing, TextAlign,
-    ThemeVariant, TransitionDuration,
+    AspectRatio, BackgroundColor, Blur, BorderColor, BorderRadius, Color, ColorValue, Cursor,
+    FontSize, FontWeight, Percentage, SemanticColor, SemanticThemeVars, Shadow, ShadowColorToken,
+    Spacing, TextAlign, TextColor, ThemeVariant, TransitionDuration,
 };
 use crate::traits::ComputeValue;
 use crate::utilities::{MarginValue, ObjectFit, PaddingValue};
@@ -26,13 +26,46 @@ pub fn to_color_value(value: crate::tokens::ColorValue) -> iced::Color {
     )
 }
 
+pub(super) fn resolve_text_color_token(token: TextColor) -> Option<ColorValue> {
+    match token {
+        TextColor::Inherit => None,
+        TextColor::Current => None,
+        TextColor::Transparent => Some(ColorValue::TRANSPARENT),
+        TextColor::Palette(color) => Some(color.compute()),
+        TextColor::CustomProperty(_) => None,
+        TextColor::Arbitrary(value) => Some(value.into()),
+    }
+}
+
+pub(super) fn resolve_border_color_token(token: BorderColor) -> Option<ColorValue> {
+    match token {
+        BorderColor::Inherit => None,
+        BorderColor::Current => None,
+        BorderColor::Transparent => Some(ColorValue::TRANSPARENT),
+        BorderColor::Palette(color) => Some(color.compute()),
+        BorderColor::CustomProperty(_) => None,
+        BorderColor::Arbitrary(value) => Some(value.into()),
+    }
+}
+
+pub(super) fn resolve_shadow_color_token(token: ShadowColorToken) -> Option<ColorValue> {
+    match token {
+        ShadowColorToken::Inherit => None,
+        ShadowColorToken::Current => None,
+        ShadowColorToken::Transparent => Some(ColorValue::TRANSPARENT),
+        ShadowColorToken::Palette(color) => Some(color.compute()),
+        ShadowColorToken::CustomProperty(_) => None,
+        ShadowColorToken::Arbitrary(value) => Some(value.into()),
+    }
+}
+
 pub(super) fn resolve_background_color_token(
     token: BackgroundColor,
-    fallback_text: Option<Color>,
+    fallback_text: Option<ColorValue>,
 ) -> Option<ColorValue> {
     match token {
         BackgroundColor::Inherit => None,
-        BackgroundColor::Current => fallback_text.map(|text| text.compute()),
+        BackgroundColor::Current => fallback_text,
         BackgroundColor::Transparent => Some(ColorValue::TRANSPARENT),
         BackgroundColor::Palette(color) => Some(color.compute()),
         BackgroundColor::CustomProperty(_) => None,
@@ -466,12 +499,53 @@ pub fn to_shadow_layers_with_color(shadow: Shadow, color: ShadowColor) -> Vec<ic
         .collect()
 }
 
+pub(super) fn to_shadow_layers_with_color_value(
+    shadow: Shadow,
+    color: ColorValue,
+) -> Vec<iced::Shadow> {
+    let layers: &[(f32, f32, f32)] = match shadow {
+        Shadow::None => &[],
+        Shadow::Xs2 => &[(1.0, 0.0, 0.05)],
+        Shadow::Xs => &[(1.0, 2.0, 0.05)],
+        Shadow::Sm => &[(1.0, 3.0, 0.1), (1.0, 2.0, 0.1)],
+        Shadow::Md => &[(4.0, 6.0, 0.1), (2.0, 4.0, 0.1)],
+        Shadow::Lg => &[(10.0, 15.0, 0.1), (4.0, 6.0, 0.1)],
+        Shadow::Xl => &[(20.0, 25.0, 0.1), (8.0, 10.0, 0.1)],
+        Shadow::S2xl => &[(25.0, 50.0, 0.25)],
+    };
+
+    layers
+        .iter()
+        .map(|(offset_y, blur, alpha)| {
+            let mut c = to_color_value(color);
+            c.a *= *alpha;
+            iced::Shadow {
+                color: c,
+                offset: iced::Vector::new(0.0, *offset_y),
+                blur_radius: *blur,
+            }
+        })
+        .collect()
+}
+
 pub(super) fn shadow_layers_with_opacity(
     shadow: Shadow,
     color: ShadowColor,
     opacity: f32,
 ) -> Vec<iced::Shadow> {
     let mut layers = to_shadow_layers_with_color(shadow, color);
+    for layer in &mut layers {
+        layer.color = apply_opacity_to_color(layer.color, opacity);
+    }
+    layers
+}
+
+pub(super) fn shadow_layers_with_color_value_and_opacity(
+    shadow: Shadow,
+    color: ColorValue,
+    opacity: f32,
+) -> Vec<iced::Shadow> {
+    let mut layers = to_shadow_layers_with_color_value(shadow, color);
     for layer in &mut layers {
         layer.color = apply_opacity_to_color(layer.color, opacity);
     }
