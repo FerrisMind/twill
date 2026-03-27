@@ -355,8 +355,7 @@ fn arbitrary_to_length(value: &str) -> Option<Length> {
 
     // Handle common arbitrary flex shorthands like "3 1 auto" or "2 0 10rem"
     // by mapping the first grow factor to iced FillPortion.
-    let tokens = raw.split_whitespace().collect::<Vec<_>>();
-    if let Some(first) = tokens.first()
+    if let Some(first) = raw.split_whitespace().next()
         && let Ok(grow) = first.parse::<u16>()
     {
         return if grow == 0 {
@@ -417,16 +416,16 @@ pub fn apply_flex_item_with_custom_properties<'a, Message: Clone + 'a>(
     direction: FlexDirection,
     custom_properties: &[(&str, &str)],
 ) -> iced::Element<'a, Message> {
-    let numeric_custom_properties = if style_uses_numeric_custom_properties(style) {
-        custom_properties
+    let numeric_custom_properties;
+    let element = if style_uses_numeric_custom_properties(style) {
+        numeric_custom_properties = custom_properties
             .iter()
             .filter_map(|(name, value)| value.parse::<f32>().ok().map(|parsed| (*name, parsed)))
-            .collect::<Vec<_>>()
+            .collect::<Vec<_>>();
+        apply_layout_with_custom_properties(content, style, &numeric_custom_properties)
     } else {
-        Vec::new()
+        apply_layout_with_custom_properties(content, style, &[])
     };
-
-    let element = apply_layout_with_custom_properties(content, style, &numeric_custom_properties);
     let Some(flex) = style.flex_item.as_ref() else {
         return element;
     };
@@ -464,18 +463,12 @@ fn style_uses_numeric_custom_properties(style: &Style) -> bool {
             .any(|value| matches!(value, MarginValue::Var(_)))
     });
 
-    let width_uses_var = style.width.is_some_and(|width| {
-        matches!(
-            width.size(),
-            Some(crate::utilities::Size::Var(_)) | Some(crate::utilities::Size::HeightVar(_))
-        )
-    });
-    let height_uses_var = style.height.is_some_and(|height| {
-        matches!(
-            height.size(),
-            Some(crate::utilities::Size::Var(_)) | Some(crate::utilities::Size::HeightVar(_))
-        )
-    });
+    let width_uses_var = style
+        .width
+        .is_some_and(|width| matches!(width.size(), Some(crate::utilities::Size::Var(_))));
+    let height_uses_var = style
+        .height
+        .is_some_and(|height| matches!(height.size(), Some(crate::utilities::Size::HeightVar(_))));
 
     padding_uses_var || margin_uses_var || width_uses_var || height_uses_var
 }

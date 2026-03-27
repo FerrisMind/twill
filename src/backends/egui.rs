@@ -10,13 +10,18 @@ use crate::tokens::{
 use crate::traits::ComputeValue;
 use crate::utilities::PaddingValue;
 
+mod private {
+    pub trait Sealed {}
+}
+
 /// Canonical egui conversion trait for typed twill values.
-pub trait ToEgui {
+pub trait ToEgui: private::Sealed {
     type Output;
 
     fn to_egui(self) -> Self::Output;
 }
 
+impl private::Sealed for Color {}
 impl ToEgui for Color {
     type Output = egui::Color32;
 
@@ -25,6 +30,7 @@ impl ToEgui for Color {
     }
 }
 
+impl private::Sealed for ColorValue {}
 impl ToEgui for ColorValue {
     type Output = egui::Color32;
 
@@ -33,6 +39,7 @@ impl ToEgui for ColorValue {
     }
 }
 
+impl private::Sealed for Spacing {}
 impl ToEgui for Spacing {
     type Output = egui::Vec2;
 
@@ -41,6 +48,7 @@ impl ToEgui for Spacing {
     }
 }
 
+impl private::Sealed for BorderRadius {}
 impl ToEgui for BorderRadius {
     type Output = f32;
 
@@ -49,6 +57,7 @@ impl ToEgui for BorderRadius {
     }
 }
 
+impl private::Sealed for Blur {}
 impl ToEgui for Blur {
     type Output = f32;
 
@@ -57,6 +66,7 @@ impl ToEgui for Blur {
     }
 }
 
+impl private::Sealed for AspectRatio {}
 impl ToEgui for AspectRatio {
     type Output = Option<f32>;
 
@@ -65,6 +75,7 @@ impl ToEgui for AspectRatio {
     }
 }
 
+impl private::Sealed for Shadow {}
 impl ToEgui for Shadow {
     type Output = Option<egui::epaint::Shadow>;
 
@@ -73,6 +84,7 @@ impl ToEgui for Shadow {
     }
 }
 
+impl private::Sealed for FontSize {}
 impl ToEgui for FontSize {
     type Output = f32;
 
@@ -81,6 +93,16 @@ impl ToEgui for FontSize {
     }
 }
 
+impl private::Sealed for FontWeight {}
+impl ToEgui for FontWeight {
+    type Output = u16;
+
+    fn to_egui(self) -> Self::Output {
+        to_font_weight(self)
+    }
+}
+
+impl private::Sealed for TransitionDuration {}
 impl ToEgui for TransitionDuration {
     type Output = std::time::Duration;
 
@@ -89,6 +111,7 @@ impl ToEgui for TransitionDuration {
     }
 }
 
+impl private::Sealed for Cursor {}
 impl ToEgui for Cursor {
     type Output = egui::CursorIcon;
 
@@ -97,6 +120,7 @@ impl ToEgui for Cursor {
     }
 }
 
+impl private::Sealed for &Style {}
 impl ToEgui for &Style {
     type Output = egui::Frame;
 
@@ -266,9 +290,9 @@ pub fn resolve_font_size(size: FontSize, custom_properties: &[(&str, f32)]) -> O
     size.resolve_px(custom_properties)
 }
 
-/// Convert twill FontWeight to egui FontFamily (fallback).
-pub fn to_font_weight(_weight: FontWeight) -> egui::FontFamily {
-    egui::FontFamily::Proportional
+/// Convert twill FontWeight to its numeric CSS-like weight.
+pub fn to_font_weight(weight: FontWeight) -> u16 {
+    weight.value()
 }
 
 /// Convert twill SemanticColor to egui Color32 based on the theme variant.

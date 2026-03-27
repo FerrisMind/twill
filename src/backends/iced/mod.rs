@@ -22,13 +22,18 @@ pub use widgets::{
     styled_container_with_custom_properties,
 };
 
+mod private {
+    pub trait Sealed {}
+}
+
 /// Canonical iced conversion trait for typed twill values.
-pub trait ToIced {
+pub trait ToIced: private::Sealed {
     type Output;
 
     fn to_iced(self) -> Self::Output;
 }
 
+impl private::Sealed for Color {}
 impl ToIced for Color {
     type Output = iced::Color;
 
@@ -37,6 +42,7 @@ impl ToIced for Color {
     }
 }
 
+impl private::Sealed for ColorValue {}
 impl ToIced for ColorValue {
     type Output = iced::Color;
 
@@ -45,6 +51,7 @@ impl ToIced for ColorValue {
     }
 }
 
+impl private::Sealed for Spacing {}
 impl ToIced for Spacing {
     type Output = iced::Padding;
 
@@ -53,6 +60,7 @@ impl ToIced for Spacing {
     }
 }
 
+impl private::Sealed for BorderRadius {}
 impl ToIced for BorderRadius {
     type Output = f32;
 
@@ -61,6 +69,7 @@ impl ToIced for BorderRadius {
     }
 }
 
+impl private::Sealed for Blur {}
 impl ToIced for Blur {
     type Output = f32;
 
@@ -69,6 +78,7 @@ impl ToIced for Blur {
     }
 }
 
+impl private::Sealed for AspectRatio {}
 impl ToIced for AspectRatio {
     type Output = Option<f32>;
 
@@ -77,6 +87,7 @@ impl ToIced for AspectRatio {
     }
 }
 
+impl private::Sealed for ObjectFit {}
 impl ToIced for ObjectFit {
     type Output = ContentFit;
 
@@ -85,6 +96,7 @@ impl ToIced for ObjectFit {
     }
 }
 
+impl private::Sealed for Shadow {}
 impl ToIced for Shadow {
     type Output = iced::Shadow;
 
@@ -93,6 +105,7 @@ impl ToIced for Shadow {
     }
 }
 
+impl private::Sealed for FontSize {}
 impl ToIced for FontSize {
     type Output = f32;
 
@@ -101,6 +114,7 @@ impl ToIced for FontSize {
     }
 }
 
+impl private::Sealed for FontWeight {}
 impl ToIced for FontWeight {
     type Output = iced::font::Weight;
 
@@ -109,6 +123,7 @@ impl ToIced for FontWeight {
     }
 }
 
+impl private::Sealed for TextAlign {}
 impl ToIced for TextAlign {
     type Output = iced::widget::text::Alignment;
 
@@ -117,6 +132,7 @@ impl ToIced for TextAlign {
     }
 }
 
+impl private::Sealed for TransitionDuration {}
 impl ToIced for TransitionDuration {
     type Output = std::time::Duration;
 
@@ -125,6 +141,7 @@ impl ToIced for TransitionDuration {
     }
 }
 
+impl private::Sealed for Cursor {}
 impl ToIced for Cursor {
     type Output = iced::mouse::Interaction;
 

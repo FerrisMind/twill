@@ -111,6 +111,50 @@ pub struct SemanticThemeVars {
     pub(crate) dark_values: Vec<(SemanticColor, ColorValue)>,
 }
 
+const SEMANTIC_COLOR_COUNT: usize = 31;
+
+const fn semantic_color_index(token: SemanticColor) -> usize {
+    match token {
+        SemanticColor::Background => 0,
+        SemanticColor::Foreground => 1,
+        SemanticColor::Card => 2,
+        SemanticColor::CardForeground => 3,
+        SemanticColor::Popover => 4,
+        SemanticColor::PopoverForeground => 5,
+        SemanticColor::Primary => 6,
+        SemanticColor::PrimaryForeground => 7,
+        SemanticColor::Secondary => 8,
+        SemanticColor::SecondaryForeground => 9,
+        SemanticColor::Muted => 10,
+        SemanticColor::MutedForeground => 11,
+        SemanticColor::Accent => 12,
+        SemanticColor::AccentForeground => 13,
+        SemanticColor::Destructive => 14,
+        SemanticColor::Border => 15,
+        SemanticColor::Input => 16,
+        SemanticColor::Ring => 17,
+        SemanticColor::Chart1 => 18,
+        SemanticColor::Chart2 => 19,
+        SemanticColor::Chart3 => 20,
+        SemanticColor::Chart4 => 21,
+        SemanticColor::Chart5 => 22,
+        SemanticColor::Sidebar => 23,
+        SemanticColor::SidebarForeground => 24,
+        SemanticColor::SidebarPrimary => 25,
+        SemanticColor::SidebarPrimaryForeground => 26,
+        SemanticColor::SidebarAccent => 27,
+        SemanticColor::SidebarAccentForeground => 28,
+        SemanticColor::SidebarBorder => 29,
+        SemanticColor::SidebarRing => 30,
+    }
+}
+
+fn resolve_fixed_entry<T: Copy>(entries: &[(SemanticColor, T)], token: SemanticColor) -> Option<T> {
+    entries
+        .get(semantic_color_index(token))
+        .map(|(_, value)| *value)
+}
+
 impl SemanticThemeVars {
     pub const fn radius(&self) -> &'static str {
         self.radius
@@ -274,10 +318,7 @@ impl SemanticThemeVars {
         } else {
             &self.light
         };
-        source
-            .iter()
-            .find(|(t, _)| *t == token)
-            .map(|(_, color)| *color)
+        resolve_fixed_entry(source, token)
     }
 
     pub fn resolve_value(&self, token: SemanticColor, variant: ThemeVariant) -> Option<ColorValue> {
@@ -286,10 +327,7 @@ impl SemanticThemeVars {
         } else {
             &self.light_values
         };
-        source
-            .iter()
-            .find(|(t, _)| *t == token)
-            .map(|(_, color)| *color)
+        resolve_fixed_entry(source, token)
     }
 
     /// Resolve a semantic token from the light palette.
@@ -332,7 +370,7 @@ impl DynamicSemanticTheme {
             .iter()
             .find(|(s, _)| *s == target)
             .map(|(_, v)| *v)
-            .expect("Scale::ALL must contain all 11 scale entries")
+            .unwrap_or_else(|| unreachable!("Scale::ALL must contain all 11 scale entries"))
     }
 
     fn readable_text_for(bg: ColorValue) -> ColorValue {
@@ -551,10 +589,14 @@ impl DynamicSemanticTheme {
         } else {
             &self.light
         };
-        source
-            .iter()
-            .find(|(t, _)| *t == token)
-            .map(|(_, color)| *color)
+        if source.len() == SEMANTIC_COLOR_COUNT {
+            resolve_fixed_entry(source, token)
+        } else {
+            source
+                .iter()
+                .find(|(t, _)| *t == token)
+                .map(|(_, color)| *color)
+        }
     }
 
     pub fn resolve_light(&self, token: SemanticColor) -> Option<ColorValue> {

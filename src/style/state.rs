@@ -83,42 +83,51 @@ impl StateStyles {
 
 impl Merge<Self> for StateStyles {
     fn merge(&self, other: Self) -> Self {
+        self.merge_ref(&other)
+    }
+}
+
+impl StateStyles {
+    pub(crate) fn merge_ref(&self, other: &Self) -> Self {
         Self {
-            hover: merge_style_opt(self.hover.clone(), other.hover),
-            focus: merge_style_opt(self.focus.clone(), other.focus),
-            focus_visible: merge_style_opt(self.focus_visible.clone(), other.focus_visible),
-            active: merge_style_opt(self.active.clone(), other.active),
-            disabled: merge_style_opt(self.disabled.clone(), other.disabled),
-            selected: merge_style_opt(self.selected.clone(), other.selected),
-            checked: merge_style_opt(self.checked.clone(), other.checked),
-            open: merge_style_opt(self.open.clone(), other.open),
-            closed: merge_style_opt(self.closed.clone(), other.closed),
-            data: merge_named_states(&self.data, other.data),
-            aria: merge_named_states(&self.aria, other.aria),
+            hover: merge_style_opt_ref(self.hover.as_ref(), other.hover.as_ref()),
+            focus: merge_style_opt_ref(self.focus.as_ref(), other.focus.as_ref()),
+            focus_visible: merge_style_opt_ref(
+                self.focus_visible.as_ref(),
+                other.focus_visible.as_ref(),
+            ),
+            active: merge_style_opt_ref(self.active.as_ref(), other.active.as_ref()),
+            disabled: merge_style_opt_ref(self.disabled.as_ref(), other.disabled.as_ref()),
+            selected: merge_style_opt_ref(self.selected.as_ref(), other.selected.as_ref()),
+            checked: merge_style_opt_ref(self.checked.as_ref(), other.checked.as_ref()),
+            open: merge_style_opt_ref(self.open.as_ref(), other.open.as_ref()),
+            closed: merge_style_opt_ref(self.closed.as_ref(), other.closed.as_ref()),
+            data: merge_named_states(&self.data, &other.data),
+            aria: merge_named_states(&self.aria, &other.aria),
         }
     }
 }
 
-fn merge_style_opt(a: Option<Style>, b: Option<Style>) -> Option<Style> {
-    match (a, b) {
-        (Some(a), Some(b)) => Some(a.merge(b)),
-        (None, Some(b)) => Some(b),
-        (Some(a), None) => Some(a),
+fn merge_style_opt_ref(current: Option<&Style>, incoming: Option<&Style>) -> Option<Style> {
+    match (current, incoming) {
+        (Some(current), Some(incoming)) => Some(current.merge(incoming.clone())),
+        (None, Some(incoming)) => Some(incoming.clone()),
+        (Some(current), None) => Some(current.clone()),
         (None, None) => None,
     }
 }
 
 fn merge_named_states(
     current: &BTreeMap<String, Style>,
-    incoming: BTreeMap<String, Style>,
+    incoming: &BTreeMap<String, Style>,
 ) -> BTreeMap<String, Style> {
     let mut merged = current.clone();
 
     for (name, style) in incoming {
-        if let Some(existing) = merged.get(&name).cloned() {
-            merged.insert(name, existing.merge(style));
+        if let Some(existing) = merged.get(name).cloned() {
+            merged.insert(name.clone(), existing.merge(style.clone()));
         } else {
-            merged.insert(name, style);
+            merged.insert(name.clone(), style.clone());
         }
     }
 

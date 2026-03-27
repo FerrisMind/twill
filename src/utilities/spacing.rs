@@ -994,13 +994,143 @@ impl Size {
     }
 }
 
+impl fmt::Display for Size {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Size::Spacing(spacing) => write!(f, "{spacing}"),
+            Size::Percentage(p) => f.write_str(p.value()),
+            Size::Container(c) => f.write_str(c.value()),
+            Size::Auto => f.write_str("auto"),
+            Size::Full => f.write_str("100%"),
+            Size::Prose => f.write_str("65ch"),
+            Size::ScreenWidth => f.write_str("100vw"),
+            Size::ScreenHeight => f.write_str("100vh"),
+            Size::Dvw => f.write_str("100dvw"),
+            Size::Dvh => f.write_str("100dvh"),
+            Size::Lvw => f.write_str("100lvw"),
+            Size::Lvh => f.write_str("100lvh"),
+            Size::Svw => f.write_str("100svw"),
+            Size::Svh => f.write_str("100svh"),
+            Size::MinContent => f.write_str("min-content"),
+            Size::MaxContent => f.write_str("max-content"),
+            Size::Fit => f.write_str("fit-content"),
+            Size::Lh => f.write_str("1lh"),
+            Size::Var(var) => write!(f, "var({var})"),
+            Size::HeightVar(var) => write!(f, "var({var})"),
+            Size::Px(px) => write!(f, "{px}px"),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum WidthSize {
+    Spacing(Spacing),
+    Percentage(crate::tokens::Percentage),
+    Container(crate::tokens::Container),
+    Auto,
+    Full,
+    Prose,
+    ScreenWidth,
+    ScreenHeight,
+    Dvw,
+    Dvh,
+    Lvw,
+    Lvh,
+    Svw,
+    Svh,
+    MinContent,
+    MaxContent,
+    Fit,
+    Lh,
+    Var(WidthVar),
+    Px(u16),
+}
+
+impl From<WidthSize> for Size {
+    fn from(value: WidthSize) -> Self {
+        match value {
+            WidthSize::Spacing(value) => Size::Spacing(value),
+            WidthSize::Percentage(value) => Size::Percentage(value),
+            WidthSize::Container(value) => Size::Container(value),
+            WidthSize::Auto => Size::Auto,
+            WidthSize::Full => Size::Full,
+            WidthSize::Prose => Size::Prose,
+            WidthSize::ScreenWidth => Size::ScreenWidth,
+            WidthSize::ScreenHeight => Size::ScreenHeight,
+            WidthSize::Dvw => Size::Dvw,
+            WidthSize::Dvh => Size::Dvh,
+            WidthSize::Lvw => Size::Lvw,
+            WidthSize::Lvh => Size::Lvh,
+            WidthSize::Svw => Size::Svw,
+            WidthSize::Svh => Size::Svh,
+            WidthSize::MinContent => Size::MinContent,
+            WidthSize::MaxContent => Size::MaxContent,
+            WidthSize::Fit => Size::Fit,
+            WidthSize::Lh => Size::Lh,
+            WidthSize::Var(value) => Size::Var(value),
+            WidthSize::Px(value) => Size::Px(value),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum HeightSize {
+    Spacing(Spacing),
+    Percentage(crate::tokens::Percentage),
+    Container(crate::tokens::Container),
+    Auto,
+    Full,
+    Prose,
+    ScreenWidth,
+    ScreenHeight,
+    Dvw,
+    Dvh,
+    Lvw,
+    Lvh,
+    Svw,
+    Svh,
+    MinContent,
+    MaxContent,
+    Fit,
+    Lh,
+    Var(HeightVar),
+    Px(u16),
+}
+
+impl From<HeightSize> for Size {
+    fn from(value: HeightSize) -> Self {
+        match value {
+            HeightSize::Spacing(value) => Size::Spacing(value),
+            HeightSize::Percentage(value) => Size::Percentage(value),
+            HeightSize::Container(value) => Size::Container(value),
+            HeightSize::Auto => Size::Auto,
+            HeightSize::Full => Size::Full,
+            HeightSize::Prose => Size::Prose,
+            HeightSize::ScreenWidth => Size::ScreenWidth,
+            HeightSize::ScreenHeight => Size::ScreenHeight,
+            HeightSize::Dvw => Size::Dvw,
+            HeightSize::Dvh => Size::Dvh,
+            HeightSize::Lvw => Size::Lvw,
+            HeightSize::Lvh => Size::Lvh,
+            HeightSize::Svw => Size::Svw,
+            HeightSize::Svh => Size::Svh,
+            HeightSize::MinContent => Size::MinContent,
+            HeightSize::MaxContent => Size::MaxContent,
+            HeightSize::Fit => Size::Fit,
+            HeightSize::Lh => Size::Lh,
+            HeightSize::Var(value) => Size::HeightVar(value),
+            HeightSize::Px(value) => Size::Px(value),
+        }
+    }
+}
+
 /// Width utility.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct Width(Option<Size>);
 
 impl Width {
-    pub fn new(size: Size) -> Self {
-        Self(Some(size))
+    pub fn new(size: WidthSize) -> Self {
+        Self(Some(size.into()))
     }
 
     pub const fn size(self) -> Option<Size> {
@@ -1009,17 +1139,17 @@ impl Width {
 
     /// Width from spacing scale (`w-<number>` and `w-px`).
     pub fn spacing(spacing: Spacing) -> Self {
-        Self::new(Size::Spacing(spacing))
+        Self::new(WidthSize::Spacing(spacing))
     }
 
     /// Fractional width (`w-<fraction>` / `w-full`).
     pub fn fraction(fraction: crate::tokens::Percentage) -> Self {
-        Self::new(Size::Percentage(fraction))
+        Self::new(WidthSize::Percentage(fraction))
     }
 
     /// Container scale width (`w-3xs` ... `w-7xl`).
     pub fn container(container: crate::tokens::Container) -> Self {
-        Self::new(Size::Container(container))
+        Self::new(WidthSize::Container(container))
     }
 
     pub fn full() -> Self {
@@ -1069,62 +1199,62 @@ impl Width {
 
     /// `w-dvw`.
     pub fn w_dvw() -> Self {
-        Self::new(Size::Dvw)
+        Self::new(WidthSize::Dvw)
     }
 
     /// `w-dvh`.
     pub fn w_dvh() -> Self {
-        Self::new(Size::Dvh)
+        Self::new(WidthSize::Dvh)
     }
 
     /// `w-lvw`.
     pub fn w_lvw() -> Self {
-        Self::new(Size::Lvw)
+        Self::new(WidthSize::Lvw)
     }
 
     /// `w-lvh`.
     pub fn w_lvh() -> Self {
-        Self::new(Size::Lvh)
+        Self::new(WidthSize::Lvh)
     }
 
     /// `w-svw`.
     pub fn w_svw() -> Self {
-        Self::new(Size::Svw)
+        Self::new(WidthSize::Svw)
     }
 
     /// `w-svh`.
     pub fn w_svh() -> Self {
-        Self::new(Size::Svh)
+        Self::new(WidthSize::Svh)
     }
 
     /// `w-min`.
     pub fn w_min() -> Self {
-        Self::new(Size::MinContent)
+        Self::new(WidthSize::MinContent)
     }
 
     /// `w-max`.
     pub fn w_max() -> Self {
-        Self::new(Size::MaxContent)
+        Self::new(WidthSize::MaxContent)
     }
 
     /// `w-fit`.
     pub fn w_fit() -> Self {
-        Self::new(Size::Fit)
+        Self::new(WidthSize::Fit)
     }
 
     /// `w-(<custom-property>)`.
     pub fn w_var(var: WidthVar) -> Self {
-        Self::new(Size::Var(var))
+        Self::new(WidthSize::Var(var))
     }
 
     /// Typed pixel width value (`w-[<value>]` in px-focused native layouts).
     pub fn w_px_value(px: u16) -> Self {
-        Self::new(Size::Px(px))
+        Self::new(WidthSize::Px(px))
     }
 }
 
-impl From<Size> for Width {
-    fn from(value: Size) -> Self {
+impl From<WidthSize> for Width {
+    fn from(value: WidthSize) -> Self {
         Self::new(value)
     }
 }
@@ -1152,8 +1282,8 @@ impl From<crate::tokens::Container> for Width {
 pub struct Height(Option<Size>);
 
 impl Height {
-    pub fn new(size: Size) -> Self {
-        Self(Some(size))
+    pub fn new(size: HeightSize) -> Self {
+        Self(Some(size.into()))
     }
 
     pub const fn size(self) -> Option<Size> {
@@ -1161,11 +1291,11 @@ impl Height {
     }
     /// Height from spacing scale (`h-<number>` and `h-px`).
     pub fn spacing(spacing: Spacing) -> Self {
-        Self::new(Size::Spacing(spacing))
+        Self::new(HeightSize::Spacing(spacing))
     }
     /// Fractional height (`h-<fraction>` / `h-full`).
     pub fn fraction(fraction: crate::tokens::Percentage) -> Self {
-        Self::new(Size::Percentage(fraction))
+        Self::new(HeightSize::Percentage(fraction))
     }
     pub fn full() -> Self {
         Self(Some(Size::Full))
@@ -1209,67 +1339,67 @@ impl Height {
 
     /// `h-dvw`.
     pub fn h_dvw() -> Self {
-        Self::new(Size::Dvw)
+        Self::new(HeightSize::Dvw)
     }
 
     /// `h-dvh`.
     pub fn h_dvh() -> Self {
-        Self::new(Size::Dvh)
+        Self::new(HeightSize::Dvh)
     }
 
     /// `h-lvw`.
     pub fn h_lvw() -> Self {
-        Self::new(Size::Lvw)
+        Self::new(HeightSize::Lvw)
     }
 
     /// `h-lvh`.
     pub fn h_lvh() -> Self {
-        Self::new(Size::Lvh)
+        Self::new(HeightSize::Lvh)
     }
 
     /// `h-svw`.
     pub fn h_svw() -> Self {
-        Self::new(Size::Svw)
+        Self::new(HeightSize::Svw)
     }
 
     /// `h-svh`.
     pub fn h_svh() -> Self {
-        Self::new(Size::Svh)
+        Self::new(HeightSize::Svh)
     }
 
     /// `h-min`.
     pub fn h_min() -> Self {
-        Self::new(Size::MinContent)
+        Self::new(HeightSize::MinContent)
     }
 
     /// `h-max`.
     pub fn h_max() -> Self {
-        Self::new(Size::MaxContent)
+        Self::new(HeightSize::MaxContent)
     }
 
     /// `h-fit`.
     pub fn h_fit() -> Self {
-        Self::new(Size::Fit)
+        Self::new(HeightSize::Fit)
     }
 
     /// `h-lh`.
     pub fn h_lh() -> Self {
-        Self::new(Size::Lh)
+        Self::new(HeightSize::Lh)
     }
 
     /// `h-(<custom-property>)`.
     pub fn h_var(var: HeightVar) -> Self {
-        Self::new(Size::HeightVar(var))
+        Self::new(HeightSize::Var(var))
     }
 
     /// Typed pixel height value (`h-[<value>]` in px-focused native layouts).
     pub fn h_px_value(px: u16) -> Self {
-        Self::new(Size::Px(px))
+        Self::new(HeightSize::Px(px))
     }
 }
 
-impl From<Size> for Height {
-    fn from(value: Size) -> Self {
+impl From<HeightSize> for Height {
+    fn from(value: HeightSize) -> Self {
         Self::new(value)
     }
 }
@@ -1288,7 +1418,7 @@ impl From<crate::tokens::Percentage> for Height {
 
 impl From<crate::tokens::Container> for Height {
     fn from(value: crate::tokens::Container) -> Self {
-        Self::new(Size::Container(value))
+        Self::new(HeightSize::Container(value))
     }
 }
 
@@ -1306,20 +1436,20 @@ impl SizeConstraints {
         Self::default()
     }
 
-    pub fn min_width(mut self, size: Size) -> Self {
-        self.min_width = Some(size);
+    pub fn min_width(mut self, size: WidthSize) -> Self {
+        self.min_width = Some(size.into());
         self
     }
-    pub fn max_width(mut self, size: Size) -> Self {
-        self.max_width = Some(size);
+    pub fn max_width(mut self, size: WidthSize) -> Self {
+        self.max_width = Some(size.into());
         self
     }
-    pub fn min_height(mut self, size: Size) -> Self {
-        self.min_height = Some(size);
+    pub fn min_height(mut self, size: HeightSize) -> Self {
+        self.min_height = Some(size.into());
         self
     }
-    pub fn max_height(mut self, size: Size) -> Self {
-        self.max_height = Some(size);
+    pub fn max_height(mut self, size: HeightSize) -> Self {
+        self.max_height = Some(size.into());
         self
     }
 
@@ -1591,17 +1721,17 @@ mod tests {
         );
         assert_eq!(
             Height::from(crate::tokens::Container::Lg),
-            Height::new(Size::Container(crate::tokens::Container::Lg))
+            Height::new(HeightSize::Container(crate::tokens::Container::Lg))
         );
     }
 
     #[test]
     fn test_size_constraints_getters() {
         let constraints = SizeConstraints::new()
-            .min_width(Size::Spacing(Spacing::S2))
-            .max_width(Size::Prose)
-            .min_height(Size::ScreenHeight)
-            .max_height(Size::Px(320));
+            .min_width(WidthSize::Spacing(Spacing::S2))
+            .max_width(WidthSize::Prose)
+            .min_height(HeightSize::ScreenHeight)
+            .max_height(HeightSize::Px(320));
 
         assert_eq!(
             constraints.min_width_value(),

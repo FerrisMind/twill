@@ -7,7 +7,6 @@ description = "Idiomatic Rust styling library inspired by Tailwind for native GU
 license = "MIT"
 authors = ["FerrisMind"]
 repository = "https://github.com/FerrisMind/twill"
-homepage = "https://github.com/FerrisMind/twill"
 documentation = "https://docs.rs/twill"
 readme = "README.md"
 keywords = ["styling", "tailwind", "gui", "egui", "iced"]
@@ -43,4 +42,3 @@ default = []
 egui = ["dep:egui"]
 iced = ["dep:iced"]
 slint = ["dep:slint"]
-

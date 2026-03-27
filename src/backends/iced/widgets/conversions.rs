@@ -251,10 +251,7 @@ pub(crate) fn resolve_width(
             .iter()
             .find(|(name, _)| *name == var.as_str())
             .map(|(_, px)| ResolvedWidth::Length(Length::Fixed(px.max(0.0)))),
-        crate::utilities::Size::HeightVar(var) => custom_properties
-            .iter()
-            .find(|(name, _)| *name == var.as_str())
-            .map(|(_, px)| ResolvedWidth::Length(Length::Fixed(px.max(0.0)))),
+        crate::utilities::Size::HeightVar(_) => None,
         crate::utilities::Size::Px(px) => Some(ResolvedWidth::Length(Length::Fixed(f32::from(px)))),
     }
 }
@@ -368,10 +365,70 @@ pub fn to_content_fit(fit: ObjectFit) -> ContentFit {
 
 /// Convert twill Shadow to iced Shadow with an optional color override.
 pub fn to_shadow_with_color(shadow: Shadow, color: ShadowColor) -> iced::Shadow {
-    to_shadow_layers_with_color(shadow, color)
-        .into_iter()
-        .next()
-        .unwrap_or_default()
+    let base = match color {
+        ShadowColor::Default => Color::black(),
+        ShadowColor::Explicit(color) => color,
+    };
+    let mut color = to_color(base);
+    match shadow {
+        Shadow::None => iced::Shadow::default(),
+        Shadow::Xs2 => {
+            color.a *= 0.05;
+            iced::Shadow {
+                color,
+                offset: iced::Vector::new(0.0, 1.0),
+                blur_radius: 0.0,
+            }
+        }
+        Shadow::Xs => {
+            color.a *= 0.05;
+            iced::Shadow {
+                color,
+                offset: iced::Vector::new(0.0, 1.0),
+                blur_radius: 2.0,
+            }
+        }
+        Shadow::Sm => {
+            color.a *= 0.1;
+            iced::Shadow {
+                color,
+                offset: iced::Vector::new(0.0, 1.0),
+                blur_radius: 3.0,
+            }
+        }
+        Shadow::Md => {
+            color.a *= 0.1;
+            iced::Shadow {
+                color,
+                offset: iced::Vector::new(0.0, 4.0),
+                blur_radius: 6.0,
+            }
+        }
+        Shadow::Lg => {
+            color.a *= 0.1;
+            iced::Shadow {
+                color,
+                offset: iced::Vector::new(0.0, 10.0),
+                blur_radius: 15.0,
+            }
+        }
+        Shadow::Xl => {
+            color.a *= 0.1;
+            iced::Shadow {
+                color,
+                offset: iced::Vector::new(0.0, 20.0),
+                blur_radius: 25.0,
+            }
+        }
+        Shadow::S2xl => {
+            color.a *= 0.25;
+            iced::Shadow {
+                color,
+                offset: iced::Vector::new(0.0, 25.0),
+                blur_radius: 50.0,
+            }
+        }
+    }
 }
 
 /// Convert twill Shadow to one or more iced shadows.
@@ -414,13 +471,11 @@ pub(super) fn shadow_layers_with_opacity(
     color: ShadowColor,
     opacity: f32,
 ) -> Vec<iced::Shadow> {
-    to_shadow_layers_with_color(shadow, color)
-        .into_iter()
-        .map(|mut layer| {
-            layer.color = apply_opacity_to_color(layer.color, opacity);
-            layer
-        })
-        .collect()
+    let mut layers = to_shadow_layers_with_color(shadow, color);
+    for layer in &mut layers {
+        layer.color = apply_opacity_to_color(layer.color, opacity);
+    }
+    layers
 }
 
 pub(super) fn wrap_with_shadow_layers<'a, Message: 'a>(

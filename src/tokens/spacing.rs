@@ -2,6 +2,8 @@
 //!
 //! The spacing scale is based on a 4px (0.25rem) base unit.
 
+use std::fmt;
+
 use crate::traits::ComputeValue;
 
 /// Spacing values based on a utility-first spacing scale.
@@ -190,6 +192,23 @@ impl ComputeValue for Spacing {
     }
 }
 
+impl fmt::Display for Spacing {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Spacing::S0 => f.write_str("0"),
+            Spacing::Px => f.write_str("1px"),
+            Spacing::Auto => f.write_str("auto"),
+            _ => {
+                if let Some(rem) = self.to_rem() {
+                    write!(f, "{rem}rem")
+                } else {
+                    f.write_str("0")
+                }
+            }
+        }
+    }
+}
+
 /// Percentage-based spacing for widths/heights.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Percentage {
@@ -344,6 +363,12 @@ impl Breakpoint {
 impl Breakpoint {
     pub fn value(&self) -> String {
         format!("{}rem", self.to_rem())
+    }
+}
+
+impl fmt::Display for Breakpoint {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}rem", self.to_rem())
     }
 }
 

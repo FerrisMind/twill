@@ -9,13 +9,18 @@ use crate::tokens::{
 };
 use crate::traits::ComputeValue;
 
+mod private {
+    pub trait Sealed {}
+}
+
 /// Canonical Slint conversion trait for typed twill values.
-pub trait ToSlint {
+pub trait ToSlint: private::Sealed {
     type Output;
 
     fn to_slint(self) -> Self::Output;
 }
 
+impl private::Sealed for Color {}
 impl ToSlint for Color {
     type Output = slint::Color;
 
@@ -24,6 +29,7 @@ impl ToSlint for Color {
     }
 }
 
+impl private::Sealed for crate::tokens::ColorValue {}
 impl ToSlint for crate::tokens::ColorValue {
     type Output = slint::Color;
 
@@ -32,6 +38,7 @@ impl ToSlint for crate::tokens::ColorValue {
     }
 }
 
+impl private::Sealed for Spacing {}
 impl ToSlint for Spacing {
     type Output = f32;
 
@@ -40,6 +47,7 @@ impl ToSlint for Spacing {
     }
 }
 
+impl private::Sealed for BorderRadius {}
 impl ToSlint for BorderRadius {
     type Output = f32;
 
@@ -48,6 +56,7 @@ impl ToSlint for BorderRadius {
     }
 }
 
+impl private::Sealed for Blur {}
 impl ToSlint for Blur {
     type Output = f32;
 
@@ -56,6 +65,7 @@ impl ToSlint for Blur {
     }
 }
 
+impl private::Sealed for Cursor {}
 impl ToSlint for Cursor {
     type Output = SlintCursor;
 
@@ -64,6 +74,7 @@ impl ToSlint for Cursor {
     }
 }
 
+impl private::Sealed for AspectRatio {}
 impl ToSlint for AspectRatio {
     type Output = Option<f32>;
 
@@ -72,6 +83,7 @@ impl ToSlint for AspectRatio {
     }
 }
 
+impl private::Sealed for FontSize {}
 impl ToSlint for FontSize {
     type Output = f32;
 
@@ -80,6 +92,7 @@ impl ToSlint for FontSize {
     }
 }
 
+impl private::Sealed for FontWeight {}
 impl ToSlint for FontWeight {
     type Output = i32;
 
@@ -88,6 +101,7 @@ impl ToSlint for FontWeight {
     }
 }
 
+impl private::Sealed for TransitionDuration {}
 impl ToSlint for TransitionDuration {
     type Output = i32;
 

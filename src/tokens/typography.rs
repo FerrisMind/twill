@@ -167,6 +167,16 @@ impl FontSize {
     }
 }
 
+impl fmt::Display for FontSize {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            FontSize::Var(var) => write!(f, "var({var})"),
+            FontSize::Px(px) => write!(f, "{px}px"),
+            _ => write!(f, "{}rem", self.size_rem()),
+        }
+    }
+}
+
 /// Font weight tokens.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum FontWeight {
@@ -210,6 +220,12 @@ impl FontWeight {
 impl FontWeight {
     pub fn value_str(&self) -> String {
         self.value().to_string()
+    }
+}
+
+impl fmt::Display for FontWeight {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value())
     }
 }
 
@@ -269,6 +285,19 @@ impl LineHeight {
             LineHeight::Relaxed => "1.625".to_string(),
             LineHeight::Loose => "2".to_string(),
             LineHeight::Numeric(n) => n.to_string(),
+        }
+    }
+}
+
+impl fmt::Display for LineHeight {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            LineHeight::Tight => f.write_str("1.25"),
+            LineHeight::Snug => f.write_str("1.375"),
+            LineHeight::Normal => f.write_str("1.5"),
+            LineHeight::Relaxed => f.write_str("1.625"),
+            LineHeight::Loose => f.write_str("2"),
+            LineHeight::Numeric(n) => write!(f, "{n}"),
         }
     }
 }

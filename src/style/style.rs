@@ -13,8 +13,8 @@ use crate::traits::{IntoStyle, Merge};
 use crate::utilities::{
     AlignItems, Columns, Display, Flex, FlexContainer, FlexDirection, GridContainer, GridTemplate,
     Height, HeightVar, JustifyContent, JustifyItems, JustifySelf, Margin, MarginValue, ObjectFit,
-    Overflow, Padding, PaddingValue, PlaceContent, PlaceItems, Position, Size, SizeConstraints,
-    Visibility, Width, WidthVar, ZIndex,
+    Overflow, Padding, PaddingValue, PlaceContent, PlaceItems, Position, SizeConstraints,
+    Visibility, Width, WidthSize, WidthVar, ZIndex,
 };
 
 /// A comprehensive style builder for composing native UI styles.
@@ -1623,13 +1623,16 @@ impl Style {
 
     /// Set max-width to prose measure (`65ch`).
     pub fn max_w_prose(mut self) -> Self {
-        let constraints = self.constraints.unwrap_or_default().max_width(Size::Prose);
+        let constraints = self
+            .constraints
+            .unwrap_or_default()
+            .max_width(WidthSize::Prose);
         self.constraints = Some(constraints);
         self
     }
 
     /// Set max-width.
-    pub fn max_w(mut self, size: Size) -> Self {
+    pub fn max_w(mut self, size: WidthSize) -> Self {
         let constraints = self.constraints.unwrap_or_default().max_width(size);
         self.constraints = Some(constraints);
         self
@@ -2135,6 +2138,12 @@ where
 {
     fn merge(&self, other: T) -> Self {
         let other = other.into_style();
+        self.merge_style_ref(&other)
+    }
+}
+
+impl Style {
+    fn merge_style_ref(&self, other: &Self) -> Self {
         Self {
             display: other.display.or(self.display),
             visibility: other.visibility.or(self.visibility),
@@ -2148,9 +2157,9 @@ where
             columns: other.columns.or(self.columns),
             column_gap: other.column_gap.or(self.column_gap),
             columns_max_count: other.columns_max_count.or(self.columns_max_count),
-            flex: merge_flex_container(self.flex.clone(), other.flex),
-            flex_item: other.flex_item.or(self.flex_item.clone()),
-            grid: merge_grid_container(self.grid.clone(), other.grid),
+            flex: merge_flex_container(self.flex.clone(), other.flex.clone()),
+            flex_item: other.flex_item.clone().or(self.flex_item.clone()),
+            grid: merge_grid_container(self.grid.clone(), other.grid.clone()),
             place_content: other.place_content.or(self.place_content),
             place_items: other.place_items.or(self.place_items),
             justify_items: other.justify_items.or(self.justify_items),
@@ -2189,6 +2198,7 @@ where
             text_shadow: other.text_shadow.or(self.text_shadow),
             transition_property: other
                 .transition_property
+                .clone()
                 .or(self.transition_property.clone()),
             transition_duration: other.transition_duration.or(self.transition_duration),
             transition_timing_function: other
@@ -2197,13 +2207,15 @@ where
             transition_delay: other.transition_delay.or(self.transition_delay),
             animation: other.animation.or(self.animation),
             cursor: other.cursor.or(self.cursor),
-            states: match (&self.states, other.states) {
-                (Some(a), Some(b)) => Some(Box::new(a.as_ref().merge(*b))),
-                (None, Some(b)) => Some(b),
+            states: match (&self.states, &other.states) {
+                (Some(current), Some(incoming)) => {
+                    Some(Box::new(current.as_ref().merge_ref(incoming.as_ref())))
+                }
+                (None, Some(incoming)) => Some(incoming.clone()),
                 (Some(a), None) => Some(a.clone()),
                 (None, None) => None,
             },
-            responsive: merge_responsive_layers(&self.responsive, other.responsive),
+            responsive: merge_responsive_layers(&self.responsive, other.responsive.clone()),
         }
     }
 }
@@ -2218,7 +2230,7 @@ impl crate::traits::Responsive for Style {
         if let Some(responsive) = &self.responsive {
             for (layer_breakpoint, layer_style) in responsive {
                 if *layer_breakpoint <= breakpoint {
-                    resolved = resolved.merge(layer_style.clone());
+                    resolved = resolved.merge_style_ref(layer_style);
                 }
             }
         }
@@ -2902,14 +2914,12 @@ mod tests {
             .flex(FlexContainer::row().justify(JustifyContent::Between))
             .constraints(
                 SizeConstraints::new()
-                    .min_width(Size::Spacing(Spacing::S8))
-                    .max_width(Size::Prose),
+                    .min_width(WidthSize::Spacing(Spacing::S8))
+                    .max_width(WidthSize::Prose),
             )
-            .merge(
-                Style::new()
-                    .align_items(AlignItems::Center)
-                    .constraints(SizeConstraints::new().max_height(Size::ScreenHeight)),
-            );
+            .merge(Style::new().align_items(AlignItems::Center).constraints(
+                SizeConstraints::new().max_height(crate::utilities::HeightSize::ScreenHeight),
+            ));
 
         assert_eq!(
             merged.flex,
@@ -2926,10 +2936,10 @@ mod tests {
         assert_eq!(
             merged.constraints,
             Some(SizeConstraints {
-                min_width: Some(Size::Spacing(Spacing::S8)),
-                max_width: Some(Size::Prose),
+                min_width: Some(crate::utilities::Size::Spacing(Spacing::S8)),
+                max_width: Some(crate::utilities::Size::Prose),
                 min_height: None,
-                max_height: Some(Size::ScreenHeight),
+                max_height: Some(crate::utilities::Size::ScreenHeight),
             })
         );
     }
@@ -2953,7 +2963,7 @@ mod tests {
             .justify_self(JustifySelf::Center)
             .padding(Padding::all(Spacing::S2))
             .width(Spacing::S24)
-            .height(Size::ScreenHeight)
+            .height(crate::utilities::HeightSize::ScreenHeight)
             .bg(Color::blue(Scale::S500))
             .blur(Blur::Sm)
             .drop_shadow(DropShadow::Sm)
@@ -3001,7 +3011,10 @@ mod tests {
         assert_eq!(style.justify_self_value(), Some(JustifySelf::Center));
         assert_eq!(style.padding_value(), Some(&Padding::all(Spacing::S2)));
         assert_eq!(style.width_value(), Some(Width::from(Spacing::S24)));
-        assert_eq!(style.height_value(), Some(Height::from(Size::ScreenHeight)));
+        assert_eq!(
+            style.height_value(),
+            Some(Height::from(crate::utilities::HeightSize::ScreenHeight))
+        );
         assert_eq!(
             style.background_color_value(),
             Some(BackgroundColor::palette(Color::blue(Scale::S500)))

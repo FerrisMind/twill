@@ -71,9 +71,9 @@ pub mod prelude {
     pub use crate::traits::{ComputeValue, IntoStyle, Merge, Responsive, ThemedStyle};
     pub use crate::utilities::{
         AlignItems, AlignSelf, Columns, Display, Flex, FlexContainer, FlexDirection, FlexWrap,
-        GridContainer, GridTemplate, Height, HeightVar, JustifyContent, Margin, MarginValue,
-        MarginVar, Overflow, Padding, PaddingValue, PaddingVar, Position, Size, SizeConstraints,
-        Width, WidthVar, ZIndex,
+        GridContainer, GridTemplate, Height, HeightSize, HeightVar, JustifyContent, Margin,
+        MarginValue, MarginVar, Overflow, Padding, PaddingValue, PaddingVar, Position, Size,
+        SizeConstraints, Width, WidthSize, WidthVar, ZIndex,
     };
 }
 

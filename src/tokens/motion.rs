@@ -1,5 +1,7 @@
 //! Motion design tokens for utility-first transitions and animations.
 
+use std::fmt;
+
 /// Transition duration tokens.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TransitionDuration {
@@ -33,6 +35,12 @@ impl TransitionDuration {
 
     pub fn value(&self) -> String {
         format!("{}ms", self.as_millis())
+    }
+}
+
+impl fmt::Display for TransitionDuration {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}ms", self.as_millis())
     }
 }
 
