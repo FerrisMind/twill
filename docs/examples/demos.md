@@ -1,14 +1,9 @@
-# Demos And Verification
+# Legacy Demo Note
 
-This repository currently focuses on the library crate itself. There are no checked-in example binaries under `examples/`.
+Checked-in examples now live under `examples/` and are documented in the rest of this chapter.
 
-Use the verification commands from the root crate instead:
+This page exists only as a version boundary note:
 
-```powershell
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" fmt --all --check
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" build
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" clippy -- -D warnings
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" test
-```
-
-If you add local demo applications, keep them layered on top of `Style` and backend adapters rather than introducing UI components into Twill itself.
+- `main` and `0.3.x` document the backend-agnostic `Style` API;
+- legacy demos from the `0.2.x` line belong to that release line only;
+- `main` intentionally does not reintroduce component APIs or CSS serialization examples.

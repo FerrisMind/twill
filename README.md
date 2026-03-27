@@ -28,6 +28,8 @@ Twill is a backend-agnostic style system for Rust UI code. It provides:
 
 Twill does **not** ship UI components such as `Button`, `Card`, or `Dialog`, and it does **not** expose a CSS serialization layer.
 
+Examples and cookbook pages in `main` target the `0.3.x` API only. Legacy demos built around component APIs or CSS serialization belong to the `0.2.x` release line, not this branch.
+
 ## Installation
 
 ```toml
@@ -51,7 +53,7 @@ let style = Style::new()
     .text_color(Color::slate(Scale::S50))
     .rounded(BorderRadius::Md)
     .hover(|style| style.opacity(0.9))
-    .focus_visible(|style| style.ring_color(Color::blue(Scale::S300)))
+    .focus_visible(|style| style.ring(RingWidth::S2, Color::blue(Scale::S300)))
     .data_state("state=open", |style| style.shadow(Shadow::Lg))
     .md(|style| style.padding(Padding::all(Spacing::S6)));
 ```

@@ -1,5 +1,7 @@
 //! Egui backend for twill.
 
+#![cfg_attr(docsrs, doc(cfg(feature = "egui")))]
+
 use crate::backends::ShadowColor;
 use crate::style::Style;
 use crate::tokens::{
@@ -15,6 +17,21 @@ mod private {
 }
 
 /// Canonical egui conversion trait for typed twill values.
+///
+/// ```rust
+/// use twill::backends::egui::ToEgui;
+/// use twill::prelude::*;
+///
+/// let color = Color::blue(Scale::S500).to_egui();
+/// let frame = Style::new()
+///     .padding(Padding::all(Spacing::S4))
+///     .bg(Color::blue(Scale::S500))
+///     .rounded(BorderRadius::Lg)
+///     .to_egui();
+///
+/// assert!(color.b() >= color.r());
+/// assert!(frame.inner_margin.left > 0);
+/// ```
 pub trait ToEgui: private::Sealed {
     type Output;
 

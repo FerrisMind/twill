@@ -102,6 +102,18 @@ impl ThemeVariant {
 }
 
 /// Semantic token set with light and dark variable definitions.
+///
+/// ```rust
+/// use twill::prelude::*;
+///
+/// let theme = SemanticThemeVars::shadcn_neutral();
+/// let light_bg = theme.resolve_light(SemanticColor::Background);
+/// let dark_bg = theme.resolve_dark(SemanticColor::Background);
+///
+/// assert!(light_bg.is_some());
+/// assert!(dark_bg.is_some());
+/// assert_ne!(light_bg, dark_bg);
+/// ```
 #[derive(Debug, Clone)]
 pub struct SemanticThemeVars {
     pub(crate) radius: &'static str,
@@ -350,6 +362,15 @@ impl SemanticThemeVars {
 }
 
 /// Dynamic semantic theme generated from an arbitrary brand color using OKLCH.
+///
+/// ```rust
+/// use twill::prelude::*;
+///
+/// let theme = DynamicSemanticTheme::from_brand_oklch(0.628, 0.258, 29.234);
+///
+/// assert!(theme.resolve_light(SemanticColor::Primary).is_some());
+/// assert!(theme.resolve_dark(SemanticColor::Primary).is_some());
+/// ```
 #[derive(Debug, Clone)]
 pub struct DynamicSemanticTheme {
     pub(crate) light: Vec<(SemanticColor, ColorValue)>,

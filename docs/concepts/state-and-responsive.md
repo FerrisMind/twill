@@ -9,9 +9,15 @@ use twill::prelude::*;
 
 let style = Style::new()
     .hover(|style| style.opacity(0.9))
-    .focus_visible(|style| style.ring_color(Color::blue(Scale::S300)))
+    .focus_visible(|style| style.ring(RingWidth::S2, Color::blue(Scale::S300)))
     .selected(|style| style.bg(Color::blue(Scale::S500)))
-    .checked(|style| style.border_color(Color::green(Scale::S500)))
+    .checked(|style| {
+        style.border(
+            BorderWidth::S1,
+            BorderStyle::Solid,
+            Color::green(Scale::S500),
+        )
+    })
     .open(|style| style.shadow(Shadow::Lg))
     .data_state("state=open", |style| style.text_color(Color::white()))
     .aria_state("selected", |style| style.font_weight(FontWeight::Bold));

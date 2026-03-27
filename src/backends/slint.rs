@@ -2,6 +2,8 @@
 //!
 //! Provides color constants and utilities for Slint UI.
 
+#![cfg_attr(docsrs, doc(cfg(feature = "slint")))]
+
 use crate::backends::ShadowColor;
 use crate::tokens::{
     AspectRatio, Blur, BorderRadius, Color, Cursor, FontSize, FontWeight, Scale, SemanticColor,
@@ -14,6 +16,17 @@ mod private {
 }
 
 /// Canonical Slint conversion trait for typed twill values.
+///
+/// ```rust
+/// use twill::backends::slint::ToSlint;
+/// use twill::prelude::*;
+///
+/// let color = Color::green(Scale::S500).to_slint();
+/// let radius = BorderRadius::Lg.to_slint();
+///
+/// assert!(color.green() >= color.red());
+/// assert!(radius > 0.0);
+/// ```
 pub trait ToSlint: private::Sealed {
     type Output;
 

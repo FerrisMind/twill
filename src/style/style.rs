@@ -18,6 +18,25 @@ use crate::utilities::{
 };
 
 /// A comprehensive style builder for composing native UI styles.
+///
+/// ```rust
+/// use twill::prelude::*;
+///
+/// let style = Style::new()
+///     .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
+///     .bg(Color::blue(Scale::S500))
+///     .text_color(Color::slate(Scale::S50))
+///     .rounded(BorderRadius::Md)
+///     .hover(|style| style.opacity(0.9))
+///     .focus_visible(|style| style.ring(RingWidth::S2, Color::blue(Scale::S300)))
+///     .data_state("state=open", |style| style.shadow(Shadow::Lg))
+///     .md(|style| style.padding(Padding::all(Spacing::S6)));
+///
+/// assert_eq!(style.text_color_value(), Some(Color::slate(Scale::S50)));
+/// assert!(style.hover_style().is_some());
+/// assert!(style.focus_visible_style().is_some());
+/// assert!(style.data_state_style("state=open").is_some());
+/// ```
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Style {
     // Layout

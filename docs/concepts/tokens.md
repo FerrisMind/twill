@@ -6,7 +6,7 @@ Twill tokens are Rust enums and value types representing styling primitives.
 Use `Color` + `Scale`:
 
 ```rust
-use twill::{Color, Scale};
+use twill::prelude::*;
 
 let primary = Color::blue(Scale::S500);
 let danger = Color::red(Scale::S600);
@@ -22,7 +22,7 @@ Special colors:
 Use `Spacing` for paddings, margins, gaps:
 
 ```rust
-use twill::Spacing;
+use twill::prelude::*;
 
 let p = Spacing::S4;   // 1rem
 let gap = Spacing::S2; // 0.5rem
@@ -57,4 +57,3 @@ Motion is applied through `Style` methods:
 - `transition_duration(...)`
 - `transition_ease(...)`
 - `animate(...)`
-

@@ -1,7 +1,7 @@
 # Quick Start
 
 ```rust
-use twill::{BorderRadius, Color, Padding, Scale, Spacing, Style};
+use twill::prelude::*;
 
 let style = Style::new()
     .padding(Padding::symmetric(Spacing::S2, Spacing::S4))

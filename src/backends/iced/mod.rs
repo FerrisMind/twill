@@ -1,3 +1,5 @@
+#![cfg_attr(docsrs, doc(cfg(feature = "iced")))]
+
 mod convert;
 mod widgets;
 
@@ -27,6 +29,17 @@ mod private {
 }
 
 /// Canonical iced conversion trait for typed twill values.
+///
+/// ```rust
+/// use twill::backends::iced::ToIced;
+/// use twill::prelude::*;
+///
+/// let color = Color::blue(Scale::S500).to_iced();
+/// let padding = Spacing::S4.to_iced();
+///
+/// assert!(color.b > color.r);
+/// assert!(padding.left > 0.0);
+/// ```
 pub trait ToIced: private::Sealed {
     type Output;
 

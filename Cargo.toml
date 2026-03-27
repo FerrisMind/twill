@@ -3,6 +3,7 @@ name = "twill"
 version = "0.3.0"
 edition = "2024"
 rust-version = "1.93"
+autoexamples = false
 description = "Idiomatic Rust styling library inspired by Tailwind for native GUI"
 license = "MIT"
 authors = ["FerrisMind"]
@@ -42,3 +43,52 @@ default = []
 egui = ["dep:egui"]
 iced = ["dep:iced"]
 slint = ["dep:slint"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[[example]]
+name = "tokens"
+path = "examples/01_tokens.rs"
+
+[[example]]
+name = "style_builder"
+path = "examples/02_style_builder.rs"
+
+[[example]]
+name = "states"
+path = "examples/03_states.rs"
+
+[[example]]
+name = "responsive"
+path = "examples/04_responsive.rs"
+
+[[example]]
+name = "semantic_theme"
+path = "examples/05_semantic_theme.rs"
+
+[[example]]
+name = "backend_egui"
+path = "examples/10_backend_egui.rs"
+required-features = ["egui"]
+
+[[example]]
+name = "backend_iced"
+path = "examples/11_backend_iced.rs"
+required-features = ["iced"]
+
+[[example]]
+name = "backend_slint"
+path = "examples/12_backend_slint.rs"
+required-features = ["slint"]
+
+[[example]]
+name = "showcase_egui"
+path = "examples/20_showcase_egui.rs"
+required-features = ["egui"]
+
+[[example]]
+name = "showcase_iced"
+path = "examples/21_showcase_iced.rs"
+required-features = ["iced"]

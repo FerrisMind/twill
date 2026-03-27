@@ -41,15 +41,22 @@
 //! Import day-to-day styling types from [`prelude`], and use module namespaces
 //! like [`tokens`], [`utilities`], and [`backends`] for the rest.
 
+#[cfg_attr(
+    docsrs,
+    doc(cfg(any(feature = "egui", feature = "iced", feature = "slint")))
+)]
 pub mod backends;
 
 #[cfg(feature = "egui")]
+#[cfg_attr(docsrs, doc(cfg(feature = "egui")))]
 pub use backends::egui;
 
 #[cfg(feature = "iced")]
+#[cfg_attr(docsrs, doc(cfg(feature = "iced")))]
 pub use backends::iced;
 
 #[cfg(feature = "slint")]
+#[cfg_attr(docsrs, doc(cfg(feature = "slint")))]
 pub use backends::slint;
 pub mod style;
 pub mod tokens;
