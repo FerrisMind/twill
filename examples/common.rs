@@ -32,6 +32,17 @@ pub fn surface_style() -> Style {
         .shadow(Shadow::Sm)
 }
 
+pub fn composition_style() -> Style {
+    surface_style()
+        .bg(Color::slate(Scale::S50))
+        .text_color(Color::slate(Scale::S900))
+        .border(
+            BorderWidth::S1,
+            BorderStyle::Solid,
+            Color::slate(Scale::S300),
+        )
+}
+
 pub fn interactive_style() -> Style {
     surface_style()
         .bg(Color::blue(Scale::S500))
@@ -50,7 +61,7 @@ pub fn interactive_style() -> Style {
 }
 
 pub fn responsive_style() -> Style {
-    Style::new()
+    composition_style()
         .padding(Padding::all(Spacing::S3))
         .w(Spacing::S24)
         .sm(|style| style.w(Spacing::S32))
@@ -81,11 +92,7 @@ pub fn showcase_sections() -> Vec<ShowcaseSection> {
         ShowcaseSection {
             title: "Style Composition",
             description: "Reusable surfaces stay in Style, not in framework-specific components.",
-            style: surface_style().with(Style::new().bg(Color::slate(Scale::S50)).border(
-                BorderWidth::S1,
-                BorderStyle::Solid,
-                Color::slate(Scale::S300),
-            )),
+            style: composition_style(),
         },
         ShowcaseSection {
             title: "States",
