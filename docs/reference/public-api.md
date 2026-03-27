@@ -16,6 +16,7 @@ Main token families:
 
 - `Color`, `ColorFamily`, `Scale`, `ColorValue`
 - `SemanticColor`, `SemanticThemeVars`, `DynamicSemanticTheme`
+- `ThemeVariant`
 - `Spacing`, `Percentage`, `Container`, `Breakpoint`
 - `FontFamily`, `FontSize`, `FontWeight`, `LetterSpacing`, `LineHeight`
 - `BorderRadius`, `BorderWidth`, `BorderStyle`, `OutlineStyle`, `RingWidth`
@@ -59,3 +60,9 @@ Feature-gated backend modules:
 - `twill::slint`
 
 These modules convert Twill values into framework-specific primitives. Twill itself does not define components like `Button` or `Card`.
+
+Backend-specific helper types:
+
+- `twill::backends::ShadowColor`
+- `twill::iced::TextDirection`
+- `twill::slint::SlintCursor`

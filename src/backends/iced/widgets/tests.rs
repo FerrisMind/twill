@@ -1,4 +1,5 @@
 use super::*;
+use crate::iced::TextDirection;
 use crate::prelude::*;
 use crate::tokens::AspectRatio;
 use crate::tokens::Scale;
@@ -85,19 +86,19 @@ fn test_text_alignment_mapping_variants() {
         iced::widget::text::Alignment::Justified
     );
     assert_eq!(
-        to_text_alignment_with_direction(TextAlign::Start, false),
+        to_text_alignment_with_direction(TextAlign::Start, TextDirection::LeftToRight),
         iced::widget::text::Alignment::Left
     );
     assert_eq!(
-        to_text_alignment_with_direction(TextAlign::Start, true),
+        to_text_alignment_with_direction(TextAlign::Start, TextDirection::RightToLeft),
         iced::widget::text::Alignment::Right
     );
     assert_eq!(
-        to_text_alignment_with_direction(TextAlign::End, false),
+        to_text_alignment_with_direction(TextAlign::End, TextDirection::LeftToRight),
         iced::widget::text::Alignment::Right
     );
     assert_eq!(
-        to_text_alignment_with_direction(TextAlign::End, true),
+        to_text_alignment_with_direction(TextAlign::End, TextDirection::RightToLeft),
         iced::widget::text::Alignment::Left
     );
 }
@@ -309,13 +310,16 @@ fn test_aspect_ratio_zero_denominator() {
 
 #[test]
 fn test_shadow_uses_custom_color() {
-    let shadow = to_shadow_with_color(Shadow::Sm, Some(Color::red(Scale::S500)));
+    let shadow = to_shadow_with_color(
+        Shadow::Sm,
+        crate::backends::ShadowColor::Explicit(Color::red(Scale::S500)),
+    );
     assert!(shadow.color.r > shadow.color.g);
 }
 
 #[test]
 fn test_shadow_layers_for_sm_are_two() {
-    let layers = to_shadow_layers_with_color(Shadow::Sm, None);
+    let layers = to_shadow_layers_with_color(Shadow::Sm, crate::backends::ShadowColor::Default);
     assert_eq!(layers.len(), 2);
     assert!((layers[0].offset.y - 1.0).abs() < f32::EPSILON);
     assert!((layers[1].offset.y - 1.0).abs() < f32::EPSILON);
@@ -325,7 +329,7 @@ fn test_shadow_layers_for_sm_are_two() {
 
 #[test]
 fn test_shadow_layers_for_2xl_are_single() {
-    let layers = to_shadow_layers_with_color(Shadow::S2xl, None);
+    let layers = to_shadow_layers_with_color(Shadow::S2xl, crate::backends::ShadowColor::Default);
     assert_eq!(layers.len(), 1);
     assert!((layers[0].offset.y - 25.0).abs() < f32::EPSILON);
     assert!((layers[0].blur_radius - 50.0).abs() < f32::EPSILON);

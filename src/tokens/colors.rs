@@ -37,7 +37,7 @@ impl Scale {
         Scale::S950,
     ];
 
-    pub fn value(&self) -> u16 {
+    pub const fn value(&self) -> u16 {
         match self {
             Scale::S50 => 50,
             Scale::S100 => 100,
@@ -51,6 +51,12 @@ impl Scale {
             Scale::S900 => 900,
             Scale::S950 => 950,
         }
+    }
+}
+
+impl fmt::Display for Scale {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value())
     }
 }
 
@@ -85,6 +91,47 @@ pub enum ColorFamily {
     Fuchsia,
     Pink,
     Rose,
+}
+
+impl ColorFamily {
+    pub const fn as_str(&self) -> &'static str {
+        match self {
+            ColorFamily::Black => "black",
+            ColorFamily::White => "white",
+            ColorFamily::Slate => "slate",
+            ColorFamily::Gray => "gray",
+            ColorFamily::Zinc => "zinc",
+            ColorFamily::Neutral => "neutral",
+            ColorFamily::Stone => "stone",
+            ColorFamily::Mauve => "mauve",
+            ColorFamily::Olive => "olive",
+            ColorFamily::Mist => "mist",
+            ColorFamily::Taupe => "taupe",
+            ColorFamily::Red => "red",
+            ColorFamily::Orange => "orange",
+            ColorFamily::Amber => "amber",
+            ColorFamily::Yellow => "yellow",
+            ColorFamily::Lime => "lime",
+            ColorFamily::Green => "green",
+            ColorFamily::Emerald => "emerald",
+            ColorFamily::Teal => "teal",
+            ColorFamily::Cyan => "cyan",
+            ColorFamily::Sky => "sky",
+            ColorFamily::Blue => "blue",
+            ColorFamily::Indigo => "indigo",
+            ColorFamily::Violet => "violet",
+            ColorFamily::Purple => "purple",
+            ColorFamily::Fuchsia => "fuchsia",
+            ColorFamily::Pink => "pink",
+            ColorFamily::Rose => "rose",
+        }
+    }
+}
+
+impl fmt::Display for ColorFamily {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
 }
 
 /// A color with its family and scale.
@@ -423,7 +470,7 @@ impl fmt::Display for BackgroundColorVar {
 
 /// Typed arbitrary literal value for background-color (`bg-[<value>]` equivalent).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ColorValueToken(pub u8, pub u8, pub u8, pub u8);
+pub struct ColorValueToken(u8, u8, u8, u8);
 
 impl ColorValueToken {
     pub const fn from_rgba8(r: u8, g: u8, b: u8, a: u8) -> Self {
@@ -432,6 +479,26 @@ impl ColorValueToken {
 
     pub const fn from_rgb8(r: u8, g: u8, b: u8) -> Self {
         Self(r, g, b, 255)
+    }
+
+    pub const fn red(self) -> u8 {
+        self.0
+    }
+
+    pub const fn green(self) -> u8 {
+        self.1
+    }
+
+    pub const fn blue(self) -> u8 {
+        self.2
+    }
+
+    pub const fn alpha(self) -> u8 {
+        self.3
+    }
+
+    pub const fn to_rgba8(self) -> (u8, u8, u8, u8) {
+        (self.0, self.1, self.2, self.3)
     }
 }
 

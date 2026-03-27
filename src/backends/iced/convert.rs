@@ -1,8 +1,15 @@
+use crate::backends::ShadowColor;
 use crate::tokens::{
     AspectRatio, Blur, BorderRadius, Color, ColorValue, Cursor, FontSize, FontWeight,
-    SemanticColor, Shadow, Spacing, TextAlign, TransitionDuration,
+    SemanticColor, Shadow, Spacing, TextAlign, ThemeVariant, TransitionDuration,
 };
 use crate::utilities::ObjectFit;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum TextDirection {
+    LeftToRight,
+    RightToLeft,
+}
 
 pub fn to_color(color: Color) -> iced::Color {
     super::widgets::to_color(color)
@@ -32,11 +39,11 @@ pub fn to_content_fit(fit: ObjectFit) -> iced::ContentFit {
     super::widgets::to_content_fit(fit)
 }
 
-pub fn to_shadow_with_color(shadow: Shadow, color: Option<Color>) -> iced::Shadow {
+pub fn to_shadow_with_color(shadow: Shadow, color: ShadowColor) -> iced::Shadow {
     super::widgets::to_shadow_with_color(shadow, color)
 }
 
-pub fn to_shadow_layers_with_color(shadow: Shadow, color: Option<Color>) -> Vec<iced::Shadow> {
+pub fn to_shadow_layers_with_color(shadow: Shadow, color: ShadowColor) -> Vec<iced::Shadow> {
     super::widgets::to_shadow_layers_with_color(shadow, color)
 }
 
@@ -62,13 +69,13 @@ pub fn to_text_alignment(align: TextAlign) -> iced::widget::text::Alignment {
 
 pub fn to_text_alignment_with_direction(
     align: TextAlign,
-    is_rtl: bool,
+    direction: TextDirection,
 ) -> iced::widget::text::Alignment {
-    super::widgets::to_text_alignment_with_direction(align, is_rtl)
+    super::widgets::to_text_alignment_with_direction(align, direction)
 }
 
-pub fn to_semantic_color(semantic: SemanticColor, is_dark: bool) -> iced::Color {
-    super::widgets::to_semantic_color(semantic, is_dark)
+pub fn to_semantic_color(semantic: SemanticColor, variant: ThemeVariant) -> iced::Color {
+    super::widgets::to_semantic_color(semantic, variant)
 }
 
 pub fn to_duration(duration: TransitionDuration) -> std::time::Duration {

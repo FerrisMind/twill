@@ -66,7 +66,7 @@ pub mod prelude {
         FontWeight, InsetShadow, LetterSpacing, LineHeight, MotionDefaults, OutlineStyle,
         Percentage, Perspective, RingWidth, Scale, SemanticColor, SemanticThemeVars, Shadow,
         Spacing, SpecialColor, TextAlign, TextDecoration, TextOverflow, TextTransform,
-        TransitionDuration, TransitionProperty, WhiteSpace, WordBreak,
+        ThemeVariant, TransitionDuration, TransitionProperty, WhiteSpace, WordBreak,
     };
     pub use crate::traits::{ComputeValue, IntoStyle, Merge, Responsive, ThemedStyle};
     pub use crate::utilities::{

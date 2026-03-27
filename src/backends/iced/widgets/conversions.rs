@@ -1,13 +1,15 @@
+use crate::backends::ShadowColor;
 use crate::tokens::{
     AspectRatio, BackgroundColor, Blur, BorderRadius, Color, ColorValue, Cursor, FontSize,
     FontWeight, Percentage, SemanticColor, SemanticThemeVars, Shadow, Spacing, TextAlign,
-    TransitionDuration,
+    ThemeVariant, TransitionDuration,
 };
 use crate::traits::ComputeValue;
 use crate::utilities::{MarginValue, ObjectFit, PaddingValue};
 use iced::{ContentFit, Length};
 
 use super::common::{apply_opacity_to_color, container_to_px, spacing_to_px};
+pub use crate::backends::iced::convert::TextDirection;
 
 pub fn to_color(color: Color) -> iced::Color {
     to_color_value(color.compute())
@@ -365,7 +367,7 @@ pub fn to_content_fit(fit: ObjectFit) -> ContentFit {
 }
 
 /// Convert twill Shadow to iced Shadow with an optional color override.
-pub fn to_shadow_with_color(shadow: Shadow, color: Option<Color>) -> iced::Shadow {
+pub fn to_shadow_with_color(shadow: Shadow, color: ShadowColor) -> iced::Shadow {
     to_shadow_layers_with_color(shadow, color)
         .into_iter()
         .next()
@@ -377,7 +379,7 @@ pub fn to_shadow_with_color(shadow: Shadow, color: Option<Color>) -> iced::Shado
 /// Tailwind defines multiple box-shadow layers for some tokens (`sm`, `md`, `lg`, `xl`).
 /// Iced supports only one shadow per container, so layered fidelity is achieved
 /// by wrapping content with multiple shadow containers.
-pub fn to_shadow_layers_with_color(shadow: Shadow, color: Option<Color>) -> Vec<iced::Shadow> {
+pub fn to_shadow_layers_with_color(shadow: Shadow, color: ShadowColor) -> Vec<iced::Shadow> {
     let layers: &[(f32, f32, f32)] = match shadow {
         Shadow::None => &[],
         Shadow::Xs2 => &[(1.0, 0.0, 0.05)],
@@ -389,7 +391,10 @@ pub fn to_shadow_layers_with_color(shadow: Shadow, color: Option<Color>) -> Vec<
         Shadow::S2xl => &[(25.0, 50.0, 0.25)],
     };
 
-    let base = color.unwrap_or(Color::black());
+    let base = match color {
+        ShadowColor::Default => Color::black(),
+        ShadowColor::Explicit(color) => color,
+    };
     layers
         .iter()
         .map(|(offset_y, blur, alpha)| {
@@ -406,7 +411,7 @@ pub fn to_shadow_layers_with_color(shadow: Shadow, color: Option<Color>) -> Vec<
 
 pub(super) fn shadow_layers_with_opacity(
     shadow: Shadow,
-    color: Option<Color>,
+    color: ShadowColor,
     opacity: f32,
 ) -> Vec<iced::Shadow> {
     to_shadow_layers_with_color(shadow, color)
@@ -444,7 +449,7 @@ pub(super) fn wrap_with_shadow_layers<'a, Message: 'a>(
 
 /// Convert twill Shadow to iced Shadow.
 pub fn to_shadow(shadow: Shadow, color: Color) -> iced::Shadow {
-    to_shadow_with_color(shadow, Some(color))
+    to_shadow_with_color(shadow, ShadowColor::Explicit(color))
 }
 
 /// Convert twill FontSize to f32 for iced
@@ -477,16 +482,16 @@ pub fn to_font_weight(weight: FontWeight) -> iced::font::Weight {
 /// For direction-aware logical alignment (`text-start` / `text-end`),
 /// use [`to_text_alignment_with_direction`].
 pub fn to_text_alignment(align: TextAlign) -> iced::widget::text::Alignment {
-    to_text_alignment_with_direction(align, false)
+    to_text_alignment_with_direction(align, TextDirection::LeftToRight)
 }
 
 /// Convert twill TextAlign to iced text alignment with explicit text direction.
 ///
-/// - `is_rtl = false` for left-to-right content
-/// - `is_rtl = true` for right-to-left content
+/// - [`TextDirection::LeftToRight`] for left-to-right content
+/// - [`TextDirection::RightToLeft`] for right-to-left content
 pub fn to_text_alignment_with_direction(
     align: TextAlign,
-    is_rtl: bool,
+    direction: TextDirection,
 ) -> iced::widget::text::Alignment {
     match align {
         TextAlign::Left => iced::widget::text::Alignment::Left,
@@ -494,14 +499,14 @@ pub fn to_text_alignment_with_direction(
         TextAlign::Right => iced::widget::text::Alignment::Right,
         TextAlign::Justify => iced::widget::text::Alignment::Justified,
         TextAlign::Start => {
-            if is_rtl {
+            if matches!(direction, TextDirection::RightToLeft) {
                 iced::widget::text::Alignment::Right
             } else {
                 iced::widget::text::Alignment::Left
             }
         }
         TextAlign::End => {
-            if is_rtl {
+            if matches!(direction, TextDirection::RightToLeft) {
                 iced::widget::text::Alignment::Left
             } else {
                 iced::widget::text::Alignment::Right
@@ -511,9 +516,9 @@ pub fn to_text_alignment_with_direction(
 }
 
 /// Convert twill SemanticColor to iced Color based on the theme variant
-pub fn to_semantic_color(semantic: SemanticColor, is_dark: bool) -> iced::Color {
+pub fn to_semantic_color(semantic: SemanticColor, variant: ThemeVariant) -> iced::Color {
     let color = SemanticThemeVars::shadcn_neutral()
-        .resolve_value(semantic, is_dark)
+        .resolve_value(semantic, variant)
         .unwrap_or_else(|| Color::black().compute());
     to_color_value(color)
 }

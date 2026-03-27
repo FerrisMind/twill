@@ -1,5 +1,6 @@
 //! Layout utilities for flexbox, grid, display, and positioning.
 
+use std::fmt;
 use std::num::{NonZeroU8, NonZeroU16};
 
 use crate::tokens::Container;
@@ -21,7 +22,7 @@ pub enum Display {
 }
 
 impl Display {
-    pub fn value(&self) -> &'static str {
+    pub const fn value(&self) -> &'static str {
         match self {
             Display::Block => "block",
             Display::InlineBlock => "inline-block",
@@ -37,6 +38,12 @@ impl Display {
     }
 }
 
+impl fmt::Display for Display {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
+    }
+}
+
 /// Position type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Position {
@@ -48,7 +55,7 @@ pub enum Position {
 }
 
 impl Position {
-    pub fn value(&self) -> &'static str {
+    pub const fn value(&self) -> &'static str {
         match self {
             Position::Static => "static",
             Position::Relative => "relative",
@@ -56,6 +63,12 @@ impl Position {
             Position::Fixed => "fixed",
             Position::Sticky => "sticky",
         }
+    }
+}
+
+impl fmt::Display for Position {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
     }
 }
 
@@ -69,13 +82,19 @@ pub enum FlexDirection {
 }
 
 impl FlexDirection {
-    pub fn value(&self) -> &'static str {
+    pub const fn value(&self) -> &'static str {
         match self {
             FlexDirection::Row => "row",
             FlexDirection::RowReverse => "row-reverse",
             FlexDirection::Col => "column",
             FlexDirection::ColReverse => "column-reverse",
         }
+    }
+}
+
+impl fmt::Display for FlexDirection {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
     }
 }
 
@@ -88,12 +107,18 @@ pub enum FlexWrap {
 }
 
 impl FlexWrap {
-    pub fn value(&self) -> &'static str {
+    pub const fn value(&self) -> &'static str {
         match self {
             FlexWrap::Wrap => "wrap",
             FlexWrap::WrapReverse => "wrap-reverse",
             FlexWrap::NoWrap => "nowrap",
         }
+    }
+}
+
+impl fmt::Display for FlexWrap {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
     }
 }
 
@@ -114,7 +139,7 @@ pub enum JustifyContent {
 }
 
 impl JustifyContent {
-    pub fn value(&self) -> &'static str {
+    pub const fn value(&self) -> &'static str {
         match self {
             JustifyContent::Start => "flex-start",
             JustifyContent::End => "flex-end",
@@ -128,6 +153,12 @@ impl JustifyContent {
             JustifyContent::Baseline => "baseline",
             JustifyContent::Normal => "normal",
         }
+    }
+}
+
+impl fmt::Display for JustifyContent {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
     }
 }
 
@@ -145,7 +176,7 @@ pub enum AlignItems {
 }
 
 impl AlignItems {
-    pub fn value(&self) -> &'static str {
+    pub const fn value(&self) -> &'static str {
         match self {
             AlignItems::Start => "flex-start",
             AlignItems::End => "flex-end",
@@ -156,6 +187,12 @@ impl AlignItems {
             AlignItems::BaselineLast => "last baseline",
             AlignItems::Stretch => "stretch",
         }
+    }
+}
+
+impl fmt::Display for AlignItems {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
     }
 }
 
@@ -171,7 +208,7 @@ pub enum AlignSelf {
 }
 
 impl AlignSelf {
-    pub fn value(&self) -> &'static str {
+    pub const fn value(&self) -> &'static str {
         match self {
             AlignSelf::Auto => "auto",
             AlignSelf::Start => "flex-start",
@@ -183,6 +220,12 @@ impl AlignSelf {
     }
 }
 
+impl fmt::Display for AlignSelf {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
+    }
+}
+
 /// Flex grow/shrink.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum FlexGrow {
@@ -191,11 +234,17 @@ pub enum FlexGrow {
 }
 
 impl FlexGrow {
-    pub fn value(&self) -> u8 {
+    pub const fn value(&self) -> u8 {
         match self {
             FlexGrow::S0 => 0,
             FlexGrow::S1 => 1,
         }
+    }
+}
+
+impl fmt::Display for FlexGrow {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value())
     }
 }
 
@@ -257,6 +306,12 @@ impl Flex {
             Flex::CustomProperty(name) => format!("var({name})"),
             Flex::Arbitrary(value) => value.clone(),
         }
+    }
+}
+
+impl fmt::Display for Flex {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.value())
     }
 }
 
@@ -436,7 +491,7 @@ pub enum ObjectFit {
 }
 
 impl ObjectFit {
-    pub fn value(&self) -> &'static str {
+    pub const fn value(&self) -> &'static str {
         match self {
             ObjectFit::Contain => "contain",
             ObjectFit::Cover => "cover",
@@ -444,6 +499,12 @@ impl ObjectFit {
             ObjectFit::None => "none",
             ObjectFit::ScaleDown => "scale-down",
         }
+    }
+}
+
+impl fmt::Display for ObjectFit {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
     }
 }
 
@@ -674,7 +735,7 @@ pub enum Overflow {
 }
 
 impl Overflow {
-    pub fn value(&self) -> &'static str {
+    pub const fn value(&self) -> &'static str {
         match self {
             Overflow::Auto => "auto",
             Overflow::Hidden => "hidden",
@@ -682,6 +743,12 @@ impl Overflow {
             Overflow::Visible => "visible",
             Overflow::Scroll => "scroll",
         }
+    }
+}
+
+impl fmt::Display for Overflow {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
     }
 }
 
@@ -698,7 +765,7 @@ pub enum ZIndex {
 }
 
 impl ZIndex {
-    pub fn value(&self) -> Option<i16> {
+    pub const fn value(&self) -> Option<i16> {
         match self {
             ZIndex::Auto => None,
             ZIndex::S0 => Some(0),
@@ -707,6 +774,15 @@ impl ZIndex {
             ZIndex::S30 => Some(30),
             ZIndex::S40 => Some(40),
             ZIndex::S50 => Some(50),
+        }
+    }
+}
+
+impl fmt::Display for ZIndex {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.value() {
+            Some(value) => write!(f, "{value}"),
+            None => f.write_str("auto"),
         }
     }
 }
@@ -720,12 +796,18 @@ pub enum Visibility {
 }
 
 impl Visibility {
-    pub fn value(&self) -> &'static str {
+    pub const fn value(&self) -> &'static str {
         match self {
             Visibility::Visible => "visible",
             Visibility::Hidden => "hidden",
             Visibility::Collapse => "collapse",
         }
+    }
+}
+
+impl fmt::Display for Visibility {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
     }
 }
 
@@ -743,7 +825,7 @@ pub enum PlaceContent {
 }
 
 impl PlaceContent {
-    pub fn value(&self) -> &'static str {
+    pub const fn value(&self) -> &'static str {
         match self {
             PlaceContent::Center => "center",
             PlaceContent::Start => "start",
@@ -754,6 +836,12 @@ impl PlaceContent {
             PlaceContent::Baseline => "baseline",
             PlaceContent::Stretch => "stretch",
         }
+    }
+}
+
+impl fmt::Display for PlaceContent {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
     }
 }
 
@@ -768,7 +856,7 @@ pub enum PlaceItems {
 }
 
 impl PlaceItems {
-    pub fn value(&self) -> &'static str {
+    pub const fn value(&self) -> &'static str {
         match self {
             PlaceItems::Center => "center",
             PlaceItems::Start => "start",
@@ -776,6 +864,12 @@ impl PlaceItems {
             PlaceItems::Baseline => "baseline",
             PlaceItems::Stretch => "stretch",
         }
+    }
+}
+
+impl fmt::Display for PlaceItems {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
     }
 }
 
@@ -790,7 +884,7 @@ pub enum JustifyItems {
 }
 
 impl JustifyItems {
-    pub fn value(&self) -> &'static str {
+    pub const fn value(&self) -> &'static str {
         match self {
             JustifyItems::Normal => "normal",
             JustifyItems::Center => "center",
@@ -798,6 +892,12 @@ impl JustifyItems {
             JustifyItems::End => "end",
             JustifyItems::Stretch => "stretch",
         }
+    }
+}
+
+impl fmt::Display for JustifyItems {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
     }
 }
 
@@ -812,7 +912,7 @@ pub enum JustifySelf {
 }
 
 impl JustifySelf {
-    pub fn value(&self) -> &'static str {
+    pub const fn value(&self) -> &'static str {
         match self {
             JustifySelf::Auto => "auto",
             JustifySelf::Start => "start",
@@ -820,6 +920,12 @@ impl JustifySelf {
             JustifySelf::Center => "center",
             JustifySelf::Stretch => "stretch",
         }
+    }
+}
+
+impl fmt::Display for JustifySelf {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.value())
     }
 }
 

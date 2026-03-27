@@ -7,33 +7,77 @@ use crate::traits::Merge;
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct StateStyles {
     /// Styles applied when the user hovers over the element.
-    pub hover: Option<Style>,
+    pub(crate) hover: Option<Style>,
     /// Styles applied when the element has programmatic or keyboard focus.
-    pub focus: Option<Style>,
+    pub(crate) focus: Option<Style>,
     /// Styles applied when the element matches `:focus-visible`.
-    pub focus_visible: Option<Style>,
+    pub(crate) focus_visible: Option<Style>,
     /// Styles applied when the element is active (e.g. while being clicked/pressed).
-    pub active: Option<Style>,
+    pub(crate) active: Option<Style>,
     /// Styles applied when the element is disabled and non-interactive.
-    pub disabled: Option<Style>,
+    pub(crate) disabled: Option<Style>,
     /// Styles applied when the element is selected.
-    pub selected: Option<Style>,
+    pub(crate) selected: Option<Style>,
     /// Styles applied when the element is checked.
-    pub checked: Option<Style>,
+    pub(crate) checked: Option<Style>,
     /// Styles applied when the element is in an open state.
-    pub open: Option<Style>,
+    pub(crate) open: Option<Style>,
     /// Styles applied when the element is in a closed state.
-    pub closed: Option<Style>,
+    pub(crate) closed: Option<Style>,
     /// Styles keyed by arbitrary `data-*` state names.
-    pub data: BTreeMap<String, Style>,
+    pub(crate) data: BTreeMap<String, Style>,
     /// Styles keyed by arbitrary `aria-*` state names.
-    pub aria: BTreeMap<String, Style>,
+    pub(crate) aria: BTreeMap<String, Style>,
 }
 
 impl StateStyles {
     /// Create a new empty state styles container.
     pub fn new() -> Self {
         Self::default()
+    }
+
+    pub fn hover_style(&self) -> Option<&Style> {
+        self.hover.as_ref()
+    }
+
+    pub fn focus_style(&self) -> Option<&Style> {
+        self.focus.as_ref()
+    }
+
+    pub fn focus_visible_style(&self) -> Option<&Style> {
+        self.focus_visible.as_ref()
+    }
+
+    pub fn active_style(&self) -> Option<&Style> {
+        self.active.as_ref()
+    }
+
+    pub fn disabled_style(&self) -> Option<&Style> {
+        self.disabled.as_ref()
+    }
+
+    pub fn selected_style(&self) -> Option<&Style> {
+        self.selected.as_ref()
+    }
+
+    pub fn checked_style(&self) -> Option<&Style> {
+        self.checked.as_ref()
+    }
+
+    pub fn open_style(&self) -> Option<&Style> {
+        self.open.as_ref()
+    }
+
+    pub fn closed_style(&self) -> Option<&Style> {
+        self.closed.as_ref()
+    }
+
+    pub fn data_style(&self, name: &str) -> Option<&Style> {
+        self.data.get(name)
+    }
+
+    pub fn aria_style(&self, name: &str) -> Option<&Style> {
+        self.aria.get(name)
     }
 }
 

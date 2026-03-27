@@ -1,9 +1,11 @@
 //! Egui backend for twill.
 
+use crate::backends::ShadowColor;
 use crate::style::Style;
 use crate::tokens::{
     AspectRatio, BackgroundColor, Blur, BorderRadius, Color, ColorValue, Cursor, FontSize,
-    FontWeight, SemanticColor, SemanticThemeVars, Shadow, Spacing, TransitionDuration,
+    FontWeight, SemanticColor, SemanticThemeVars, Shadow, Spacing, ThemeVariant,
+    TransitionDuration,
 };
 use crate::traits::ComputeValue;
 use crate::utilities::PaddingValue;
@@ -221,7 +223,7 @@ pub fn to_aspect_ratio(ratio: AspectRatio) -> Option<f32> {
 /// Convert twill Shadow to egui Shadow with an optional color override.
 pub fn to_shadow_with_color(
     shadow: Shadow,
-    shadow_color: Option<Color>,
+    shadow_color: ShadowColor,
 ) -> Option<egui::epaint::Shadow> {
     let (offset, blur, alpha) = match shadow {
         Shadow::None => return None,
@@ -234,7 +236,11 @@ pub fn to_shadow_with_color(
         Shadow::S2xl => ([0, 25], 50, 0.25),
     };
 
-    let mut value = shadow_color.unwrap_or(Color::black()).compute();
+    let mut value = match shadow_color {
+        ShadowColor::Default => Color::black(),
+        ShadowColor::Explicit(color) => color,
+    }
+    .compute();
     value.a *= alpha;
 
     Some(egui::epaint::Shadow {
@@ -247,7 +253,7 @@ pub fn to_shadow_with_color(
 
 /// Convert twill Shadow to egui Shadow.
 pub fn to_shadow(shadow: Shadow) -> Option<egui::epaint::Shadow> {
-    to_shadow_with_color(shadow, None)
+    to_shadow_with_color(shadow, ShadowColor::Default)
 }
 
 /// Convert twill FontSize to f32.
@@ -266,9 +272,9 @@ pub fn to_font_weight(_weight: FontWeight) -> egui::FontFamily {
 }
 
 /// Convert twill SemanticColor to egui Color32 based on the theme variant.
-pub fn to_semantic_color32(semantic: SemanticColor, is_dark: bool) -> egui::Color32 {
+pub fn to_semantic_color32(semantic: SemanticColor, variant: ThemeVariant) -> egui::Color32 {
     let color = SemanticThemeVars::shadcn_neutral()
-        .resolve_value(semantic, is_dark)
+        .resolve_value(semantic, variant)
         .unwrap_or_else(|| Color::black().compute());
     to_color32_value(color)
 }
@@ -367,7 +373,8 @@ pub fn to_frame(style: &Style) -> egui::Frame {
 
     // Shadow
     if let Some(s) = &style.box_shadow
-        && let Some(mut egui_shadow) = to_shadow_with_color(*s, style.shadow_color)
+        && let Some(mut egui_shadow) =
+            to_shadow_with_color(*s, ShadowColor::from(style.shadow_color))
     {
         egui_shadow.color = apply_opacity_to_color32(egui_shadow.color, opacity);
         frame = frame.shadow(egui_shadow);
@@ -422,7 +429,9 @@ mod tests {
 
     #[test]
     fn test_shadow_uses_custom_color() {
-        let shadow = to_shadow_with_color(Shadow::Sm, Some(Color::red(Scale::S500))).unwrap();
+        let shadow =
+            to_shadow_with_color(Shadow::Sm, ShadowColor::Explicit(Color::red(Scale::S500)))
+                .unwrap();
         assert!(shadow.color.r() > shadow.color.g());
     }
 

@@ -2,6 +2,9 @@
 //!
 //! These tokens are opt-in: you can ignore them and continue using raw color tokens.
 
+use std::fmt;
+use std::sync::LazyLock;
+
 use crate::tokens::{Color, ColorValue, Scale, SpecialColor};
 use crate::traits::ComputeValue;
 
@@ -42,7 +45,7 @@ pub enum SemanticColor {
 }
 
 impl SemanticColor {
-    pub fn var_name(&self) -> &'static str {
+    pub const fn var_name(&self) -> &'static str {
         match self {
             Self::Background => "background",
             Self::Foreground => "foreground",
@@ -79,6 +82,25 @@ impl SemanticColor {
     }
 }
 
+impl fmt::Display for SemanticColor {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.var_name())
+    }
+}
+
+/// Theme variant used when resolving semantic tokens.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ThemeVariant {
+    Light,
+    Dark,
+}
+
+impl ThemeVariant {
+    pub const fn is_dark(self) -> bool {
+        matches!(self, Self::Dark)
+    }
+}
+
 /// Semantic token set with light and dark variable definitions.
 #[derive(Debug, Clone)]
 pub struct SemanticThemeVars {
@@ -111,7 +133,13 @@ impl SemanticThemeVars {
     }
 
     /// Default neutral semantic theme matching shadcn-ui / shadcn-svelte values.
-    pub fn shadcn_neutral() -> Self {
+    pub fn shadcn_neutral() -> &'static Self {
+        static SHADCN_NEUTRAL: LazyLock<SemanticThemeVars> =
+            LazyLock::new(SemanticThemeVars::build_shadcn_neutral);
+        &SHADCN_NEUTRAL
+    }
+
+    fn build_shadcn_neutral() -> Self {
         let light = vec![
             (SemanticColor::Background, Color::white()),
             (SemanticColor::Foreground, Color::neutral(Scale::S950)),
@@ -238,17 +266,22 @@ impl SemanticThemeVars {
 
     /// Resolve a semantic token to a concrete `Color`.
     ///
-    /// `is_dark = false` resolves from light values, `true` from dark values.
-    pub fn resolve(&self, token: SemanticColor, is_dark: bool) -> Option<Color> {
-        let source = if is_dark { &self.dark } else { &self.light };
+    /// [`ThemeVariant::Light`] resolves from light values and [`ThemeVariant::Dark`]
+    /// resolves from dark values.
+    pub fn resolve(&self, token: SemanticColor, variant: ThemeVariant) -> Option<Color> {
+        let source = if variant.is_dark() {
+            &self.dark
+        } else {
+            &self.light
+        };
         source
             .iter()
             .find(|(t, _)| *t == token)
             .map(|(_, color)| *color)
     }
 
-    pub fn resolve_value(&self, token: SemanticColor, is_dark: bool) -> Option<ColorValue> {
-        let source = if is_dark {
+    pub fn resolve_value(&self, token: SemanticColor, variant: ThemeVariant) -> Option<ColorValue> {
+        let source = if variant.is_dark() {
             &self.dark_values
         } else {
             &self.light_values
@@ -261,20 +294,20 @@ impl SemanticThemeVars {
 
     /// Resolve a semantic token from the light palette.
     pub fn resolve_light(&self, token: SemanticColor) -> Option<Color> {
-        self.resolve(token, false)
+        self.resolve(token, ThemeVariant::Light)
     }
 
     /// Resolve a semantic token from the dark palette.
     pub fn resolve_dark(&self, token: SemanticColor) -> Option<Color> {
-        self.resolve(token, true)
+        self.resolve(token, ThemeVariant::Dark)
     }
 
     pub fn resolve_light_value(&self, token: SemanticColor) -> Option<ColorValue> {
-        self.resolve_value(token, false)
+        self.resolve_value(token, ThemeVariant::Light)
     }
 
     pub fn resolve_dark_value(&self, token: SemanticColor) -> Option<ColorValue> {
-        self.resolve_value(token, true)
+        self.resolve_value(token, ThemeVariant::Dark)
     }
 }
 
@@ -512,8 +545,12 @@ impl DynamicSemanticTheme {
     }
 
     /// Resolve a semantic token to concrete RGBA color.
-    pub fn resolve(&self, token: SemanticColor, is_dark: bool) -> Option<ColorValue> {
-        let source = if is_dark { &self.dark } else { &self.light };
+    pub fn resolve(&self, token: SemanticColor, variant: ThemeVariant) -> Option<ColorValue> {
+        let source = if variant.is_dark() {
+            &self.dark
+        } else {
+            &self.light
+        };
         source
             .iter()
             .find(|(t, _)| *t == token)
@@ -521,11 +558,11 @@ impl DynamicSemanticTheme {
     }
 
     pub fn resolve_light(&self, token: SemanticColor) -> Option<ColorValue> {
-        self.resolve(token, false)
+        self.resolve(token, ThemeVariant::Light)
     }
 
     pub fn resolve_dark(&self, token: SemanticColor) -> Option<ColorValue> {
-        self.resolve(token, true)
+        self.resolve(token, ThemeVariant::Dark)
     }
 }
 

@@ -8,6 +8,7 @@ use super::conversions::{
     resolve_background_color_token, shadow_layers_with_opacity, to_border_radius, to_color,
     to_color_value, to_style_padding, wrap_with_shadow_layers,
 };
+use crate::backends::ShadowColor;
 
 pub fn styled_container<'a, Message: Clone + 'a>(
     content: iced::Element<'a, Message>,
@@ -49,7 +50,7 @@ pub fn styled_container_with_custom_properties<'a, Message: Clone + 'a>(
     let border_width = base_border_width;
     let shadow_layers = style
         .box_shadow
-        .map(|s| shadow_layers_with_opacity(s, style.shadow_color, opacity))
+        .map(|s| shadow_layers_with_opacity(s, ShadowColor::from(style.shadow_color), opacity))
         .unwrap_or_default();
 
     match border_style {

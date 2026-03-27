@@ -9,9 +9,9 @@ use crate::utilities::ObjectFit;
 use iced::ContentFit;
 
 pub use convert::{
-    resolve_font_size, to_aspect_ratio, to_blur_radius, to_border_radius, to_color, to_color_value,
-    to_content_fit, to_duration, to_font_size, to_font_weight, to_interaction, to_padding,
-    to_semantic_color, to_shadow, to_shadow_layers_with_color, to_shadow_with_color,
+    TextDirection, resolve_font_size, to_aspect_ratio, to_blur_radius, to_border_radius, to_color,
+    to_color_value, to_content_fit, to_duration, to_font_size, to_font_weight, to_interaction,
+    to_padding, to_semantic_color, to_shadow, to_shadow_layers_with_color, to_shadow_with_color,
     to_text_alignment, to_text_alignment_with_direction,
 };
 pub use widgets::{
@@ -89,7 +89,7 @@ impl ToIced for Shadow {
     type Output = iced::Shadow;
 
     fn to_iced(self) -> Self::Output {
-        to_shadow_with_color(self, None)
+        to_shadow_with_color(self, super::ShadowColor::Default)
     }
 }
 

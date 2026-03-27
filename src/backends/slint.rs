@@ -2,9 +2,10 @@
 //!
 //! Provides color constants and utilities for Slint UI.
 
+use crate::backends::ShadowColor;
 use crate::tokens::{
     AspectRatio, Blur, BorderRadius, Color, Cursor, FontSize, FontWeight, Scale, SemanticColor,
-    SemanticThemeVars, Shadow, Spacing, TransitionDuration,
+    SemanticThemeVars, Shadow, Spacing, ThemeVariant, TransitionDuration,
 };
 use crate::traits::ComputeValue;
 
@@ -56,7 +57,7 @@ impl ToSlint for Blur {
 }
 
 impl ToSlint for Cursor {
-    type Output = slint::private_unstable_api::re_exports::MouseCursor;
+    type Output = SlintCursor;
 
     fn to_slint(self) -> Self::Output {
         to_cursor_icon(self)
@@ -140,44 +141,29 @@ pub fn to_blur_radius(blur: Blur) -> f32 {
     blur.radius_px() as f32
 }
 
-/// Convert twill Cursor to Slint MouseCursor.
-pub fn to_cursor_icon(cursor: Cursor) -> slint::private_unstable_api::re_exports::MouseCursor {
-    use slint::private_unstable_api::re_exports::MouseCursor;
-    match cursor {
-        Cursor::Auto | Cursor::Default => MouseCursor::Default,
-        Cursor::Pointer => MouseCursor::Pointer,
-        Cursor::Wait => MouseCursor::Wait,
-        Cursor::Progress => MouseCursor::Progress,
-        Cursor::Text | Cursor::VerticalText => MouseCursor::Text,
-        Cursor::Move | Cursor::AllScroll => MouseCursor::Move,
-        Cursor::Help => MouseCursor::Help,
-        Cursor::NotAllowed => MouseCursor::NotAllowed,
-        Cursor::NoDrop => MouseCursor::NoDrop,
-        Cursor::None => MouseCursor::None,
-        Cursor::ContextMenu => MouseCursor::Default,
-        Cursor::Cell => MouseCursor::Default,
-        Cursor::Crosshair => MouseCursor::Crosshair,
-        Cursor::Alias => MouseCursor::Alias,
-        Cursor::Copy => MouseCursor::Copy,
-        Cursor::Grab => MouseCursor::Grab,
-        Cursor::Grabbing => MouseCursor::Grabbing,
-        Cursor::ColResize => MouseCursor::ColResize,
-        Cursor::RowResize => MouseCursor::RowResize,
-        Cursor::NResize => MouseCursor::NResize,
-        Cursor::EResize => MouseCursor::EResize,
-        Cursor::SResize => MouseCursor::SResize,
-        Cursor::WResize => MouseCursor::WResize,
-        Cursor::NeResize => MouseCursor::NeResize,
-        Cursor::NwResize => MouseCursor::NwResize,
-        Cursor::SeResize => MouseCursor::SeResize,
-        Cursor::SwResize => MouseCursor::SwResize,
-        Cursor::EwResize => MouseCursor::EwResize,
-        Cursor::NsResize => MouseCursor::NsResize,
-        Cursor::NeswResize => MouseCursor::NeswResize,
-        Cursor::NwseResize => MouseCursor::NwseResize,
-        Cursor::ZoomIn => MouseCursor::Default,
-        Cursor::ZoomOut => MouseCursor::Default,
+/// Stable public representation of a Slint cursor mapping.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct SlintCursor(Cursor);
+
+impl SlintCursor {
+    pub const fn new(cursor: Cursor) -> Self {
+        Self(cursor)
     }
+
+    pub const fn twill_cursor(self) -> Cursor {
+        self.0
+    }
+}
+
+impl From<Cursor> for SlintCursor {
+    fn from(value: Cursor) -> Self {
+        Self::new(value)
+    }
+}
+
+/// Convert twill Cursor to a stable Slint cursor wrapper.
+pub fn to_cursor_icon(cursor: Cursor) -> SlintCursor {
+    SlintCursor::new(cursor)
 }
 
 /// Convert twill AspectRatio to Option<f32>.
@@ -206,9 +192,13 @@ pub fn to_shadow(shadow: Shadow) -> (f32, f32) {
 }
 
 /// Convert twill Shadow to Slint values with color.
-pub fn to_shadow_with_color(shadow: Shadow, color: Option<Color>) -> (f32, f32, slint::Color) {
+pub fn to_shadow_with_color(shadow: Shadow, color: ShadowColor) -> (f32, f32, slint::Color) {
     let (offset, blur) = to_shadow(shadow);
-    let mut value = color.unwrap_or(Color::black()).compute();
+    let mut value = match color {
+        ShadowColor::Default => Color::black(),
+        ShadowColor::Explicit(color) => color,
+    }
+    .compute();
     value.a *= match shadow {
         Shadow::None => 0.0,
         Shadow::Xs2 | Shadow::Xs => 0.05,
@@ -240,9 +230,9 @@ pub fn to_font_weight(weight: FontWeight) -> i32 {
 }
 
 /// Convert twill SemanticColor to Slint Color based on the theme variant.
-pub fn to_semantic_color(semantic: SemanticColor, is_dark: bool) -> slint::Color {
+pub fn to_semantic_color(semantic: SemanticColor, variant: ThemeVariant) -> slint::Color {
     let color = SemanticThemeVars::shadcn_neutral()
-        .resolve_value(semantic, is_dark)
+        .resolve_value(semantic, variant)
         .unwrap_or_else(|| Color::black().compute());
     to_slint_color_value(color)
 }
@@ -410,7 +400,8 @@ mod tests {
 
     #[test]
     fn test_shadow_uses_custom_color() {
-        let (_, _, c) = to_shadow_with_color(Shadow::Sm, Some(Color::red(Scale::S500)));
+        let (_, _, c) =
+            to_shadow_with_color(Shadow::Sm, ShadowColor::Explicit(Color::red(Scale::S500)));
         assert!(c.red() > c.green());
     }
 
