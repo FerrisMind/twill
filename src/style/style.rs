@@ -2963,8 +2963,8 @@ mod tests {
     use super::*;
     use crate::tokens::{
         AnimationToken, BorderColor, BorderColorVar, ColorValueToken, Easing, LetterSpacingVar,
-        LineHeightVar, OutlineColor, Perspective, RingColor, RingColorVar, Scale, ShadowColorToken,
-        TextColor, TransitionDuration,
+        LineHeightVar, OutlineColor, Perspective, RingColor, RingColorVar, Scale, SemanticColor,
+        ShadowColorToken, TextColor, TransitionDuration,
     };
 
     #[test]
@@ -3731,6 +3731,32 @@ mod tests {
         assert_eq!(style.text_color_value(), None);
         assert_eq!(style.border_color_value(), None);
         assert_eq!(style.shadow_color_value(), None);
+    }
+
+    #[test]
+    fn test_semantic_color_tokens_are_preserved_in_style() {
+        let background = BackgroundColor::semantic(SemanticColor::Background);
+        let text = TextColor::semantic(SemanticColor::Foreground);
+        let border = BorderColor::semantic(SemanticColor::Border);
+        let outline = OutlineColor::semantic(SemanticColor::Ring);
+        let ring = RingColor::semantic(SemanticColor::Primary);
+
+        let style = Style::new()
+            .background_token(background)
+            .text_color_token(text)
+            .border_color_token(border)
+            .outline_color_token(outline)
+            .ring_color_token(ring);
+
+        assert_eq!(style.background_color_value(), Some(background));
+        assert_eq!(style.text_color_token_value(), Some(text));
+        assert_eq!(style.border_color_token_value(), Some(border));
+        assert_eq!(style.outline_color_token_value(), Some(outline));
+        assert_eq!(style.ring_color_token_value(), Some(ring));
+        assert_eq!(style.text_color_value(), None);
+        assert_eq!(style.border_color_value(), None);
+        assert_eq!(style.outline_color_value(), None);
+        assert_eq!(style.ring_color_value(), None);
     }
 
     #[test]

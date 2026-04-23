@@ -1,9 +1,11 @@
 use crate::backends::ShadowColor;
 use crate::tokens::{
-    AspectRatio, Blur, BorderRadius, Color, ColorValue, Cursor, FontSize, FontWeight,
+    AspectRatio, Blur, BorderRadius, Color, ColorValue, Cursor, Easing, FontSize, FontWeight,
     SemanticColor, Shadow, Spacing, TextAlign, ThemeVariant, TransitionDuration,
 };
 use crate::utilities::ObjectFit;
+
+use super::widgets::SemanticThemeSource;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TextDirection {
@@ -74,12 +76,24 @@ pub fn to_text_alignment_with_direction(
     super::widgets::to_text_alignment_with_direction(align, direction)
 }
 
+pub fn to_semantic_color_with_theme<S: SemanticThemeSource + ?Sized>(
+    semantic: SemanticColor,
+    semantic_theme: &S,
+    variant: ThemeVariant,
+) -> iced::Color {
+    super::widgets::to_semantic_color_with_theme(semantic, semantic_theme, variant)
+}
+
 pub fn to_semantic_color(semantic: SemanticColor, variant: ThemeVariant) -> iced::Color {
     super::widgets::to_semantic_color(semantic, variant)
 }
 
 pub fn to_duration(duration: TransitionDuration) -> std::time::Duration {
     super::widgets::to_duration(duration)
+}
+
+pub fn to_easing(easing: Easing) -> iced::animation::Easing {
+    super::widgets::to_easing(easing)
 }
 
 pub fn to_interaction(cursor: Cursor) -> iced::mouse::Interaction {

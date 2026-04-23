@@ -1,10 +1,11 @@
 use crate::style::Style;
+use crate::tokens::{SemanticThemeVars, ThemeVariant};
 use iced::{Length, Point, Rectangle, Size, Vector, mouse};
 
-use super::container::styled_container_with_custom_properties;
+use super::container::styled_container_with_custom_properties_and_semantic_theme;
 use super::conversions::{
-    MarginOffsets, ResolvedHeight, ResolvedMarginValue, ResolvedWidth, resolve_height,
-    resolve_width, to_aspect_ratio, to_style_margin,
+    MarginOffsets, ResolvedHeight, ResolvedMarginValue, ResolvedWidth, SemanticThemeSource,
+    resolve_height, resolve_width, to_aspect_ratio, to_style_margin,
 };
 use super::ratio_boxes::{AspectRatioBox, HeightRatioBox, WidthRatioBox};
 use iced::advanced::layout::{Layout as AdvancedLayout, Limits, Node};
@@ -280,7 +281,32 @@ pub fn apply_layout<'a, Message: Clone + 'a>(
     content: iced::Element<'a, Message>,
     style: &Style,
 ) -> iced::Element<'a, Message> {
-    apply_layout_with_custom_properties(content, style, &[])
+    apply_layout_with_custom_properties_and_semantic_theme(
+        content,
+        style,
+        &[],
+        SemanticThemeVars::shadcn_neutral(),
+        ThemeVariant::Light,
+    )
+}
+
+pub fn apply_layout_with_semantic_theme<
+    'a,
+    Message: Clone + 'a,
+    S: SemanticThemeSource + ?Sized,
+>(
+    content: iced::Element<'a, Message>,
+    style: &Style,
+    semantic_theme: &S,
+    variant: ThemeVariant,
+) -> iced::Element<'a, Message> {
+    apply_layout_with_custom_properties_and_semantic_theme(
+        content,
+        style,
+        &[],
+        semantic_theme,
+        variant,
+    )
 }
 
 /// Apply high-level layout wrappers with explicit custom-property values.
@@ -289,11 +315,37 @@ pub fn apply_layout_with_custom_properties<'a, Message: Clone + 'a>(
     style: &Style,
     custom_properties: &[(&str, f32)],
 ) -> iced::Element<'a, Message> {
+    apply_layout_with_custom_properties_and_semantic_theme(
+        content,
+        style,
+        custom_properties,
+        SemanticThemeVars::shadcn_neutral(),
+        ThemeVariant::Light,
+    )
+}
+
+fn apply_layout_with_custom_properties_and_semantic_theme<
+    'a,
+    Message: Clone + 'a,
+    S: SemanticThemeSource + ?Sized,
+>(
+    content: iced::Element<'a, Message>,
+    style: &Style,
+    custom_properties: &[(&str, f32)],
+    semantic_theme: &S,
+    variant: ThemeVariant,
+) -> iced::Element<'a, Message> {
     if matches!(style.display, Some(crate::utilities::Display::Hidden)) {
         return iced::widget::Space::new().into();
     }
 
-    let mut container = styled_container_with_custom_properties(content, style, custom_properties);
+    let mut container = styled_container_with_custom_properties_and_semantic_theme(
+        content,
+        style,
+        custom_properties,
+        semantic_theme,
+        variant,
+    );
     let mut width_ratio = None;
     let mut height_ratio = None;
 

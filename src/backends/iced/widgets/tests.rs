@@ -68,6 +68,61 @@ fn test_font_weight_mapping_variants() {
 }
 
 #[test]
+fn test_easing_mapping_variants() {
+    assert_eq!(to_easing(Easing::Linear), iced::animation::Easing::Linear);
+    assert_eq!(to_easing(Easing::In), iced::animation::Easing::EaseIn);
+    assert_eq!(to_easing(Easing::Out), iced::animation::Easing::EaseOut);
+    assert_eq!(to_easing(Easing::InOut), iced::animation::Easing::EaseInOut);
+}
+
+#[test]
+fn test_semantic_tokens_resolve_with_static_theme() {
+    let theme = SemanticThemeVars::shadcn_neutral();
+    let text = resolve_text_color_token_with_semantic_theme(
+        TextColor::semantic(SemanticColor::Foreground),
+        theme,
+        ThemeVariant::Dark,
+    );
+    let border = resolve_border_color_token_with_semantic_theme(
+        BorderColor::semantic(SemanticColor::Border),
+        theme,
+        ThemeVariant::Dark,
+    );
+    let background = resolve_background_color_token_with_semantic_theme(
+        BackgroundColor::semantic(SemanticColor::Background),
+        text,
+        theme,
+        ThemeVariant::Dark,
+    );
+
+    assert_eq!(
+        text,
+        theme.resolve_value(SemanticColor::Foreground, ThemeVariant::Dark)
+    );
+    assert_eq!(
+        border,
+        theme.resolve_value(SemanticColor::Border, ThemeVariant::Dark)
+    );
+    assert_eq!(
+        background,
+        theme.resolve_value(SemanticColor::Background, ThemeVariant::Dark)
+    );
+}
+
+#[test]
+fn test_semantic_color_resolution_with_dynamic_theme() {
+    let theme = DynamicSemanticTheme::from_brand_oklch(0.628, 0.258, 29.234);
+    let expected = theme
+        .resolve(SemanticColor::Primary, ThemeVariant::Dark)
+        .expect("dynamic semantic theme should resolve primary");
+
+    assert_eq!(
+        to_semantic_color_with_theme(SemanticColor::Primary, &theme, ThemeVariant::Dark),
+        to_color_value(expected)
+    );
+}
+
+#[test]
 fn test_text_alignment_mapping_variants() {
     assert_eq!(
         to_text_alignment(TextAlign::Left),

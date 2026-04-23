@@ -216,6 +216,9 @@ fn resolve_text_color_token(token: TextColor) -> Option<ColorValue> {
         TextColor::Current => None,
         TextColor::Transparent => Some(ColorValue::TRANSPARENT),
         TextColor::Palette(color) => Some(color.compute()),
+        TextColor::Semantic(color) => {
+            SemanticThemeVars::shadcn_neutral().resolve_value(color, ThemeVariant::Light)
+        }
         TextColor::CustomProperty(_) => None,
         TextColor::Arbitrary(value) => Some(value.into()),
     }
@@ -227,6 +230,9 @@ fn resolve_border_color_token(token: BorderColor) -> Option<ColorValue> {
         BorderColor::Current => None,
         BorderColor::Transparent => Some(ColorValue::TRANSPARENT),
         BorderColor::Palette(color) => Some(color.compute()),
+        BorderColor::Semantic(color) => {
+            SemanticThemeVars::shadcn_neutral().resolve_value(color, ThemeVariant::Light)
+        }
         BorderColor::CustomProperty(_) => None,
         BorderColor::Arbitrary(value) => Some(value.into()),
     }
@@ -238,6 +244,9 @@ fn resolve_shadow_color_token(token: ShadowColorToken) -> Option<ColorValue> {
         ShadowColorToken::Current => None,
         ShadowColorToken::Transparent => Some(ColorValue::TRANSPARENT),
         ShadowColorToken::Palette(color) => Some(color.compute()),
+        ShadowColorToken::Semantic(color) => {
+            SemanticThemeVars::shadcn_neutral().resolve_value(color, ThemeVariant::Light)
+        }
         ShadowColorToken::CustomProperty(_) => None,
         ShadowColorToken::Arbitrary(value) => Some(value.into()),
     }
@@ -252,6 +261,9 @@ fn resolve_background_color_token(
         BackgroundColor::Current => fallback_text,
         BackgroundColor::Transparent => Some(ColorValue::TRANSPARENT),
         BackgroundColor::Palette(color) => Some(color.compute()),
+        BackgroundColor::Semantic(color) => {
+            SemanticThemeVars::shadcn_neutral().resolve_value(color, ThemeVariant::Light)
+        }
         BackgroundColor::CustomProperty(_) => None,
         BackgroundColor::Arbitrary(value) => Some(value.into()),
     }

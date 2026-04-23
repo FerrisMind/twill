@@ -4,6 +4,7 @@
 
 use std::fmt;
 
+use super::semantic::SemanticColor;
 use crate::traits::ComputeValue;
 
 /// Color scale values (50-950).
@@ -400,6 +401,7 @@ pub enum BackgroundColor {
     Current,
     Transparent,
     Palette(Color),
+    Semantic(SemanticColor),
     CustomProperty(BackgroundColorVar),
     Arbitrary(ColorValueToken),
 }
@@ -421,12 +423,30 @@ impl BackgroundColor {
         Self::Palette(color)
     }
 
+    pub const fn semantic(color: SemanticColor) -> Self {
+        Self::Semantic(color)
+    }
+
     pub const fn custom_property(var: BackgroundColorVar) -> Self {
         Self::CustomProperty(var)
     }
 
     pub const fn arbitrary(value: ColorValueToken) -> Self {
         Self::Arbitrary(value)
+    }
+
+    pub const fn palette_value(self) -> Option<Color> {
+        match self {
+            Self::Palette(color) => Some(color),
+            _ => None,
+        }
+    }
+
+    pub const fn semantic_value(self) -> Option<SemanticColor> {
+        match self {
+            Self::Semantic(color) => Some(color),
+            _ => None,
+        }
     }
 }
 
@@ -449,6 +469,7 @@ macro_rules! define_palette_color_token {
             Current,
             Transparent,
             Palette(Color),
+            Semantic(SemanticColor),
             CustomProperty($var),
             Arbitrary(ColorValueToken),
         }
@@ -470,6 +491,10 @@ macro_rules! define_palette_color_token {
                 Self::Palette(color)
             }
 
+            pub const fn semantic(color: SemanticColor) -> Self {
+                Self::Semantic(color)
+            }
+
             pub const fn custom_property(var: $var) -> Self {
                 Self::CustomProperty(var)
             }
@@ -481,6 +506,13 @@ macro_rules! define_palette_color_token {
             pub const fn palette_value(self) -> Option<Color> {
                 match self {
                     Self::Palette(color) => Some(color),
+                    _ => None,
+                }
+            }
+
+            pub const fn semantic_value(self) -> Option<SemanticColor> {
+                match self {
+                    Self::Semantic(color) => Some(color),
                     _ => None,
                 }
             }

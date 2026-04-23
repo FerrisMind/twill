@@ -1,8 +1,9 @@
 use crate::backends::ShadowColor;
 use crate::tokens::{
     AspectRatio, BackgroundColor, Blur, BorderColor, BorderRadius, Color, ColorValue, Cursor,
-    FontSize, FontWeight, Percentage, SemanticColor, SemanticThemeVars, Shadow, ShadowColorToken,
-    Spacing, TextAlign, TextColor, ThemeVariant, TransitionDuration,
+    DynamicSemanticTheme, Easing, FontSize, FontWeight, Percentage, SemanticColor,
+    SemanticThemeVars, Shadow, ShadowColorToken, Spacing, TextAlign, TextColor, ThemeVariant,
+    TransitionDuration,
 };
 use crate::traits::ComputeValue;
 use crate::utilities::{MarginValue, ObjectFit, PaddingValue};
@@ -10,6 +11,22 @@ use iced::{ContentFit, Length};
 
 use super::common::{apply_opacity_to_color, container_to_px, spacing_to_px};
 pub use crate::backends::iced::convert::TextDirection;
+
+pub trait SemanticThemeSource {
+    fn resolve_value(&self, semantic: SemanticColor, variant: ThemeVariant) -> Option<ColorValue>;
+}
+
+impl SemanticThemeSource for SemanticThemeVars {
+    fn resolve_value(&self, semantic: SemanticColor, variant: ThemeVariant) -> Option<ColorValue> {
+        SemanticThemeVars::resolve_value(self, semantic, variant)
+    }
+}
+
+impl SemanticThemeSource for DynamicSemanticTheme {
+    fn resolve_value(&self, semantic: SemanticColor, variant: ThemeVariant) -> Option<ColorValue> {
+        DynamicSemanticTheme::resolve(self, semantic, variant)
+    }
+}
 
 pub fn to_color(color: Color) -> iced::Color {
     to_color_value(color.compute())
@@ -26,48 +43,68 @@ pub fn to_color_value(value: crate::tokens::ColorValue) -> iced::Color {
     )
 }
 
-pub(super) fn resolve_text_color_token(token: TextColor) -> Option<ColorValue> {
+pub(crate) fn resolve_text_color_token_with_semantic_theme<S: SemanticThemeSource + ?Sized>(
+    token: TextColor,
+    semantic_theme: &S,
+    variant: ThemeVariant,
+) -> Option<ColorValue> {
     match token {
         TextColor::Inherit => None,
         TextColor::Current => None,
         TextColor::Transparent => Some(ColorValue::TRANSPARENT),
         TextColor::Palette(color) => Some(color.compute()),
+        TextColor::Semantic(color) => semantic_theme.resolve_value(color, variant),
         TextColor::CustomProperty(_) => None,
         TextColor::Arbitrary(value) => Some(value.into()),
     }
 }
 
-pub(super) fn resolve_border_color_token(token: BorderColor) -> Option<ColorValue> {
+pub(crate) fn resolve_border_color_token_with_semantic_theme<S: SemanticThemeSource + ?Sized>(
+    token: BorderColor,
+    semantic_theme: &S,
+    variant: ThemeVariant,
+) -> Option<ColorValue> {
     match token {
         BorderColor::Inherit => None,
         BorderColor::Current => None,
         BorderColor::Transparent => Some(ColorValue::TRANSPARENT),
         BorderColor::Palette(color) => Some(color.compute()),
+        BorderColor::Semantic(color) => semantic_theme.resolve_value(color, variant),
         BorderColor::CustomProperty(_) => None,
         BorderColor::Arbitrary(value) => Some(value.into()),
     }
 }
 
-pub(super) fn resolve_shadow_color_token(token: ShadowColorToken) -> Option<ColorValue> {
+pub(crate) fn resolve_shadow_color_token_with_semantic_theme<S: SemanticThemeSource + ?Sized>(
+    token: ShadowColorToken,
+    semantic_theme: &S,
+    variant: ThemeVariant,
+) -> Option<ColorValue> {
     match token {
         ShadowColorToken::Inherit => None,
         ShadowColorToken::Current => None,
         ShadowColorToken::Transparent => Some(ColorValue::TRANSPARENT),
         ShadowColorToken::Palette(color) => Some(color.compute()),
+        ShadowColorToken::Semantic(color) => semantic_theme.resolve_value(color, variant),
         ShadowColorToken::CustomProperty(_) => None,
         ShadowColorToken::Arbitrary(value) => Some(value.into()),
     }
 }
 
-pub(super) fn resolve_background_color_token(
+pub(crate) fn resolve_background_color_token_with_semantic_theme<
+    S: SemanticThemeSource + ?Sized,
+>(
     token: BackgroundColor,
     fallback_text: Option<ColorValue>,
+    semantic_theme: &S,
+    variant: ThemeVariant,
 ) -> Option<ColorValue> {
     match token {
         BackgroundColor::Inherit => None,
         BackgroundColor::Current => fallback_text,
         BackgroundColor::Transparent => Some(ColorValue::TRANSPARENT),
         BackgroundColor::Palette(color) => Some(color.compute()),
+        BackgroundColor::Semantic(color) => semantic_theme.resolve_value(color, variant),
         BackgroundColor::CustomProperty(_) => None,
         BackgroundColor::Arbitrary(value) => Some(value.into()),
     }
@@ -76,6 +113,16 @@ pub(super) fn resolve_background_color_token(
 /// Convert twill Spacing to iced Padding.
 pub fn to_padding(spacing: Spacing) -> iced::Padding {
     iced::Padding::new(spacing_to_px(spacing))
+}
+
+/// Convert twill easing tokens into iced animation easing curves.
+pub fn to_easing(easing: Easing) -> iced::animation::Easing {
+    match easing {
+        Easing::Linear => iced::animation::Easing::Linear,
+        Easing::In => iced::animation::Easing::EaseIn,
+        Easing::Out => iced::animation::Easing::EaseOut,
+        Easing::InOut => iced::animation::Easing::EaseInOut,
+    }
 }
 
 fn resolve_padding_value_px(value: PaddingValue, custom_properties: &[(&str, f32)]) -> f32 {
@@ -644,12 +691,20 @@ pub fn to_text_alignment_with_direction(
     }
 }
 
-/// Convert twill SemanticColor to iced Color based on the theme variant
-pub fn to_semantic_color(semantic: SemanticColor, variant: ThemeVariant) -> iced::Color {
-    let color = SemanticThemeVars::shadcn_neutral()
+pub fn to_semantic_color_with_theme<S: SemanticThemeSource + ?Sized>(
+    semantic: SemanticColor,
+    semantic_theme: &S,
+    variant: ThemeVariant,
+) -> iced::Color {
+    let color = semantic_theme
         .resolve_value(semantic, variant)
         .unwrap_or_else(|| Color::black().compute());
     to_color_value(color)
+}
+
+/// Convert twill SemanticColor to iced Color based on the default semantic theme.
+pub fn to_semantic_color(semantic: SemanticColor, variant: ThemeVariant) -> iced::Color {
+    to_semantic_color_with_theme(semantic, SemanticThemeVars::shadcn_neutral(), variant)
 }
 
 /// Convert twill TransitionDuration to std::time::Duration for iced

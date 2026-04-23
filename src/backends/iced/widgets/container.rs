@@ -5,18 +5,45 @@ use iced::{Point, Rectangle, Renderer, Size, Theme, border, mouse};
 
 use super::common::{apply_opacity_to_color, apply_opacity_to_color_value, resolved_opacity};
 use super::conversions::{
-    resolve_background_color_token, resolve_border_color_token, resolve_shadow_color_token,
-    resolve_text_color_token, shadow_layers_with_color_value_and_opacity,
+    SemanticThemeSource, resolve_background_color_token_with_semantic_theme,
+    resolve_border_color_token_with_semantic_theme, resolve_shadow_color_token_with_semantic_theme,
+    resolve_text_color_token_with_semantic_theme, shadow_layers_with_color_value_and_opacity,
     shadow_layers_with_opacity, to_border_radius, to_color_value, to_style_padding,
     wrap_with_shadow_layers,
 };
 use crate::backends::ShadowColor;
+use crate::tokens::{SemanticThemeVars, ThemeVariant};
 
 pub fn styled_container<'a, Message: Clone + 'a>(
     content: iced::Element<'a, Message>,
     style: &Style,
 ) -> iced::widget::Container<'a, Message> {
-    styled_container_with_custom_properties(content, style, &[])
+    styled_container_with_custom_properties_and_semantic_theme(
+        content,
+        style,
+        &[],
+        SemanticThemeVars::shadcn_neutral(),
+        ThemeVariant::Light,
+    )
+}
+
+pub fn styled_container_with_semantic_theme<
+    'a,
+    Message: Clone + 'a,
+    S: SemanticThemeSource + ?Sized,
+>(
+    content: iced::Element<'a, Message>,
+    style: &Style,
+    semantic_theme: &S,
+    variant: ThemeVariant,
+) -> iced::widget::Container<'a, Message> {
+    styled_container_with_custom_properties_and_semantic_theme(
+        content,
+        style,
+        &[],
+        semantic_theme,
+        variant,
+    )
 }
 
 /// Create a styled container with twill Style and explicit custom-property values.
@@ -24,6 +51,26 @@ pub fn styled_container_with_custom_properties<'a, Message: Clone + 'a>(
     content: iced::Element<'a, Message>,
     style: &Style,
     custom_properties: &[(&str, f32)],
+) -> iced::widget::Container<'a, Message> {
+    styled_container_with_custom_properties_and_semantic_theme(
+        content,
+        style,
+        custom_properties,
+        SemanticThemeVars::shadcn_neutral(),
+        ThemeVariant::Light,
+    )
+}
+
+pub(super) fn styled_container_with_custom_properties_and_semantic_theme<
+    'a,
+    Message: Clone + 'a,
+    S: SemanticThemeSource + ?Sized,
+>(
+    content: iced::Element<'a, Message>,
+    style: &Style,
+    custom_properties: &[(&str, f32)],
+    semantic_theme: &S,
+    variant: ThemeVariant,
 ) -> iced::widget::Container<'a, Message> {
     let opacity = resolved_opacity(style);
     let padding = style
@@ -33,7 +80,14 @@ pub fn styled_container_with_custom_properties<'a, Message: Clone + 'a>(
     let bg_color = style
         .background_color
         .and_then(|bg| {
-            resolve_background_color_token(bg, style.text_color.and_then(resolve_text_color_token))
+            resolve_background_color_token_with_semantic_theme(
+                bg,
+                style.text_color.and_then(|text| {
+                    resolve_text_color_token_with_semantic_theme(text, semantic_theme, variant)
+                }),
+                semantic_theme,
+                variant,
+            )
         })
         .map(|bg| apply_opacity_to_color_value(bg, opacity))
         .map(to_color_value);
@@ -47,7 +101,9 @@ pub fn styled_container_with_custom_properties<'a, Message: Clone + 'a>(
     let border_radius = style.border_radius.map_or(0.0, to_border_radius);
     let border_color = style
         .border_color
-        .and_then(resolve_border_color_token)
+        .and_then(|color| {
+            resolve_border_color_token_with_semantic_theme(color, semantic_theme, variant)
+        })
         .map(to_color_value)
         .map(|color| apply_opacity_to_color(color, opacity))
         .unwrap_or(iced::Color::TRANSPARENT);
@@ -56,7 +112,9 @@ pub fn styled_container_with_custom_properties<'a, Message: Clone + 'a>(
     let shadow_layers = style
         .box_shadow
         .map(|s| {
-            if let Some(shadow_color) = style.shadow_color.and_then(resolve_shadow_color_token) {
+            if let Some(shadow_color) = style.shadow_color.and_then(|color| {
+                resolve_shadow_color_token_with_semantic_theme(color, semantic_theme, variant)
+            }) {
                 shadow_layers_with_color_value_and_opacity(s, shadow_color, opacity)
             } else {
                 shadow_layers_with_opacity(s, ShadowColor::Default, opacity)

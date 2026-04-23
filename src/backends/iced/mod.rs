@@ -4,24 +4,26 @@ mod convert;
 mod widgets;
 
 use crate::tokens::{
-    AspectRatio, Blur, BorderRadius, Color, ColorValue, Cursor, FontSize, FontWeight, Shadow,
-    Spacing, TextAlign, TransitionDuration,
+    AspectRatio, Blur, BorderRadius, Color, ColorValue, Cursor, Easing, FontSize, FontWeight,
+    Shadow, Spacing, TextAlign, TransitionDuration,
 };
 use crate::utilities::ObjectFit;
 use iced::ContentFit;
 
 pub use convert::{
     TextDirection, resolve_font_size, to_aspect_ratio, to_blur_radius, to_border_radius, to_color,
-    to_color_value, to_content_fit, to_duration, to_font_size, to_font_weight, to_interaction,
-    to_padding, to_semantic_color, to_shadow, to_shadow_layers_with_color, to_shadow_with_color,
-    to_text_alignment, to_text_alignment_with_direction,
+    to_color_value, to_content_fit, to_duration, to_easing, to_font_size, to_font_weight,
+    to_interaction, to_padding, to_semantic_color, to_semantic_color_with_theme, to_shadow,
+    to_shadow_layers_with_color, to_shadow_with_color, to_text_alignment,
+    to_text_alignment_with_direction,
 };
+pub use widgets::SemanticThemeSource;
 pub use widgets::{
     align_items_layout, apply_flex_item, apply_flex_item_with_custom_properties, apply_layout,
-    apply_layout_with_custom_properties, columns_layout, flex_direction_layout, gap_layout,
-    gap_x_layout, gap_y_layout, grid_template_columns_layout,
+    apply_layout_with_custom_properties, apply_layout_with_semantic_theme, columns_layout,
+    flex_direction_layout, gap_layout, gap_x_layout, gap_y_layout, grid_template_columns_layout,
     grid_template_columns_layout_with_context, justify_content_layout, styled_container,
-    styled_container_with_custom_properties,
+    styled_container_with_custom_properties, styled_container_with_semantic_theme,
 };
 
 mod private {
@@ -151,6 +153,15 @@ impl ToIced for TransitionDuration {
 
     fn to_iced(self) -> Self::Output {
         to_duration(self)
+    }
+}
+
+impl private::Sealed for Easing {}
+impl ToIced for Easing {
+    type Output = iced::animation::Easing;
+
+    fn to_iced(self) -> Self::Output {
+        to_easing(self)
     }
 }
 
