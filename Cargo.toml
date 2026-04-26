@@ -29,7 +29,7 @@ strip = true
 [dependencies]
 # Optional UI framework backends
 egui = { version = "0.33", optional = true }
-iced = { version = "0.14", optional = true, features = ["advanced", "image", "tokio", "canvas"] }
+iced = { version = "0.14", optional = true, default-features = false, features = ["advanced", "image", "tokio", "canvas"] }
 palette = { version = "0.7.6", features = ["std"] }
 slint = { version = "1.15", optional = true }
 
