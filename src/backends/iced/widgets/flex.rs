@@ -426,13 +426,13 @@ pub fn apply_flex_item_with_custom_properties<'a, Message: Clone + 'a>(
     } else {
         apply_layout_with_custom_properties(content, style, &[])
     };
-    let Some(flex) = style.flex_item.as_ref() else {
+    let Some(flex) = style.flex_item_value() else {
         return element;
     };
 
     let length = match flex {
         Flex::CustomProperty(name) => {
-            custom_property_length(name, custom_properties).unwrap_or(Length::Shrink)
+            custom_property_length(name.as_str(), custom_properties).unwrap_or(Length::Shrink)
         }
         _ => flex_item_length(flex),
     };
@@ -449,25 +449,35 @@ pub fn apply_flex_item_with_custom_properties<'a, Message: Clone + 'a>(
 }
 
 fn style_uses_numeric_custom_properties(style: &Style) -> bool {
-    let padding_uses_var = style.padding.is_some_and(|padding| {
-        [padding.top, padding.right, padding.bottom, padding.left]
+    let padding_uses_var = style.padding_value().is_some_and(|padding| {
+        [
+            padding.top_side(),
+            padding.right_side(),
+            padding.bottom_side(),
+            padding.left_side(),
+        ]
             .into_iter()
             .flatten()
             .any(|value| matches!(value, PaddingValue::Var(_)))
     });
 
-    let margin_uses_var = style.margin.is_some_and(|margin| {
-        [margin.top, margin.right, margin.bottom, margin.left]
+    let margin_uses_var = style.margin_value().is_some_and(|margin| {
+        [
+            margin.top_side(),
+            margin.right_side(),
+            margin.bottom_side(),
+            margin.left_side(),
+        ]
             .into_iter()
             .flatten()
             .any(|value| matches!(value, MarginValue::Var(_)))
     });
 
     let width_uses_var = style
-        .width
+        .width_value()
         .is_some_and(|width| matches!(width.size(), Some(crate::utilities::Size::Var(_))));
     let height_uses_var = style
-        .height
+        .height_value()
         .is_some_and(|height| matches!(height.size(), Some(crate::utilities::Size::HeightVar(_))));
 
     padding_uses_var || margin_uses_var || width_uses_var || height_uses_var

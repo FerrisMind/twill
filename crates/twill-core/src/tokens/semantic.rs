@@ -104,7 +104,7 @@ impl ThemeVariant {
 /// Semantic token set with light and dark variable definitions.
 ///
 /// ```rust
-/// use twill::prelude::*;
+/// use twill_core::prelude::*;
 ///
 /// let theme = SemanticThemeVars::shadcn_neutral();
 /// let light_bg = theme.resolve_light(SemanticColor::Background);
@@ -364,7 +364,7 @@ impl SemanticThemeVars {
 /// Dynamic semantic theme generated from an arbitrary brand color using OKLCH.
 ///
 /// ```rust
-/// use twill::prelude::*;
+/// use twill_core::prelude::*;
 ///
 /// let theme = DynamicSemanticTheme::from_brand_oklch(0.628, 0.258, 29.234);
 ///

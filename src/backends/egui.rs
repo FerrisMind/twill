@@ -157,13 +157,13 @@ fn apply_opacity_to_color32(color: egui::Color32, opacity: f32) -> egui::Color32
 
 fn apply_opacity_to_color_value(mut color: ColorValue, opacity: f32) -> ColorValue {
     if opacity.is_finite() {
-        color.a *= opacity.clamp(0.0, 1.0);
+        color = color.with_alpha(color.alpha() * opacity.clamp(0.0, 1.0));
     }
     color
 }
 
 fn resolved_opacity(style: &Style) -> f32 {
-    style.opacity.unwrap_or(1.0).clamp(0.0, 1.0)
+    style.opacity_value().unwrap_or(1.0).clamp(0.0, 1.0)
 }
 
 fn spacing_to_px(spacing: Spacing) -> f32 {
@@ -202,11 +202,12 @@ pub fn to_color32(color: Color) -> egui::Color32 {
 /// Convert twill ColorValue to egui Color32.
 pub fn to_color32_value(value: crate::tokens::ColorValue) -> egui::Color32 {
     let (r, g, b) = value.to_rgb8();
+    let alpha = value.alpha();
     egui::Color32::from_rgba_premultiplied(
-        (r as f32 * value.a) as u8,
-        (g as f32 * value.a) as u8,
-        (b as f32 * value.a) as u8,
-        (255.0 * value.a) as u8,
+        (r as f32 * alpha) as u8,
+        (g as f32 * alpha) as u8,
+        (b as f32 * alpha) as u8,
+        (255.0 * alpha) as u8,
     )
 }
 
@@ -326,7 +327,7 @@ pub fn to_shadow_with_color(
         ShadowColor::Default => Color::black().compute(),
         ShadowColor::Explicit(color) => color.compute(),
     };
-    value.a *= alpha;
+    value = value.with_alpha(value.alpha() * alpha);
 
     Some(egui::epaint::Shadow {
         offset,
@@ -414,12 +415,12 @@ pub fn to_frame(style: &Style) -> egui::Frame {
     let opacity = resolved_opacity(style);
 
     // Padding
-    if let Some(p) = &style.padding {
+    if let Some(p) = style.padding_value() {
         let clamp_i8 = |v: f32| v.clamp(i8::MIN as f32, i8::MAX as f32) as i8;
-        let top = clamp_i8(p.top.map(padding_value_to_px).unwrap_or(0.0));
-        let right = clamp_i8(p.right.map(padding_value_to_px).unwrap_or(0.0));
-        let bottom = clamp_i8(p.bottom.map(padding_value_to_px).unwrap_or(0.0));
-        let left = clamp_i8(p.left.map(padding_value_to_px).unwrap_or(0.0));
+        let top = clamp_i8(p.top_side().map(padding_value_to_px).unwrap_or(0.0));
+        let right = clamp_i8(p.right_side().map(padding_value_to_px).unwrap_or(0.0));
+        let bottom = clamp_i8(p.bottom_side().map(padding_value_to_px).unwrap_or(0.0));
+        let left = clamp_i8(p.left_side().map(padding_value_to_px).unwrap_or(0.0));
         frame = frame.inner_margin(egui::Margin {
             top,
             left,
@@ -429,19 +430,19 @@ pub fn to_frame(style: &Style) -> egui::Frame {
     }
 
     // Background
-    if let Some(bg) = style.background_color.and_then(|bg| {
-        resolve_background_color_token(bg, style.text_color.and_then(resolve_text_color_token))
+    if let Some(bg) = style.background_color_value().and_then(|bg| {
+        resolve_background_color_token(bg, style.text_color_token_value().and_then(resolve_text_color_token))
     }) {
         frame = frame.fill(to_color32_value(apply_opacity_to_color_value(bg, opacity)));
     }
 
     // Border radius
-    if let Some(r) = &style.border_radius {
-        frame = frame.corner_radius(to_corner_radius(*r));
+    if let Some(r) = style.border_radius_value() {
+        frame = frame.corner_radius(to_corner_radius(r));
     }
 
     // Border
-    if let (Some(width), Some(color)) = (&style.border_width, &style.border_color) {
+    if let (Some(width), Some(color)) = (style.border_width_value(), style.border_color_token_value()) {
         let w = match width {
             crate::tokens::BorderWidth::S0 => 0.0,
             crate::tokens::BorderWidth::S1 => 1.0,
@@ -449,7 +450,7 @@ pub fn to_frame(style: &Style) -> egui::Frame {
             crate::tokens::BorderWidth::S4 => 4.0,
             crate::tokens::BorderWidth::S8 => 8.0,
         };
-        if let Some(color) = resolve_border_color_token(*color) {
+        if let Some(color) = resolve_border_color_token(color) {
             frame = frame.stroke(egui::Stroke::new(
                 w,
                 apply_opacity_to_color32(to_color32_value(color), opacity),
@@ -458,13 +459,13 @@ pub fn to_frame(style: &Style) -> egui::Frame {
     }
 
     // Shadow
-    if let Some(s) = &style.box_shadow {
+    if let Some(s) = style.box_shadow_value() {
         let shadow_color = style
-            .shadow_color
+            .shadow_color_token_value()
             .and_then(resolve_shadow_color_token)
             .map(to_color32_value)
             .unwrap_or_else(|| to_color32(Color::black()));
-        if let Some(mut egui_shadow) = to_shadow(*s) {
+        if let Some(mut egui_shadow) = to_shadow(s) {
             egui_shadow.color = apply_opacity_to_color32(shadow_color, opacity);
             frame = frame.shadow(egui_shadow);
         }

@@ -39,7 +39,7 @@ pub fn to_color_value(value: crate::tokens::ColorValue) -> iced::Color {
         r as f32 / 255.0,
         g as f32 / 255.0,
         b as f32 / 255.0,
-        value.a,
+        value.alpha(),
     )
 }
 
@@ -156,19 +156,19 @@ pub(crate) fn to_style_padding(
 ) -> iced::Padding {
     iced::Padding {
         top: padding
-            .top
+            .top_side()
             .map(|value| resolve_padding_value_px(value, custom_properties))
             .unwrap_or(0.0),
         right: padding
-            .right
+            .right_side()
             .map(|value| resolve_padding_value_px(value, custom_properties))
             .unwrap_or(0.0),
         bottom: padding
-            .bottom
+            .bottom_side()
             .map(|value| resolve_padding_value_px(value, custom_properties))
             .unwrap_or(0.0),
         left: padding
-            .left
+            .left_side()
             .map(|value| resolve_padding_value_px(value, custom_properties))
             .unwrap_or(0.0),
     }
@@ -243,16 +243,16 @@ pub(super) fn to_style_margin(
 ) -> ResolvedMargin {
     ResolvedMargin {
         top: margin
-            .top
+            .top_side()
             .map(|value| resolve_margin_value_px(value, custom_properties)),
         right: margin
-            .right
+            .right_side()
             .map(|value| resolve_margin_value_px(value, custom_properties)),
         bottom: margin
-            .bottom
+            .bottom_side()
             .map(|value| resolve_margin_value_px(value, custom_properties)),
         left: margin
-            .left
+            .left_side()
             .map(|value| resolve_margin_value_px(value, custom_properties)),
     }
 }

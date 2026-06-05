@@ -17,13 +17,13 @@ pub fn columns_layout<'a, Message: Clone + 'a>(
     items: Vec<iced::Element<'a, Message>>,
     style: &Style,
 ) -> iced::Element<'a, Message> {
-    let gap = style.column_gap.map_or(0.0, spacing_to_px);
+    let gap = style.column_gap_value().map_or(0.0, spacing_to_px);
     let max_columns = style
-        .columns_max_count
+        .columns_max_count_value()
         .map(|max| usize::from(max.get()))
         .unwrap_or(DEFAULT_MAX_COLUMNS);
 
-    match style.columns {
+    match style.columns_value() {
         Some(columns) => ColumnsFlow::with_elements(items, columns)
             .gap(gap)
             .max_columns(max_columns)

@@ -335,7 +335,7 @@ fn apply_layout_with_custom_properties_and_semantic_theme<
     semantic_theme: &S,
     variant: ThemeVariant,
 ) -> iced::Element<'a, Message> {
-    if matches!(style.display, Some(crate::utilities::Display::Hidden)) {
+    if matches!(style.display_mode(), Some(crate::utilities::Display::Hidden)) {
         return iced::widget::Space::new().into();
     }
 
@@ -350,7 +350,7 @@ fn apply_layout_with_custom_properties_and_semantic_theme<
     let mut height_ratio = None;
 
     if let Some(width) = style
-        .width
+        .width_value()
         .and_then(|width| resolve_width(width, custom_properties))
     {
         match width {
@@ -365,7 +365,7 @@ fn apply_layout_with_custom_properties_and_semantic_theme<
     }
 
     if let Some(height) = style
-        .height
+        .height_value()
         .and_then(|height| resolve_height(height, custom_properties))
     {
         match height {
@@ -379,8 +379,8 @@ fn apply_layout_with_custom_properties_and_semantic_theme<
         }
     }
 
-    if let Some(constraints) = style.constraints {
-        match constraints.max_width {
+    if let Some(constraints) = style.constraints_value() {
+        match constraints.max_width_value() {
             Some(crate::utilities::Size::Spacing(ref s)) => {
                 if let Some(px) = s.to_px() {
                     container = container.max_width(px as f32);
@@ -393,7 +393,7 @@ fn apply_layout_with_custom_properties_and_semantic_theme<
             _ => {}
         }
 
-        match constraints.max_height {
+        match constraints.max_height_value() {
             Some(crate::utilities::Size::Spacing(ref s)) => {
                 if let Some(px) = s.to_px() {
                     container = container.max_height(px as f32);
@@ -406,12 +406,12 @@ fn apply_layout_with_custom_properties_and_semantic_theme<
         }
     }
 
-    if matches!(style.overflow, Some(crate::utilities::Overflow::Hidden)) {
+    if matches!(style.overflow_value(), Some(crate::utilities::Overflow::Hidden)) {
         container = container.clip(true);
     }
 
     let mut element: iced::Element<'a, Message> = if matches!(
-        style.overflow,
+        style.overflow_value(),
         Some(crate::utilities::Overflow::Auto) | Some(crate::utilities::Overflow::Scroll)
     ) {
         iced::widget::scrollable(container).into()
@@ -427,13 +427,13 @@ fn apply_layout_with_custom_properties_and_semantic_theme<
         element = HeightRatioBox::new(element, ratio).into();
     }
 
-    if let Some(ratio) = style.aspect_ratio.and_then(to_aspect_ratio) {
+    if let Some(ratio) = style.aspect_ratio_value().and_then(to_aspect_ratio) {
         element = AspectRatioBox::new(element, ratio)
             .width(Length::Fill)
             .into();
     }
 
-    if let Some(margin) = style.margin {
+    if let Some(margin) = style.margin_value().copied() {
         element = apply_margin(element, margin, custom_properties);
     }
 

@@ -2,9 +2,14 @@
 
 `twill` keeps its public API centered on style primitives and backend adapters.
 
+If you only need the backend-agnostic style engine, depend on `twill-core` directly. The
+top-level `twill` crate is now a facade that re-exports the same core modules and optionally
+adds GUI adapters.
+
 ## Core entry points
 
 - `Style`
+- `twill-core`
 - `twill::prelude::core::*`
 - `twill::prelude::*`
 - `Merge`
@@ -47,7 +52,6 @@ use twill::prelude::core::*;
 let card = Style::new()
     .padding(Padding::all(Spacing::S4))
     .background_color(Color::slate(Scale::S50))
-    .text_color_arbitrary(ColorValueToken::from_rgb8(15, 23, 42))
     .rounded(BorderRadius::Lg)
     .hover(|style| style.shadow(Shadow::Md))
     .at_lg(|style| style.padding(Padding::all(Spacing::S6)));

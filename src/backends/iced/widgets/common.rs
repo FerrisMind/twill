@@ -12,13 +12,13 @@ pub(super) fn apply_opacity_to_color(mut color: iced::Color, opacity: f32) -> ic
 
 pub(super) fn apply_opacity_to_color_value(mut color: ColorValue, opacity: f32) -> ColorValue {
     if opacity.is_finite() {
-        color.a *= opacity.clamp(0.0, 1.0);
+        color = color.with_alpha(color.alpha() * opacity.clamp(0.0, 1.0));
     }
     color
 }
 
 pub(super) fn resolved_opacity(style: &Style) -> f32 {
-    style.opacity.unwrap_or(1.0).clamp(0.0, 1.0)
+    style.opacity_value().unwrap_or(1.0).clamp(0.0, 1.0)
 }
 
 pub(super) fn spacing_to_px(spacing: Spacing) -> f32 {

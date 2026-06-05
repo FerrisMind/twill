@@ -74,15 +74,16 @@ pub(super) fn styled_container_with_custom_properties_and_semantic_theme<
 ) -> iced::widget::Container<'a, Message> {
     let opacity = resolved_opacity(style);
     let padding = style
-        .padding
+        .padding_value()
+        .copied()
         .map(|padding| to_style_padding(padding, custom_properties));
 
     let bg_color = style
-        .background_color
+        .background_color_value()
         .and_then(|bg| {
             resolve_background_color_token_with_semantic_theme(
                 bg,
-                style.text_color.and_then(|text| {
+                style.text_color_token_value().and_then(|text| {
                     resolve_text_color_token_with_semantic_theme(text, semantic_theme, variant)
                 }),
                 semantic_theme,
@@ -91,28 +92,28 @@ pub(super) fn styled_container_with_custom_properties_and_semantic_theme<
         })
         .map(|bg| apply_opacity_to_color_value(bg, opacity))
         .map(to_color_value);
-    let base_border_width: f32 = style.border_width.map_or(0.0, |w| match w {
+    let base_border_width: f32 = style.border_width_value().map_or(0.0, |w| match w {
         crate::tokens::BorderWidth::S0 => 0.0,
         crate::tokens::BorderWidth::S1 => 1.0,
         crate::tokens::BorderWidth::S2 => 2.0,
         crate::tokens::BorderWidth::S4 => 4.0,
         crate::tokens::BorderWidth::S8 => 8.0,
     });
-    let border_radius = style.border_radius.map_or(0.0, to_border_radius);
+    let border_radius = style.border_radius_value().map_or(0.0, to_border_radius);
     let border_color = style
-        .border_color
+        .border_color_token_value()
         .and_then(|color| {
             resolve_border_color_token_with_semantic_theme(color, semantic_theme, variant)
         })
         .map(to_color_value)
         .map(|color| apply_opacity_to_color(color, opacity))
         .unwrap_or(iced::Color::TRANSPARENT);
-    let border_style = style.border_style.unwrap_or(BorderStyle::Solid);
+    let border_style = style.border_style_value().unwrap_or(BorderStyle::Solid);
     let border_width = base_border_width;
     let shadow_layers = style
-        .box_shadow
+        .box_shadow_value()
         .map(|s| {
-            if let Some(shadow_color) = style.shadow_color.and_then(|color| {
+            if let Some(shadow_color) = style.shadow_color_token_value().and_then(|color| {
                 resolve_shadow_color_token_with_semantic_theme(color, semantic_theme, variant)
             }) {
                 shadow_layers_with_color_value_and_opacity(s, shadow_color, opacity)

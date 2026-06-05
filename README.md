@@ -29,12 +29,20 @@ Twill is a backend-agnostic style system for Rust UI code. It provides:
 
 Twill does **not** ship UI components such as `Button`, `Card`, or `Dialog`, and it does **not** expose a CSS serialization layer.
 
+The ecosystem now has two entry points:
+
+- `twill-core` for libraries and applications that only need the backend-agnostic style engine;
+- `twill` as the facade crate that re-exports `twill-core` and optionally adds GUI adapters.
+
 Examples and cookbook pages in `main` target the `0.3.x` API only. Legacy demos built around component APIs or CSS serialization belong to the `0.2.x` release line, not this branch.
 
 ## Installation
 
 ```toml
 [dependencies]
+twill-core = "0.3"
+
+# or use the facade crate
 twill = "0.3"
 
 # Optional backend adapters
@@ -42,6 +50,16 @@ twill = { version = "0.3", features = ["egui"] }
 twill = { version = "0.3", features = ["iced"] }
 twill = { version = "0.3", features = ["slint"] }
 ```
+
+MSRV: Rust `1.93`.
+
+Backend notes:
+
+- `twill-core` is synchronous and backend-agnostic.
+- `twill` re-exports the full core API and only pulls GUI dependencies when you enable a backend feature.
+- `egui` adds conversion helpers for egui types only.
+- `iced` adds the Iced adapter and the Unix windowing/runtime feature set used by this crate configuration.
+- `slint` adds Slint conversion helpers only when requested.
 
 ## Quick Start
 
@@ -58,6 +76,9 @@ let style = Style::new()
     .data_attr(DataState::Open, |style| style.shadow(Shadow::Lg))
     .at_md(|style| style.padding(Padding::all(Spacing::S6)));
 ```
+
+If you prefer the old wide import surface or need advanced escape hatches, `twill::prelude::*`
+remains available as the power-user path.
 
 Typed escape hatches stay in the style layer:
 
@@ -79,6 +100,7 @@ let style = Style::new()
 ## Core API
 
 - `Style` is the central style composition type.
+- `twill-core` is the lightest dependency when you do not need backend adapters.
 - `twill::prelude::core::*` is the recommended starter import; `twill::prelude::*` remains the full power-user import.
 - `SemanticThemeVars` and `DynamicSemanticTheme` provide semantic alias mapping inspired by shadcn theme variables.
 - `twill::backends::{egui, iced, slint}` expose typed conversion helpers for each supported runtime.

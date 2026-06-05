@@ -1,0 +1,19 @@
+[package]
+name = "twill-core"
+version = "0.3.0"
+edition = "2024"
+rust-version = "1.93"
+description = "Backend-agnostic style engine for the Twill Rust styling ecosystem"
+license = "MIT"
+authors = ["FerrisMind"]
+repository = "https://github.com/FerrisMind/twill"
+documentation = "https://docs.rs/twill-core"
+readme = "../../README.md"
+keywords = ["styling", "tailwind", "gui", "design-tokens", "rust"]
+categories = ["gui", "rendering"]
+
+[dependencies]
+palette = { version = "0.7.6", features = ["std"] }
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "docsrs"]

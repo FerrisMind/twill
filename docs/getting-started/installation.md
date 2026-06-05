@@ -1,7 +1,16 @@
 # Installation
 
 ## Minimum setup
-Add `twill` to your `Cargo.toml`:
+Choose the smallest crate that fits your use case.
+
+Backend-agnostic core only:
+
+```toml
+[dependencies]
+twill-core = "0.3"
+```
+
+Facade crate with the same core API:
 
 ```toml
 [dependencies]
@@ -31,7 +40,8 @@ twill = { version = "0.3", features = ["egui", "iced", "slint"] }
 
 ## Feature notes
 
-- Base `twill` stays backend-agnostic and does not require a GUI runtime.
+- `twill-core` stays backend-agnostic and does not require a GUI runtime.
+- Base `twill` simply re-exports `twill-core`; it does not require a GUI runtime until you enable a backend feature.
 - `egui` enables egui conversion helpers only.
 - `iced` enables the Iced adapter and the Linux windowing/runtime feature set used by this crate configuration.
 - `slint` enables Slint conversion helpers only.

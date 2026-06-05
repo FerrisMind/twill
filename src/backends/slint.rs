@@ -226,13 +226,13 @@ pub fn to_shadow_with_color(shadow: Shadow, color: ShadowColor) -> (f32, f32, sl
         ShadowColor::Explicit(color) => color,
     }
     .compute();
-    value.a *= match shadow {
+    value = value.with_alpha(value.alpha() * match shadow {
         Shadow::None => 0.0,
         Shadow::Xs2 | Shadow::Xs => 0.05,
         Shadow::Sm | Shadow::Md => 0.1,
         Shadow::Lg | Shadow::Xl => 0.26,
         Shadow::S2xl => 0.63,
-    };
+    });
     (offset, blur, to_slint_color_value(value))
 }
 
