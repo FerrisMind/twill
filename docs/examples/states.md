@@ -1,12 +1,12 @@
 # States Example
 
-This example isolates state and attribute layers such as `hover`, `focus_visible`, `disabled`, `data_state`, and `aria_state`.
+This example isolates state and attribute layers such as `hover`, `focus_visible`, `disabled`, `data_attr`, and `aria_attr`.
 
 - File: `examples/03_states.rs`
 - Run:
 
-```powershell
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" run --example states
+```bash
+cargo run --example states
 ```
 
 - Expected output: a terminal summary of the nested state styles stored on the composed `Style`.

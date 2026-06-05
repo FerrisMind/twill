@@ -5,8 +5,8 @@ This example shows the lowest layer of the API: typed tokens for color, spacing,
 - File: `examples/01_tokens.rs`
 - Run:
 
-```powershell
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" run --example tokens
+```bash
+cargo run --example tokens
 ```
 
 - Expected output: a small terminal dump of palette values, spacing in pixels, representative typography/shadow tokens, and typed custom token wrappers.
