@@ -18,7 +18,7 @@ fn main() {
     let semantic = iced::to_semantic_color(SemanticColor::Primary, ThemeVariant::Dark);
     let cursor = Cursor::Pointer.to_iced();
     let shadow = interactive_style()
-        .data_state_style("state=open")
+        .data_attr_style(DataState::Open)
         .and_then(Style::box_shadow_value)
         .map(|value| iced::to_shadow_with_color(value, twill::backends::ShadowColor::Default));
 

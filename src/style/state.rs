@@ -1,18 +1,22 @@
-use std::{
-    collections::BTreeMap,
-    fmt::{self, Display, Formatter},
-};
+use std::{borrow::Cow, collections::BTreeMap, fmt};
 
 use crate::style::Style;
 use crate::traits::Merge;
 
-/// Common `data-state=*` values used by Rust UI libraries.
+/// Common values for `data-state=<value>` selectors.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[non_exhaustive]
 pub enum DataState {
     Open,
     Closed,
     Checked,
+    Unchecked,
     Selected,
+    Unselected,
+    Active,
+    Inactive,
+    On,
+    Off,
     Custom(String),
 }
 
@@ -22,149 +26,140 @@ impl DataState {
         Self::Custom(value.into())
     }
 
-    /// Return the raw state value used in `data-state=<value>`.
     pub fn as_str(&self) -> &str {
         match self {
             Self::Open => "open",
             Self::Closed => "closed",
             Self::Checked => "checked",
+            Self::Unchecked => "unchecked",
             Self::Selected => "selected",
+            Self::Unselected => "unselected",
+            Self::Active => "active",
+            Self::Inactive => "inactive",
+            Self::On => "on",
+            Self::Off => "off",
             Self::Custom(value) => value.as_str(),
         }
     }
 }
 
-impl Display for DataState {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+impl fmt::Display for DataState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.as_str())
     }
 }
 
-/// Typed `data-*` selector key stored by [`Style`].
+/// Typed selector for arbitrary `data-*` hooks.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct DataAttr(String);
+pub enum DataAttr {
+    State(DataState),
+    Pair { name: String, value: String },
+    Custom(String),
+}
 
 impl DataAttr {
-    /// Build from a raw key such as `state=open`.
-    pub fn new(name: impl Into<String>) -> Self {
-        Self(name.into())
+    /// Create a typed `data-state=<value>` selector.
+    pub fn state(value: DataState) -> Self {
+        Self::State(value)
     }
 
-    /// Build a `data-state=<value>` selector from a typed state value.
-    pub fn state(state: DataState) -> Self {
-        Self(format!("state={state}"))
+    /// Create a typed `data-<name>=<value>` selector.
+    pub fn pair(name: impl Into<String>, value: impl Into<String>) -> Self {
+        Self::Pair {
+            name: name.into(),
+            value: value.into(),
+        }
     }
 
-    /// Return the raw key used for storage and lookup.
-    pub fn as_str(&self) -> &str {
-        self.0.as_str()
+    /// Create a raw selector suffix such as `side=left`.
+    pub fn custom(selector: impl Into<String>) -> Self {
+        Self::Custom(selector.into())
     }
-}
 
-impl AsRef<str> for DataAttr {
-    fn as_ref(&self) -> &str {
-        self.as_str()
-    }
-}
-
-impl Display for DataAttr {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str(self.as_str())
-    }
-}
-
-impl From<String> for DataAttr {
-    fn from(value: String) -> Self {
-        Self::new(value)
-    }
-}
-
-impl From<&str> for DataAttr {
-    fn from(value: &str) -> Self {
-        Self::new(value)
+    pub fn selector(&self) -> Cow<'_, str> {
+        match self {
+            Self::State(value) => Cow::Owned(format!("state={value}")),
+            Self::Pair { name, value } => Cow::Owned(format!("{name}={value}")),
+            Self::Custom(selector) => Cow::Borrowed(selector.as_str()),
+        }
     }
 }
 
 impl From<DataState> for DataAttr {
     fn from(value: DataState) -> Self {
-        Self::state(value)
+        Self::State(value)
     }
 }
 
-/// Typed `aria-*` selector key stored by [`Style`].
+impl From<&str> for DataAttr {
+    fn from(value: &str) -> Self {
+        Self::custom(value)
+    }
+}
+
+impl From<String> for DataAttr {
+    fn from(value: String) -> Self {
+        Self::custom(value)
+    }
+}
+
+impl fmt::Display for DataAttr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.selector().as_ref())
+    }
+}
+
+/// Typed selector for arbitrary `aria-*` hooks.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct AriaAttr(String);
+#[non_exhaustive]
+pub enum AriaAttr {
+    Selected,
+    Checked,
+    Expanded,
+    Pressed,
+    Disabled,
+    Hidden,
+    Invalid,
+    Current,
+    Custom(String),
+}
 
 impl AriaAttr {
-    /// Build from a raw key such as `selected=true`.
-    pub fn new(name: impl Into<String>) -> Self {
-        Self(name.into())
+    /// Create a custom `aria-*` selector key.
+    pub fn custom(name: impl Into<String>) -> Self {
+        Self::Custom(name.into())
     }
 
-    /// Build an arbitrary boolean ARIA selector such as `expanded=true`.
-    pub fn flag(name: impl AsRef<str>, enabled: bool) -> Self {
-        Self(format!("{}={enabled}", name.as_ref()))
-    }
-
-    pub fn selected(enabled: bool) -> Self {
-        Self::flag("selected", enabled)
-    }
-
-    pub fn checked(enabled: bool) -> Self {
-        Self::flag("checked", enabled)
-    }
-
-    pub fn expanded(enabled: bool) -> Self {
-        Self::flag("expanded", enabled)
-    }
-
-    pub fn disabled(enabled: bool) -> Self {
-        Self::flag("disabled", enabled)
-    }
-
-    pub fn hidden(enabled: bool) -> Self {
-        Self::flag("hidden", enabled)
-    }
-
-    pub fn invalid(enabled: bool) -> Self {
-        Self::flag("invalid", enabled)
-    }
-
-    pub fn pressed(enabled: bool) -> Self {
-        Self::flag("pressed", enabled)
-    }
-
-    pub fn required(enabled: bool) -> Self {
-        Self::flag("required", enabled)
-    }
-
-    /// Return the raw key used for storage and lookup.
     pub fn as_str(&self) -> &str {
-        self.0.as_str()
-    }
-}
-
-impl AsRef<str> for AriaAttr {
-    fn as_ref(&self) -> &str {
-        self.as_str()
-    }
-}
-
-impl Display for AriaAttr {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str(self.as_str())
-    }
-}
-
-impl From<String> for AriaAttr {
-    fn from(value: String) -> Self {
-        Self::new(value)
+        match self {
+            Self::Selected => "selected",
+            Self::Checked => "checked",
+            Self::Expanded => "expanded",
+            Self::Pressed => "pressed",
+            Self::Disabled => "disabled",
+            Self::Hidden => "hidden",
+            Self::Invalid => "invalid",
+            Self::Current => "current",
+            Self::Custom(name) => name.as_str(),
+        }
     }
 }
 
 impl From<&str> for AriaAttr {
     fn from(value: &str) -> Self {
-        Self::new(value)
+        Self::custom(value)
+    }
+}
+
+impl From<String> for AriaAttr {
+    fn from(value: String) -> Self {
+        Self::custom(value)
+    }
+}
+
+impl fmt::Display for AriaAttr {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
     }
 }
 
@@ -237,12 +232,22 @@ impl StateStyles {
         self.closed.as_ref()
     }
 
-    pub fn data_style(&self, name: impl AsRef<str>) -> Option<&Style> {
-        self.data.get(name.as_ref())
+    pub fn data_style(&self, name: &str) -> Option<&Style> {
+        self.data.get(name)
     }
 
-    pub fn aria_style(&self, name: impl AsRef<str>) -> Option<&Style> {
-        self.aria.get(name.as_ref())
+    pub fn aria_style(&self, name: &str) -> Option<&Style> {
+        self.aria.get(name)
+    }
+
+    pub fn data_attr_style(&self, attr: impl Into<DataAttr>) -> Option<&Style> {
+        let attr = attr.into();
+        self.data.get(attr.selector().as_ref())
+    }
+
+    pub fn aria_attr_style(&self, attr: impl Into<AriaAttr>) -> Option<&Style> {
+        let attr = attr.into();
+        self.aria.get(attr.as_str())
     }
 }
 

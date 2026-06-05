@@ -10,7 +10,7 @@ use twill::prelude::core::*;
 let style = Style::new()
     .hover(|style| style.opacity(0.9))
     .focus_visible(|style| style.ring(RingWidth::S2, Color::blue(Scale::S300)))
-    .selected(|style| style.background_color(Color::blue(Scale::S500)))
+    .selected(|style| style.bg(Color::blue(Scale::S500)))
     .checked(|style| {
         style.border(
             BorderWidth::S1,
@@ -20,9 +20,7 @@ let style = Style::new()
     })
     .open(|style| style.shadow(Shadow::Lg))
     .data_attr(DataState::Open, |style| style.text_color(Color::white()))
-    .aria_attr(AriaAttr::selected(true), |style| {
-        style.font_weight(FontWeight::Bold)
-    });
+    .aria_attr(AriaAttr::Selected, |style| style.font_weight(FontWeight::Bold));
 ```
 
 Supported built-in state layers:
@@ -41,8 +39,6 @@ Supported arbitrary hooks:
 
 - `data_attr(DataState::..., ...)`
 - `aria_attr(AriaAttr::..., ...)`
-- `data_state("...")` when you want a raw escape hatch
-- `aria_state("...")` when you want a raw escape hatch
 
 ## Responsive styling
 
@@ -66,10 +62,5 @@ Available breakpoint helpers:
 - `lg`
 - `xl`
 - `s2xl`
-- `at_sm`
-- `at_md`
-- `at_lg`
-- `at_xl`
-- `at_2xl`
 
 You can also attach layers generically with `responsive(Breakpoint::..., ...)`.

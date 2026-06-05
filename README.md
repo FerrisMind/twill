@@ -43,15 +43,6 @@ twill = { version = "0.3", features = ["iced"] }
 twill = { version = "0.3", features = ["slint"] }
 ```
 
-MSRV: Rust `1.93`.
-
-Backend notes:
-
-- Core `twill` is synchronous and backend-agnostic.
-- `egui` adds conversion helpers for egui types only.
-- `iced` adds the Iced adapter and the Unix windowing/runtime feature set used by this crate configuration.
-- `slint` adds Slint conversion helpers only when requested.
-
 ## Quick Start
 
 ```rust
@@ -59,7 +50,7 @@ use twill::prelude::core::*;
 
 let style = Style::new()
     .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
-    .background_color(Color::blue(Scale::S500))
+    .bg(Color::blue(Scale::S500))
     .text_color(Color::slate(Scale::S50))
     .rounded(BorderRadius::Md)
     .hover(|style| style.opacity(0.9))
@@ -67,9 +58,6 @@ let style = Style::new()
     .data_attr(DataState::Open, |style| style.shadow(Shadow::Lg))
     .at_md(|style| style.padding(Padding::all(Spacing::S6)));
 ```
-
-If you prefer the old wide import surface or need advanced escape hatches, `twill::prelude::*`
-remains available as the power-user path.
 
 Typed escape hatches stay in the style layer:
 
@@ -91,8 +79,7 @@ let style = Style::new()
 ## Core API
 
 - `Style` is the central style composition type.
-- `twill::prelude::core::*` is the recommended starter import path.
-- `twill::prelude::*` stays available when you want the full surface.
+- `twill::prelude::core::*` is the recommended starter import; `twill::prelude::*` remains the full power-user import.
 - `SemanticThemeVars` and `DynamicSemanticTheme` provide semantic alias mapping inspired by shadcn theme variables.
 - `twill::backends::{egui, iced, slint}` expose typed conversion helpers for each supported runtime.
 
@@ -111,8 +98,6 @@ Common state layers:
 - `closed`
 - `data_attr(DataState::..., ...)`
 - `aria_attr(AriaAttr::..., ...)`
-- `data_state("...")` for raw escape hatches
-- `aria_state("...")` for raw escape hatches
 
 Responsive layers:
 
@@ -121,7 +106,6 @@ Responsive layers:
 - `lg`
 - `xl`
 - `s2xl`
-- `at_sm`, `at_md`, `at_lg`, `at_xl`, `at_2xl`
 - `Style::at_breakpoint(...)`
 
 ## Backends
@@ -145,11 +129,10 @@ The core crate stays synchronous and backend-agnostic; only enabled adapters pul
 
 Useful checks:
 
-```powershell
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" fmt --all --check
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" build
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" clippy -- -D warnings
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" test
+```bash
+cargo fmt --all --check
+cargo clippy --all-targets --all-features -- -D warnings
+cargo test --all-features
 ```
 
 ## License

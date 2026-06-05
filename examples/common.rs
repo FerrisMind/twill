@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use twill::prelude::*;
+use twill::prelude::{core::*, theme::*};
 
 #[derive(Debug, Clone)]
 pub struct ShowcaseSection {
@@ -20,7 +20,7 @@ pub fn token_palette() -> [(Color, &'static str); 4] {
 
 pub fn surface_style() -> Style {
     Style::new()
-        .background_color(Color::white())
+        .bg(Color::white())
         .text_color(Color::slate(Scale::S900))
         .padding(Padding::all(Spacing::S4))
         .rounded(BorderRadius::Xl)
@@ -34,7 +34,7 @@ pub fn surface_style() -> Style {
 
 pub fn composition_style() -> Style {
     surface_style()
-        .background_color(Color::slate(Scale::S50))
+        .bg(Color::slate(Scale::S50))
         .text_color(Color::slate(Scale::S900))
         .border(
             BorderWidth::S1,
@@ -45,13 +45,13 @@ pub fn composition_style() -> Style {
 
 pub fn interactive_style() -> Style {
     surface_style()
-        .background_color(Color::blue(Scale::S500))
+        .bg(Color::blue(Scale::S500))
         .text_color(Color::white())
         .hover(|style| style.opacity(0.92))
         .focus_visible(|style| style.ring(RingWidth::S2, Color::blue(Scale::S300)))
         .disabled(|style| style.opacity(0.55))
         .data_attr(DataState::Open, |style| style.shadow(Shadow::Lg))
-        .aria_attr(AriaAttr::selected(true), |style| {
+        .aria_attr(AriaAttr::Selected, |style| {
             style.border(
                 BorderWidth::S1,
                 BorderStyle::Solid,

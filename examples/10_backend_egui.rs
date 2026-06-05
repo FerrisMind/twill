@@ -19,7 +19,7 @@ fn main() {
     let semantic = egui::to_semantic_color32(SemanticColor::Primary, ThemeVariant::Dark);
     let cursor = Cursor::Pointer.to_egui();
     let shadow = interactive_style()
-        .data_state_style("state=open")
+        .data_attr_style(DataState::Open)
         .and_then(Style::box_shadow_value)
         .and_then(|value| egui::to_shadow_with_color(value, twill::backends::ShadowColor::Default));
 

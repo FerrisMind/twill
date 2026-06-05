@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 //! # Twill
 //!
 //! Idiomatic Rust styling library with utility-first design tokens for native GUI.
@@ -27,10 +29,11 @@
 //! // Create a reusable surface style
 //! let surface_style = Style::new()
 //!     .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
-//!     .background_color(Color::blue(Scale::S500))
+//!     .bg(Color::blue(Scale::S500))
 //!     .text_color(Color::slate(Scale::S50))
 //!     .rounded(BorderRadius::Md)
 //!     .hover(|style| style.opacity(0.9))
+//!     .data_attr(DataState::Open, |style| style.shadow(Shadow::Lg))
 //!     .at_md(|style| style.padding(Padding::all(Spacing::S6)));
 //! ```
 //!
@@ -38,11 +41,8 @@
 //! ## API Surface
 //!
 //! The root namespace intentionally stays small.
-//! Start with [`prelude::core`] for the small, ergonomic import path.
-//! [`prelude`] remains available as the full power-user import surface.
-//! Use module namespaces like [`tokens`], [`utilities`], and [`backends`] for the rest.
-
-#![forbid(unsafe_code)]
+//! Import day-to-day styling types from [`prelude`], and use module namespaces
+//! like [`tokens`], [`utilities`], and [`backends`] for the rest.
 
 #[cfg_attr(
     docsrs,
@@ -68,47 +68,60 @@ pub mod utilities;
 
 /// Canonical import surface for day-to-day twill usage.
 pub mod prelude {
-    /// Smaller starter prelude for most applications.
+    /// Narrow, recommended import set for most applications.
     pub mod core {
         pub use crate::style::{AriaAttr, DataAttr, DataState, Style};
         pub use crate::tokens::{
-            AnimationToken, BorderRadius, BorderStyle, BorderWidth, Breakpoint, Color, ColorFamily,
-            Container, Cursor, Easing, FontFamily, FontSize, FontWeight, LetterSpacing, LineHeight,
-            MotionDefaults, Percentage, Perspective, RingWidth, Scale, SemanticColor,
-            SemanticThemeVars, Shadow, Spacing, TextAlign, TextDecoration, TextOverflow,
-            TextTransform, ThemeVariant, TransitionDuration, TransitionProperty, WhiteSpace,
-            WordBreak,
+            BorderRadius, BorderStyle, BorderWidth, Breakpoint, Color, Container, DropShadow,
+            Easing, FontFamily, FontSize, FontWeight, InsetShadow, LetterSpacing, LineHeight,
+            OutlineStyle, Percentage, Perspective, RingWidth, Scale, Shadow, Spacing, TextAlign,
+            TextDecoration, TextTransform, TransitionDuration, TransitionProperty,
         };
         pub use crate::utilities::{
-            AlignItems, Columns, Display, Flex, FlexContainer, FlexDirection, GridContainer,
+            AlignItems, Columns, Display, FlexContainer, FlexDirection, GridContainer,
             GridTemplate, Height, JustifyContent, Margin, Overflow, Padding, Position,
             SizeConstraints, Width, ZIndex,
         };
     }
 
-    pub use crate::style::{AriaAttr, DataAttr, DataState, Style};
+    /// Semantic theme tokens and aliases.
+    pub mod theme {
+        pub use crate::tokens::{
+            DynamicSemanticTheme, SemanticColor, SemanticThemeVars, ThemeVariant,
+        };
+    }
+
+    /// Typed escape hatches for arbitrary values and custom properties.
+    pub mod arbitrary {
+        pub use crate::tokens::{
+            BackgroundColor, BackgroundColorVar, BorderColor, BorderColorVar, ColorFamily,
+            ColorValue, ColorValueToken, FontSizeVar, LetterSpacingVar, LineHeightVar,
+            OutlineColor, OutlineColorVar, RingColor, RingColorVar, ShadowColorToken,
+            ShadowColorVar, SpecialColor, TextColor, TextColorVar,
+        };
+        pub use crate::utilities::{
+            HeightSize, HeightVar, MarginValue, MarginVar, PaddingValue, PaddingVar, Size,
+            WidthSize, WidthVar,
+        };
+    }
+
+    /// Public traits for advanced integration and generic programming.
+    pub mod traits {
+        pub use crate::traits::{ComputeValue, IntoStyle, Merge, Responsive, ThemedStyle};
+    }
+
     pub use crate::tokens::{
-        AnimationToken, BackgroundColor, BackgroundColorVar, BorderColor, BorderColorVar,
-        BorderRadius, BorderStyle, BorderWidth, Breakpoint, Color, ColorFamily, ColorValue,
-        ColorValueToken, Container, DivideWidth, DropShadow, DynamicSemanticTheme, Easing,
-        FontFamily, FontSize, FontSizeVar, FontWeight, InsetShadow, LetterSpacing,
-        LetterSpacingVar, LineHeight, LineHeightVar, MotionDefaults, OutlineColor, OutlineColorVar,
-        OutlineStyle, Percentage, Perspective, RingColor, RingColorVar, RingWidth, Scale,
-        SemanticColor, SemanticThemeVars, Shadow, ShadowColorToken, ShadowColorVar, Spacing,
-        SpecialColor, TextAlign, TextColor, TextColorVar, TextDecoration, TextOverflow,
-        TextTransform, ThemeVariant, TransitionDuration, TransitionProperty, WhiteSpace, WordBreak,
+        AnimationToken, DivideWidth, MotionDefaults, TextOverflow, WhiteSpace, WordBreak,
     };
-    pub use crate::traits::{ComputeValue, IntoStyle, Merge, Responsive, ThemedStyle};
-    pub use crate::utilities::{
-        AlignItems, AlignSelf, Columns, Display, Flex, FlexContainer, FlexDirection, FlexWrap,
-        GridContainer, GridTemplate, Height, HeightSize, HeightVar, JustifyContent, Margin,
-        MarginValue, MarginVar, Overflow, Padding, PaddingValue, PaddingVar, Position, Size,
-        SizeConstraints, Width, WidthSize, WidthVar, ZIndex,
-    };
+    pub use crate::utilities::{AlignSelf, Flex, FlexWrap};
+    pub use arbitrary::*;
+    pub use core::*;
+    pub use theme::*;
+    pub use traits::*;
 }
 
 // Style
-pub use style::Style;
+pub use style::{AriaAttr, DataAttr, DataState, Style};
 
 #[cfg(test)]
 mod tests {

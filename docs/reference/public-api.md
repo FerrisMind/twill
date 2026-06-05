@@ -42,7 +42,7 @@ Common utility-style value types:
 ## Recommended usage
 
 ```rust
-use twill::prelude::*;
+use twill::prelude::core::*;
 
 let card = Style::new()
     .padding(Padding::all(Spacing::S4))

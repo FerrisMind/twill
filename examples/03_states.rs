@@ -2,13 +2,13 @@ use twill::prelude::core::*;
 
 fn main() {
     let style = Style::new()
-        .background_color(Color::slate(Scale::S100))
+        .bg(Color::slate(Scale::S100))
         .text_color(Color::slate(Scale::S900))
         .hover(|style| style.opacity(0.9))
         .focus_visible(|style| style.ring(RingWidth::S2, Color::blue(Scale::S300)))
         .disabled(|style| style.opacity(0.5))
         .data_attr(DataState::Open, |style| style.shadow(Shadow::Lg))
-        .aria_attr(AriaAttr::selected(true), |style| {
+        .aria_attr(AriaAttr::Selected, |style| {
             style.font_weight(FontWeight::Bold)
         });
 
@@ -31,9 +31,9 @@ fn main() {
             .and_then(Style::box_shadow_value)
     );
     println!(
-        "aria[selected=true] weight: {:?}",
+        "aria[selected] weight: {:?}",
         style
-            .aria_attr_style(AriaAttr::selected(true))
+            .aria_attr_style(AriaAttr::Selected)
             .and_then(Style::font_weight_value)
     );
 }

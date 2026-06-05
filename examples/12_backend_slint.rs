@@ -20,7 +20,7 @@ fn main() {
     let semantic = slint::to_semantic_color(SemanticColor::Primary, ThemeVariant::Dark);
     let cursor = Cursor::Pointer.to_slint();
     let shadow = interactive_style()
-        .data_state_style("state=open")
+        .data_attr_style(DataState::Open)
         .and_then(Style::box_shadow_value)
         .map(slint::to_shadow);
 
