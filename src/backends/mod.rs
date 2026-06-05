@@ -1,38 +1,15 @@
 //! Backend adapters for different UI frameworks.
 
-use crate::tokens::Color;
-
-/// Explicit shadow color selection for backend conversion helpers.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
-pub enum ShadowColor {
-    #[default]
-    Default,
-    Explicit(Color),
-}
-
-impl From<Color> for ShadowColor {
-    fn from(value: Color) -> Self {
-        Self::Explicit(value)
-    }
-}
-
-impl From<Option<Color>> for ShadowColor {
-    fn from(value: Option<Color>) -> Self {
-        match value {
-            Some(color) => Self::Explicit(color),
-            None => Self::Default,
-        }
-    }
-}
+pub use twill_backend_common::ShadowColor;
 
 #[cfg(feature = "egui")]
-pub mod egui;
+pub use twill_egui as egui;
 
 #[cfg(feature = "iced")]
-pub mod iced;
+pub use twill_iced as iced;
 
 #[cfg(feature = "slint")]
-pub mod slint;
+pub use twill_slint as slint;
 
 #[cfg(feature = "egui")]
 pub use egui::ToEgui;
