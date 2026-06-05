@@ -101,10 +101,17 @@ impl ThemeVariant {
     }
 }
 
+/// Core abstraction for anything that can resolve semantic color aliases.
+///
+/// This is the common theme contract used by Twill's style layer and backend adapters.
+pub trait SemanticThemeSource {
+    fn resolve_value(&self, semantic: SemanticColor, variant: ThemeVariant) -> Option<ColorValue>;
+}
+
 /// Semantic token set with light and dark variable definitions.
 ///
 /// ```rust
-/// use twill_core::prelude::*;
+/// use twill_core::prelude::theme::*;
 ///
 /// let theme = SemanticThemeVars::shadcn_neutral();
 /// let light_bg = theme.resolve_light(SemanticColor::Background);
@@ -361,10 +368,16 @@ impl SemanticThemeVars {
     }
 }
 
+impl SemanticThemeSource for SemanticThemeVars {
+    fn resolve_value(&self, semantic: SemanticColor, variant: ThemeVariant) -> Option<ColorValue> {
+        Self::resolve_value(self, semantic, variant)
+    }
+}
+
 /// Dynamic semantic theme generated from an arbitrary brand color using OKLCH.
 ///
 /// ```rust
-/// use twill_core::prelude::*;
+/// use twill_core::prelude::theme::*;
 ///
 /// let theme = DynamicSemanticTheme::from_brand_oklch(0.628, 0.258, 29.234);
 ///
@@ -626,6 +639,12 @@ impl DynamicSemanticTheme {
 
     pub fn resolve_dark(&self, token: SemanticColor) -> Option<ColorValue> {
         self.resolve(token, ThemeVariant::Dark)
+    }
+}
+
+impl SemanticThemeSource for DynamicSemanticTheme {
+    fn resolve_value(&self, semantic: SemanticColor, variant: ThemeVariant) -> Option<ColorValue> {
+        Self::resolve(self, semantic, variant)
     }
 }
 

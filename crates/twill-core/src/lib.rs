@@ -26,12 +26,10 @@
 //! ```rust
 //! use twill_core::prelude::core::*;
 //!
-//! // Create a reusable surface style
-//! let surface_style = Style::new()
+//! // Create a reusable card style
+//! let surface_style = Style::card()
+//!     .merged(Style::interactive())
 //!     .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
-//!     .bg(Color::blue(Scale::S500))
-//!     .text_color(Color::slate(Scale::S50))
-//!     .rounded(BorderRadius::Md)
 //!     .hover(|style| style.opacity(0.9))
 //!     .data_attr(DataState::Open, |style| style.shadow(Shadow::Lg))
 //!     .at_md(|style| style.padding(Padding::all(Spacing::S6)));
@@ -70,7 +68,8 @@ pub mod prelude {
     /// Semantic theme tokens and aliases.
     pub mod theme {
         pub use crate::tokens::{
-            DynamicSemanticTheme, SemanticColor, SemanticThemeVars, ThemeVariant,
+            DynamicSemanticTheme, SemanticColor, SemanticThemeSource, SemanticThemeVars,
+            ThemeVariant,
         };
     }
 
