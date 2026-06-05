@@ -8,6 +8,8 @@ Add `twill` to your `Cargo.toml`:
 twill = "0.3"
 ```
 
+MSRV: Rust `1.93`.
+
 ## Enable GUI backends
 Enable only the backends you use:
 
@@ -26,6 +28,13 @@ You can combine features:
 [dependencies]
 twill = { version = "0.3", features = ["egui", "iced", "slint"] }
 ```
+
+## Feature notes
+
+- Base `twill` stays backend-agnostic and does not require a GUI runtime.
+- `egui` enables egui conversion helpers only.
+- `iced` enables the Iced adapter and the Linux windowing/runtime feature set used by this crate configuration.
+- `slint` enables Slint conversion helpers only.
 
 ## Verify installation
 Run:

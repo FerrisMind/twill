@@ -43,6 +43,15 @@ twill = { version = "0.3", features = ["iced"] }
 twill = { version = "0.3", features = ["slint"] }
 ```
 
+MSRV: Rust `1.93`.
+
+Backend notes:
+
+- Core `twill` is synchronous and backend-agnostic.
+- `egui` adds conversion helpers for egui types only.
+- `iced` adds the Iced adapter and the Unix windowing/runtime feature set used by this crate configuration.
+- `slint` adds Slint conversion helpers only when requested.
+
 ## Quick Start
 
 ```rust
@@ -130,6 +139,7 @@ The core crate stays synchronous and backend-agnostic; only enabled adapters pul
 
 - mdBook sources live in [`docs/`](docs/)
 - crate documentation is published on [docs.rs/twill](https://docs.rs/twill)
+- release notes live in [CHANGELOG.md](CHANGELOG.md)
 
 ## Development
 

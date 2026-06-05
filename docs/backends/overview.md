@@ -8,6 +8,9 @@ Supported adapters:
 - `iced`
 - `slint`
 
+The core crate stays synchronous and useful without any backend features.
+Only enabled adapters pull their runtime or windowing dependencies.
+
 ## Enabling backend features
 
 ```toml
