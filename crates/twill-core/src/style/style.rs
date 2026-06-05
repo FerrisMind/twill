@@ -23,7 +23,7 @@ use crate::utilities::{
 /// A comprehensive style builder for composing native UI styles.
 ///
 /// ```rust
-/// use twill::prelude::core::*;
+/// use twill_core::prelude::core::*;
 ///
 /// let style = Style::new()
 ///     .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
