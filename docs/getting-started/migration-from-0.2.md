@@ -21,7 +21,7 @@ use twill::prelude::core::*;
 Use the full prelude only when you need advanced arbitrary/custom-property wrappers:
 
 ```rust
-use twill::prelude::*;
+use twill::prelude::{arbitrary::*, core::*};
 ```
 
 ## Practical API updates
@@ -30,6 +30,8 @@ use twill::prelude::*;
 - Prefer `data_attr(DataState::..., ...)` and `aria_attr(AriaAttr::..., ...)` over raw strings.
 - Prefer `Style::at_breakpoint(...)` in normal application code.
 - Use `at_sm` / `at_md` / `at_lg` / `at_xl` / `at_2xl` if the short breakpoint builders feel too terse.
+- Prefer `Style::surface()`, `Style::card()`, and `Style::interactive()` as reusable starting points.
+- Prefer `merged(...)` or `merge_in_place(...)` for explicit style composition.
 
 ## What did not change
 
@@ -44,6 +46,7 @@ use twill::prelude::*;
 - Re-run:
 
 ```bash
-cargo clippy --all-features --all-targets -- -D warnings
-cargo test --all-features
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+cargo test --workspace --all-features
+cargo check --workspace --all-features --examples
 ```

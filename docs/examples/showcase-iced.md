@@ -5,8 +5,8 @@ This is the full `iced` showcase for `main`/`0.3.x`. It mirrors the conceptual c
 - File: `examples/21_showcase_iced.rs`
 - Run:
 
-```powershell
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" run --example showcase_iced --features iced
+```bash
+cargo run --example showcase_iced --features iced
 ```
 
 - Expected UI: a native `iced` window with token swatches, semantic theme sections, and composed cards rendered through `twill::backends::iced`.

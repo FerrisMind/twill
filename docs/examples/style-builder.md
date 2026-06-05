@@ -1,12 +1,12 @@
 # Style Builder Example
 
-This example shows how a reusable base `Style` is composed with an additional layer through `with(...)`, including layout and spacing escape hatches.
+This example shows how a reusable base `Style` is composed with an additional layer through `merged(...)`, including layout and spacing escape hatches.
 
 - File: `examples/02_style_builder.rs`
 - Run:
 
-```powershell
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" run --example style_builder
+```bash
+cargo run --example style_builder
 ```
 
 - Expected output: the merged padding, background, text color, width, constraints, layout tokens, radius, and shadow values.
