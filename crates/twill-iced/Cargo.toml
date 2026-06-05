@@ -1,0 +1,21 @@
+[package]
+name = "twill-iced"
+version = "0.3.0"
+edition = "2024"
+rust-version = "1.93"
+description = "iced adapter crate for the Twill Rust styling ecosystem"
+license = "MIT"
+authors = ["FerrisMind"]
+repository = "https://github.com/FerrisMind/twill"
+documentation = "https://docs.rs/twill-iced"
+readme = "README.md"
+keywords = ["styling", "gui", "iced", "adapter", "rust"]
+categories = ["gui", "rendering"]
+
+[dependencies]
+twill-core = { path = "../twill-core", version = "0.3.0" }
+twill-backend-common = { path = "../twill-backend-common", version = "0.3.0" }
+iced = { version = "0.14", default-features = false, features = ["advanced", "image", "tokio", "canvas", "wayland", "x11"] }
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "docsrs"]

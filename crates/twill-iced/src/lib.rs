@@ -1,0 +1,175 @@
+#![forbid(unsafe_code)]
+
+mod convert;
+mod widgets;
+
+use iced::ContentFit;
+use twill_core::tokens::{
+    AspectRatio, Blur, BorderRadius, Color, ColorValue, Cursor, Easing, FontSize, FontWeight,
+    Shadow, Spacing, TextAlign, TransitionDuration,
+};
+use twill_core::utilities::ObjectFit;
+
+pub use convert::{
+    TextDirection, resolve_font_size, to_aspect_ratio, to_blur_radius, to_border_radius, to_color,
+    to_color_value, to_content_fit, to_duration, to_easing, to_font_size, to_font_weight,
+    to_interaction, to_padding, to_semantic_color, to_semantic_color_with_theme, to_shadow,
+    to_shadow_layers_with_color, to_shadow_with_color, to_text_alignment,
+    to_text_alignment_with_direction,
+};
+pub use widgets::SemanticThemeSource;
+pub use widgets::{
+    align_items_layout, apply_flex_item, apply_flex_item_with_custom_properties, apply_layout,
+    apply_layout_with_custom_properties, apply_layout_with_semantic_theme, columns_layout,
+    flex_direction_layout, gap_layout, gap_x_layout, gap_y_layout, grid_template_columns_layout,
+    grid_template_columns_layout_with_context, justify_content_layout, styled_container,
+    styled_container_with_custom_properties, styled_container_with_semantic_theme,
+};
+
+mod private {
+    pub trait Sealed {}
+}
+
+/// Canonical iced conversion trait for typed twill values.
+///
+/// ```rust
+/// use twill_iced::ToIced;
+/// use twill_core::prelude::core::*;
+///
+/// let color = Color::blue(Scale::S500).to_iced();
+/// let padding = Spacing::S4.to_iced();
+///
+/// assert!(color.b > color.r);
+/// assert!(padding.left > 0.0);
+/// ```
+pub trait ToIced: private::Sealed {
+    type Output;
+
+    fn to_iced(self) -> Self::Output;
+}
+
+impl private::Sealed for Color {}
+impl ToIced for Color {
+    type Output = iced::Color;
+
+    fn to_iced(self) -> Self::Output {
+        to_color(self)
+    }
+}
+
+impl private::Sealed for ColorValue {}
+impl ToIced for ColorValue {
+    type Output = iced::Color;
+
+    fn to_iced(self) -> Self::Output {
+        to_color_value(self)
+    }
+}
+
+impl private::Sealed for Spacing {}
+impl ToIced for Spacing {
+    type Output = iced::Padding;
+
+    fn to_iced(self) -> Self::Output {
+        to_padding(self)
+    }
+}
+
+impl private::Sealed for BorderRadius {}
+impl ToIced for BorderRadius {
+    type Output = f32;
+
+    fn to_iced(self) -> Self::Output {
+        to_border_radius(self)
+    }
+}
+
+impl private::Sealed for Blur {}
+impl ToIced for Blur {
+    type Output = f32;
+
+    fn to_iced(self) -> Self::Output {
+        to_blur_radius(self)
+    }
+}
+
+impl private::Sealed for AspectRatio {}
+impl ToIced for AspectRatio {
+    type Output = Option<f32>;
+
+    fn to_iced(self) -> Self::Output {
+        to_aspect_ratio(self)
+    }
+}
+
+impl private::Sealed for ObjectFit {}
+impl ToIced for ObjectFit {
+    type Output = ContentFit;
+
+    fn to_iced(self) -> Self::Output {
+        to_content_fit(self)
+    }
+}
+
+impl private::Sealed for Shadow {}
+impl ToIced for Shadow {
+    type Output = iced::Shadow;
+
+    fn to_iced(self) -> Self::Output {
+        to_shadow_with_color(self, twill_backend_common::ShadowColor::Default)
+    }
+}
+
+impl private::Sealed for FontSize {}
+impl ToIced for FontSize {
+    type Output = f32;
+
+    fn to_iced(self) -> Self::Output {
+        to_font_size(self)
+    }
+}
+
+impl private::Sealed for FontWeight {}
+impl ToIced for FontWeight {
+    type Output = iced::font::Weight;
+
+    fn to_iced(self) -> Self::Output {
+        to_font_weight(self)
+    }
+}
+
+impl private::Sealed for TextAlign {}
+impl ToIced for TextAlign {
+    type Output = iced::widget::text::Alignment;
+
+    fn to_iced(self) -> Self::Output {
+        to_text_alignment(self)
+    }
+}
+
+impl private::Sealed for TransitionDuration {}
+impl ToIced for TransitionDuration {
+    type Output = std::time::Duration;
+
+    fn to_iced(self) -> Self::Output {
+        to_duration(self)
+    }
+}
+
+impl private::Sealed for Easing {}
+impl ToIced for Easing {
+    type Output = iced::animation::Easing;
+
+    fn to_iced(self) -> Self::Output {
+        to_easing(self)
+    }
+}
+
+impl private::Sealed for Cursor {}
+impl ToIced for Cursor {
+    type Output = iced::mouse::Interaction;
+
+    fn to_iced(self) -> Self::Output {
+        to_interaction(self)
+    }
+}
