@@ -47,6 +47,7 @@ eframe = { version = "0.33", default-features = false, features = ["glow", "x11"
 iced = { version = "0.14", default-features = false, features = ["advanced", "image", "tokio", "canvas", "wgpu", "wayland", "x11"] }
 image = { version = "0.25", default-features = false, features = ["png"] }
 regex = "1.12.3"
+slint = { version = "1.15", features = ["unstable-winit-030"] }
 
 [features]
 default = []
@@ -57,6 +58,10 @@ slint = ["dep:twill-slint"]
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+
+[[example]]
+name = "quick_start_card"
+path = "examples/00_quick_start_card.rs"
 
 [[example]]
 name = "tokens"
@@ -83,6 +88,18 @@ name = "arbitrary_values"
 path = "examples/06_arbitrary_values.rs"
 
 [[example]]
+name = "component_recipes"
+path = "examples/07_component_recipes.rs"
+
+[[example]]
+name = "style_composition"
+path = "examples/08_style_composition.rs"
+
+[[example]]
+name = "state_variants"
+path = "examples/09_state_variants.rs"
+
+[[example]]
 name = "backend_egui"
 path = "examples/10_backend_egui.rs"
 required-features = ["egui"]
@@ -98,6 +115,11 @@ path = "examples/12_backend_slint.rs"
 required-features = ["slint"]
 
 [[example]]
+name = "backend_mapping_matrix"
+path = "examples/13_backend_mapping_matrix.rs"
+required-features = ["egui", "iced", "slint"]
+
+[[example]]
 name = "showcase_egui"
 path = "examples/20_showcase_egui.rs"
 required-features = ["egui"]
@@ -106,3 +128,17 @@ required-features = ["egui"]
 name = "showcase_iced"
 path = "examples/21_showcase_iced.rs"
 required-features = ["iced"]
+
+[[example]]
+name = "showcase_slint"
+path = "examples/22_showcase_slint.rs"
+required-features = ["slint"]
+
+[[example]]
+name = "showcase_winit"
+path = "examples/23_showcase_winit.rs"
+required-features = ["slint"]
+
+[[example]]
+name = "design_system_module"
+path = "examples/25_design_system_module.rs"
