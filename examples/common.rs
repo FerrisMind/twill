@@ -20,7 +20,7 @@ pub fn token_palette() -> [(Color, &'static str); 4] {
 
 pub fn surface_style() -> Style {
     Style::new()
-        .bg(Color::white())
+        .background_color(Color::white())
         .text_color(Color::slate(Scale::S900))
         .padding(Padding::all(Spacing::S4))
         .rounded(BorderRadius::Xl)
@@ -34,7 +34,7 @@ pub fn surface_style() -> Style {
 
 pub fn composition_style() -> Style {
     surface_style()
-        .bg(Color::slate(Scale::S50))
+        .background_color(Color::slate(Scale::S50))
         .text_color(Color::slate(Scale::S900))
         .border(
             BorderWidth::S1,
@@ -45,13 +45,13 @@ pub fn composition_style() -> Style {
 
 pub fn interactive_style() -> Style {
     surface_style()
-        .bg(Color::blue(Scale::S500))
+        .background_color(Color::blue(Scale::S500))
         .text_color(Color::white())
         .hover(|style| style.opacity(0.92))
         .focus_visible(|style| style.ring(RingWidth::S2, Color::blue(Scale::S300)))
         .disabled(|style| style.opacity(0.55))
-        .data_state("state=open", |style| style.shadow(Shadow::Lg))
-        .aria_state("selected", |style| {
+        .data_attr(DataState::Open, |style| style.shadow(Shadow::Lg))
+        .aria_attr(AriaAttr::selected(true), |style| {
             style.border(
                 BorderWidth::S1,
                 BorderStyle::Solid,
@@ -64,11 +64,11 @@ pub fn responsive_style() -> Style {
     composition_style()
         .padding(Padding::all(Spacing::S3))
         .w(Spacing::S24)
-        .sm(|style| style.w(Spacing::S32))
-        .md(|style| style.padding(Padding::all(Spacing::S4)))
-        .lg(|style| style.w(Spacing::S40))
-        .xl(|style| style.shadow(Shadow::Lg))
-        .s2xl(|style| style.padding(Padding::all(Spacing::S6)))
+        .at_sm(|style| style.w(Spacing::S32))
+        .at_md(|style| style.padding(Padding::all(Spacing::S4)))
+        .at_lg(|style| style.w(Spacing::S40))
+        .at_xl(|style| style.shadow(Shadow::Lg))
+        .at_2xl(|style| style.padding(Padding::all(Spacing::S6)))
 }
 
 pub fn semantic_summary() -> Vec<(&'static str, SemanticColor)> {
@@ -101,7 +101,7 @@ pub fn showcase_sections() -> Vec<ShowcaseSection> {
         },
         ShowcaseSection {
             title: "Responsive",
-            description: "Breakpoint layers resolve into concrete styles through the Responsive trait.",
+            description: "Breakpoint layers resolve into concrete styles through Style::at_breakpoint.",
             style: responsive_style(),
         },
     ]

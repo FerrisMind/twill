@@ -46,18 +46,21 @@ twill = { version = "0.3", features = ["slint"] }
 ## Quick Start
 
 ```rust
-use twill::prelude::*;
+use twill::prelude::core::*;
 
 let style = Style::new()
     .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
-    .bg(Color::blue(Scale::S500))
+    .background_color(Color::blue(Scale::S500))
     .text_color(Color::slate(Scale::S50))
     .rounded(BorderRadius::Md)
     .hover(|style| style.opacity(0.9))
     .focus_visible(|style| style.ring(RingWidth::S2, Color::blue(Scale::S300)))
-    .data_state("state=open", |style| style.shadow(Shadow::Lg))
-    .md(|style| style.padding(Padding::all(Spacing::S6)));
+    .data_attr(DataState::Open, |style| style.shadow(Shadow::Lg))
+    .at_md(|style| style.padding(Padding::all(Spacing::S6)));
 ```
+
+If you prefer the old wide import surface or need advanced escape hatches, `twill::prelude::*`
+remains available as the power-user path.
 
 Typed escape hatches stay in the style layer:
 
@@ -79,7 +82,8 @@ let style = Style::new()
 ## Core API
 
 - `Style` is the central style composition type.
-- `twill::prelude::*` re-exports the main day-to-day tokens and utilities.
+- `twill::prelude::core::*` is the recommended starter import path.
+- `twill::prelude::*` stays available when you want the full surface.
 - `SemanticThemeVars` and `DynamicSemanticTheme` provide semantic alias mapping inspired by shadcn theme variables.
 - `twill::backends::{egui, iced, slint}` expose typed conversion helpers for each supported runtime.
 
@@ -96,8 +100,10 @@ Common state layers:
 - `checked`
 - `open`
 - `closed`
-- `data_state("...")`
-- `aria_state("...")`
+- `data_attr(DataState::..., ...)`
+- `aria_attr(AriaAttr::..., ...)`
+- `data_state("...")` for raw escape hatches
+- `aria_state("...")` for raw escape hatches
 
 Responsive layers:
 
@@ -106,7 +112,8 @@ Responsive layers:
 - `lg`
 - `xl`
 - `s2xl`
-- `Responsive::at_breakpoint(...)`
+- `at_sm`, `at_md`, `at_lg`, `at_xl`, `at_2xl`
+- `Style::at_breakpoint(...)`
 
 ## Backends
 
@@ -117,6 +124,7 @@ Supported adapters:
 - `slint`
 
 Each backend translates Twill tokens and `Style` values into framework-specific primitives without changing the core style model.
+The core crate stays synchronous and backend-agnostic; only enabled adapters pull runtime-specific dependencies.
 
 ## Documentation
 

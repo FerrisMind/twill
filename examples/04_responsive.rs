@@ -1,13 +1,13 @@
-use twill::prelude::*;
+use twill::prelude::core::*;
 
 fn main() {
     let style = Style::new()
         .w(Spacing::S12)
-        .sm(|style| style.w(Spacing::S24))
-        .md(|style| style.padding(Padding::all(Spacing::S4)))
-        .lg(|style| style.h(Spacing::S32))
-        .xl(|style| style.shadow(Shadow::Lg))
-        .s2xl(|style| style.padding(Padding::all(Spacing::S6)));
+        .at_sm(|style| style.w(Spacing::S24))
+        .at_md(|style| style.padding(Padding::all(Spacing::S4)))
+        .at_lg(|style| style.h(Spacing::S32))
+        .at_xl(|style| style.shadow(Shadow::Lg))
+        .at_2xl(|style| style.padding(Padding::all(Spacing::S6)));
 
     println!("== responsive layers ==");
     for breakpoint in [

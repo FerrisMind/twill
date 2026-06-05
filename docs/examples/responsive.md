@@ -1,6 +1,6 @@
 # Responsive Example
 
-This example shows breakpoint layers and how they resolve through `Responsive::at_breakpoint(...)`.
+This example shows breakpoint layers and how they resolve through `Style::at_breakpoint(...)`.
 
 - File: `examples/04_responsive.rs`
 - Run:
@@ -13,3 +13,4 @@ This example shows breakpoint layers and how they resolve through `Responsive::a
 
 Why this exists:
 responsive behavior should be inspectable without launching a GUI backend.
+The example also uses the more discoverable `at_md`/`at_2xl` builder aliases.

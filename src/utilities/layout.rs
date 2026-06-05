@@ -251,9 +251,9 @@ impl fmt::Display for FlexGrow {
 /// Flex shorthand utility.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Flex {
-    /// flex: <number>
+    /// flex: `<number>`
     Number(u16),
-    /// flex: calc(<fraction> * 100%)
+    /// flex: `calc(<fraction> * 100%)`
     Fraction {
         numerator: u16,
         denominator: NonZeroU16,
@@ -264,9 +264,9 @@ pub enum Flex {
     Initial,
     /// flex: none
     None,
-    /// flex: var(<custom-property>)
+    /// flex: `var(<custom-property>)`
     CustomProperty(String),
-    /// flex: <value>
+    /// flex: `<value>`
     Arbitrary(String),
 }
 

@@ -29,12 +29,12 @@ strip = true
 [dependencies]
 # Optional UI framework backends
 egui = { version = "0.33", optional = true }
-iced = { version = "0.14", optional = true, default-features = false, features = ["advanced", "image", "tokio", "canvas"] }
+iced = { version = "0.14", optional = true, default-features = false, features = ["advanced", "image", "tokio", "canvas", "x11", "wayland"] }
 palette = { version = "0.7.6", features = ["std"] }
 slint = { version = "1.15", optional = true }
 
 [dev-dependencies]
-eframe = { version = "0.33", default-features = false, features = ["glow"] }
+eframe = { version = "0.33", default-features = false, features = ["glow", "x11", "wayland"] }
 image = { version = "0.25", default-features = false, features = ["png"] }
 regex = "1.12.3"
 

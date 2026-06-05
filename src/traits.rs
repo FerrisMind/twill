@@ -10,7 +10,9 @@ mod private {
     impl<T> Sealed for T where T: Into<Style> {}
 }
 
-/// Trait for merging styles together.
+/// Trait for merging style-like values together.
+///
+/// This trait mainly supports Twill's composition infrastructure and advanced extensions.
 pub trait Merge<T> {
     /// Merge another style into this one, with other taking precedence.
     fn merge(&self, other: T) -> Self;
@@ -34,6 +36,8 @@ where
 }
 
 /// Trait for theme-aware styling.
+///
+/// This trait is intended for static dispatch and typed composition.
 pub trait ThemedStyle {
     /// The theme type this style uses.
     type Theme;
@@ -43,6 +47,8 @@ pub trait ThemedStyle {
 }
 
 /// Trait for responsive styles.
+///
+/// Prefer [`crate::Style::at_breakpoint`] when working with concrete [`crate::Style`] values.
 pub trait Responsive {
     /// The breakpoint type.
     type Breakpoint;
@@ -52,6 +58,8 @@ pub trait Responsive {
 }
 
 /// Trait for computing actual values from tokens.
+///
+/// This trait is primarily useful for tokens, adapters, and other infrastructure code.
 pub trait ComputeValue {
     /// The output value type.
     type Output;

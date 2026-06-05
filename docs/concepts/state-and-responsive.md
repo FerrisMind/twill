@@ -5,12 +5,12 @@ Twill keeps interactive and responsive styling at the `Style` layer instead of s
 ## Stateful styling
 
 ```rust
-use twill::prelude::*;
+use twill::prelude::core::*;
 
 let style = Style::new()
     .hover(|style| style.opacity(0.9))
     .focus_visible(|style| style.ring(RingWidth::S2, Color::blue(Scale::S300)))
-    .selected(|style| style.bg(Color::blue(Scale::S500)))
+    .selected(|style| style.background_color(Color::blue(Scale::S500)))
     .checked(|style| {
         style.border(
             BorderWidth::S1,
@@ -19,8 +19,10 @@ let style = Style::new()
         )
     })
     .open(|style| style.shadow(Shadow::Lg))
-    .data_state("state=open", |style| style.text_color(Color::white()))
-    .aria_state("selected", |style| style.font_weight(FontWeight::Bold));
+    .data_attr(DataState::Open, |style| style.text_color(Color::white()))
+    .aria_attr(AriaAttr::selected(true), |style| {
+        style.font_weight(FontWeight::Bold)
+    });
 ```
 
 Supported built-in state layers:
@@ -37,18 +39,20 @@ Supported built-in state layers:
 
 Supported arbitrary hooks:
 
-- `data_state("...")`
-- `aria_state("...")`
+- `data_attr(DataState::..., ...)`
+- `aria_attr(AriaAttr::..., ...)`
+- `data_state("...")` when you want a raw escape hatch
+- `aria_state("...")` when you want a raw escape hatch
 
 ## Responsive styling
 
 ```rust
-use twill::prelude::*;
+use twill::prelude::core::*;
 
 let style = Style::new()
     .w(Spacing::S12)
-    .sm(|style| style.w(Spacing::S24))
-    .lg(|style| style.h(Spacing::S32));
+    .at_sm(|style| style.w(Spacing::S24))
+    .at_lg(|style| style.h(Spacing::S32));
 
 let resolved = style.at_breakpoint(Breakpoint::Lg);
 assert_eq!(resolved.width_value(), Some(Width::from(Spacing::S24)));
@@ -62,5 +66,10 @@ Available breakpoint helpers:
 - `lg`
 - `xl`
 - `s2xl`
+- `at_sm`
+- `at_md`
+- `at_lg`
+- `at_xl`
+- `at_2xl`
 
 You can also attach layers generically with `responsive(Breakpoint::..., ...)`.

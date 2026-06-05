@@ -295,7 +295,7 @@ pub fn to_blur_radius(blur: Blur) -> f32 {
     blur.radius_px() as f32
 }
 
-/// Convert twill AspectRatio to Option<f32> for egui.
+/// Convert twill AspectRatio to `Option<f32>` for egui.
 pub fn to_aspect_ratio(ratio: AspectRatio) -> Option<f32> {
     match ratio {
         AspectRatio::Auto => None,

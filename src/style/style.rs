@@ -2,6 +2,9 @@
 
 use std::{collections::BTreeMap, num::NonZeroU8};
 
+use crate::style::{AriaAttr, DataAttr};
+#[cfg(test)]
+use crate::style::DataState;
 use crate::tokens::{
     AnimationToken, AspectRatio, BackgroundColor, BackgroundColorVar, Blur, BorderColor,
     BorderColorVar, BorderRadius, BorderStyle, BorderWidth, Breakpoint, Color, ColorValueToken,
@@ -23,22 +26,22 @@ use crate::utilities::{
 /// A comprehensive style builder for composing native UI styles.
 ///
 /// ```rust
-/// use twill::prelude::*;
+/// use twill::prelude::core::*;
 ///
 /// let style = Style::new()
 ///     .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
-///     .bg(Color::blue(Scale::S500))
+///     .background_color(Color::blue(Scale::S500))
 ///     .text_color(Color::slate(Scale::S50))
 ///     .rounded(BorderRadius::Md)
 ///     .hover(|style| style.opacity(0.9))
 ///     .focus_visible(|style| style.ring(RingWidth::S2, Color::blue(Scale::S300)))
-///     .data_state("state=open", |style| style.shadow(Shadow::Lg))
-///     .md(|style| style.padding(Padding::all(Spacing::S6)));
+///     .data_attr(DataState::Open, |style| style.shadow(Shadow::Lg))
+///     .at_md(|style| style.padding(Padding::all(Spacing::S6)));
 ///
 /// assert_eq!(style.text_color_value(), Some(Color::slate(Scale::S50)));
 /// assert!(style.hover_style().is_some());
 /// assert!(style.focus_visible_style().is_some());
-/// assert!(style.data_state_style("state=open").is_some());
+/// assert!(style.data_attr_style(DataState::Open).is_some());
 /// ```
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Style {
@@ -602,6 +605,16 @@ impl Style {
         self
     }
 
+    /// Preferred typed front door for `data-*` hooks, while keeping [`Self::data_state`]
+    /// available as a raw escape hatch.
+    pub fn data_attr<F, D>(self, attr: D, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+        D: Into<DataAttr>,
+    {
+        self.data_state(attr.into().to_string(), build)
+    }
+
     /// Set styles for an arbitrary `aria-*` state hook, like `aria-selected=true`.
     pub fn aria_state<F>(mut self, name: impl Into<String>, build: F) -> Self
     where
@@ -613,6 +626,16 @@ impl Style {
         states.aria.insert(name, build(current));
         self.states = Some(states);
         self
+    }
+
+    /// Preferred typed front door for `aria-*` hooks, while keeping [`Self::aria_state`]
+    /// available as a raw escape hatch.
+    pub fn aria_attr<F, A>(self, attr: A, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+        A: Into<AriaAttr>,
+    {
+        self.aria_state(attr.into().to_string(), build)
     }
 
     /// Get the hover nested style, if any.
@@ -661,13 +684,29 @@ impl Style {
     }
 
     /// Get a named `data-*` nested style, if any.
-    pub fn data_state_style(&self, name: &str) -> Option<&Style> {
-        self.states.as_ref().and_then(|s| s.data.get(name))
+    pub fn data_state_style(&self, name: impl AsRef<str>) -> Option<&Style> {
+        self.states.as_ref().and_then(|s| s.data.get(name.as_ref()))
+    }
+
+    /// Get a typed `data-*` nested style, if any.
+    pub fn data_attr_style<D>(&self, attr: D) -> Option<&Style>
+    where
+        D: Into<DataAttr>,
+    {
+        self.data_state_style(attr.into())
     }
 
     /// Get a named `aria-*` nested style, if any.
-    pub fn aria_state_style(&self, name: &str) -> Option<&Style> {
-        self.states.as_ref().and_then(|s| s.aria.get(name))
+    pub fn aria_state_style(&self, name: impl AsRef<str>) -> Option<&Style> {
+        self.states.as_ref().and_then(|s| s.aria.get(name.as_ref()))
+    }
+
+    /// Get a typed `aria-*` nested style, if any.
+    pub fn aria_attr_style<A>(&self, attr: A) -> Option<&Style>
+    where
+        A: Into<AriaAttr>,
+    {
+        self.aria_state_style(attr.into())
     }
 
     /// Set styles to apply at or above a breakpoint.
@@ -719,6 +758,62 @@ impl Style {
         F: FnOnce(Style) -> Style,
     {
         self.responsive(Breakpoint::S2xl, build)
+    }
+
+    /// Alias for [`Self::sm`] with a more discoverable name.
+    pub fn at_sm<F>(self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        self.sm(build)
+    }
+
+    /// Alias for [`Self::md`] with a more discoverable name.
+    pub fn at_md<F>(self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        self.md(build)
+    }
+
+    /// Alias for [`Self::lg`] with a more discoverable name.
+    pub fn at_lg<F>(self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        self.lg(build)
+    }
+
+    /// Alias for [`Self::xl`] with a more discoverable name.
+    pub fn at_xl<F>(self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        self.xl(build)
+    }
+
+    /// Alias for [`Self::s2xl`] with a more discoverable name.
+    pub fn at_2xl<F>(self, build: F) -> Self
+    where
+        F: FnOnce(Style) -> Style,
+    {
+        self.s2xl(build)
+    }
+
+    /// Resolve cascading responsive layers up to a concrete breakpoint.
+    pub fn at_breakpoint(&self, breakpoint: Breakpoint) -> Self {
+        let mut resolved = self.clone();
+        resolved.responsive = None;
+
+        if let Some(responsive) = &self.responsive {
+            for (layer_breakpoint, layer_style) in responsive {
+                if *layer_breakpoint <= breakpoint {
+                    resolved = resolved.merge_style_ref(layer_style);
+                }
+            }
+        }
+
+        resolved
     }
 
     // === Layout ===
@@ -2154,6 +2249,11 @@ impl Style {
         self
     }
 
+    /// Alias for [`Self::bg`] with a more Rust-first name.
+    pub fn background_color(self, color: Color) -> Self {
+        self.bg(color)
+    }
+
     /// Set background token directly.
     pub fn background_token(mut self, token: BackgroundColor) -> Self {
         self.background_color = Some(token);
@@ -2861,18 +2961,7 @@ impl crate::traits::Responsive for Style {
     type Breakpoint = Breakpoint;
 
     fn at_breakpoint(&self, breakpoint: Self::Breakpoint) -> Self {
-        let mut resolved = self.clone();
-        resolved.responsive = None;
-
-        if let Some(responsive) = &self.responsive {
-            for (layer_breakpoint, layer_style) in responsive {
-                if *layer_breakpoint <= breakpoint {
-                    resolved = resolved.merge_style_ref(layer_style);
-                }
-            }
-        }
-
-        resolved
+        Style::at_breakpoint(self, breakpoint)
     }
 }
 
@@ -3429,8 +3518,10 @@ mod tests {
             })
             .open(|style| style.opacity(1.0))
             .closed(|style| style.opacity(0.5))
-            .data_state("state=open", |style| style.text_color(Color::white()))
-            .aria_state("selected", |style| style.font_weight(FontWeight::Bold));
+            .data_attr(DataState::Open, |style| style.text_color(Color::white()))
+            .aria_attr(AriaAttr::selected(true), |style| {
+                style.font_weight(FontWeight::Bold)
+            });
 
         assert_eq!(
             style
@@ -3455,13 +3546,13 @@ mod tests {
         );
         assert_eq!(
             style
-                .data_state_style("state=open")
+                .data_attr_style(DataState::Open)
                 .and_then(Style::text_color_value),
             Some(Color::white())
         );
         assert_eq!(
             style
-                .aria_state_style("selected")
+                .aria_attr_style(AriaAttr::selected(true))
                 .and_then(Style::font_weight_value),
             Some(FontWeight::Bold)
         );
@@ -3470,16 +3561,16 @@ mod tests {
     #[test]
     fn test_named_state_and_breakpoint_layers_merge() {
         let merged = Style::new()
-            .data_state("state=open", |style| style.bg(Color::blue(Scale::S500)))
+            .data_attr(DataState::Open, |style| style.bg(Color::blue(Scale::S500)))
             .sm(|style| style.w(Spacing::S24))
             .merge(
                 Style::new()
-                    .data_state("state=open", |style| style.text_color(Color::white()))
+                    .data_attr(DataState::Open, |style| style.text_color(Color::white()))
                     .sm(|style| style.h(Spacing::S12)),
             );
 
         let state = merged
-            .data_state_style("state=open")
+            .data_attr_style(DataState::Open)
             .expect("data state layer should exist");
         assert_eq!(
             state.background_color_value(),
@@ -3498,10 +3589,10 @@ mod tests {
     fn test_responsive_trait_resolves_cascading_layers() {
         let style = Style::new()
             .w(Spacing::S12)
-            .sm(|style| style.w(Spacing::S24))
-            .lg(|style| style.h(Spacing::S32));
+            .at_sm(|style| style.w(Spacing::S24))
+            .at_lg(|style| style.h(Spacing::S32));
 
-        let md = crate::traits::Responsive::at_breakpoint(&style, Breakpoint::Md);
+        let md = style.at_breakpoint(Breakpoint::Md);
         assert_eq!(md.width_value(), Some(Width::from(Spacing::S24)));
         assert_eq!(md.height_value(), None);
         assert!(md.responsive_styles().is_none());
@@ -3509,6 +3600,37 @@ mod tests {
         let lg = crate::traits::Responsive::at_breakpoint(&style, Breakpoint::Lg);
         assert_eq!(lg.width_value(), Some(Width::from(Spacing::S24)));
         assert_eq!(lg.height_value(), Some(Height::from(Spacing::S32)));
+    }
+
+    #[test]
+    fn test_alias_builders_and_typed_named_hooks() {
+        let style = Style::new()
+            .background_color(Color::slate(Scale::S100))
+            .data_attr(DataAttr::state(DataState::custom("loading")), |style| {
+                style.opacity(0.6)
+            })
+            .aria_attr(AriaAttr::expanded(true), |style| style.shadow(Shadow::Lg))
+            .at_md(|style| style.padding(Padding::all(Spacing::S4)))
+            .at_2xl(|style| style.padding(Padding::all(Spacing::S6)));
+
+        assert_eq!(
+            style.background_color_value(),
+            Some(BackgroundColor::palette(Color::slate(Scale::S100)))
+        );
+        assert_eq!(
+            style
+                .data_attr_style(DataAttr::state(DataState::custom("loading")))
+                .and_then(Style::opacity_value),
+            Some(0.6)
+        );
+        assert_eq!(
+            style
+                .aria_attr_style(AriaAttr::expanded(true))
+                .and_then(Style::box_shadow_value),
+            Some(Shadow::Lg)
+        );
+        assert!(style.breakpoint_style(Breakpoint::Md).is_some());
+        assert!(style.breakpoint_style(Breakpoint::S2xl).is_some());
     }
 
     #[test]

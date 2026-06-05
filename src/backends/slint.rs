@@ -193,7 +193,7 @@ pub fn to_cursor_icon(cursor: Cursor) -> SlintCursor {
     SlintCursor::new(cursor)
 }
 
-/// Convert twill AspectRatio to Option<f32>.
+/// Convert twill AspectRatio to `Option<f32>`.
 pub fn to_aspect_ratio(ratio: AspectRatio) -> Option<f32> {
     match ratio {
         AspectRatio::Auto => None,

@@ -1,7 +1,172 @@
-use std::collections::BTreeMap;
+use std::{
+    collections::BTreeMap,
+    fmt::{self, Display, Formatter},
+};
 
 use crate::style::Style;
 use crate::traits::Merge;
+
+/// Common `data-state=*` values used by Rust UI libraries.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum DataState {
+    Open,
+    Closed,
+    Checked,
+    Selected,
+    Custom(String),
+}
+
+impl DataState {
+    /// Create a custom `data-state=<value>` selector.
+    pub fn custom(value: impl Into<String>) -> Self {
+        Self::Custom(value.into())
+    }
+
+    /// Return the raw state value used in `data-state=<value>`.
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Open => "open",
+            Self::Closed => "closed",
+            Self::Checked => "checked",
+            Self::Selected => "selected",
+            Self::Custom(value) => value.as_str(),
+        }
+    }
+}
+
+impl Display for DataState {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+/// Typed `data-*` selector key stored by [`Style`].
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct DataAttr(String);
+
+impl DataAttr {
+    /// Build from a raw key such as `state=open`.
+    pub fn new(name: impl Into<String>) -> Self {
+        Self(name.into())
+    }
+
+    /// Build a `data-state=<value>` selector from a typed state value.
+    pub fn state(state: DataState) -> Self {
+        Self(format!("state={state}"))
+    }
+
+    /// Return the raw key used for storage and lookup.
+    pub fn as_str(&self) -> &str {
+        self.0.as_str()
+    }
+}
+
+impl AsRef<str> for DataAttr {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl Display for DataAttr {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl From<String> for DataAttr {
+    fn from(value: String) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<&str> for DataAttr {
+    fn from(value: &str) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<DataState> for DataAttr {
+    fn from(value: DataState) -> Self {
+        Self::state(value)
+    }
+}
+
+/// Typed `aria-*` selector key stored by [`Style`].
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct AriaAttr(String);
+
+impl AriaAttr {
+    /// Build from a raw key such as `selected=true`.
+    pub fn new(name: impl Into<String>) -> Self {
+        Self(name.into())
+    }
+
+    /// Build an arbitrary boolean ARIA selector such as `expanded=true`.
+    pub fn flag(name: impl AsRef<str>, enabled: bool) -> Self {
+        Self(format!("{}={enabled}", name.as_ref()))
+    }
+
+    pub fn selected(enabled: bool) -> Self {
+        Self::flag("selected", enabled)
+    }
+
+    pub fn checked(enabled: bool) -> Self {
+        Self::flag("checked", enabled)
+    }
+
+    pub fn expanded(enabled: bool) -> Self {
+        Self::flag("expanded", enabled)
+    }
+
+    pub fn disabled(enabled: bool) -> Self {
+        Self::flag("disabled", enabled)
+    }
+
+    pub fn hidden(enabled: bool) -> Self {
+        Self::flag("hidden", enabled)
+    }
+
+    pub fn invalid(enabled: bool) -> Self {
+        Self::flag("invalid", enabled)
+    }
+
+    pub fn pressed(enabled: bool) -> Self {
+        Self::flag("pressed", enabled)
+    }
+
+    pub fn required(enabled: bool) -> Self {
+        Self::flag("required", enabled)
+    }
+
+    /// Return the raw key used for storage and lookup.
+    pub fn as_str(&self) -> &str {
+        self.0.as_str()
+    }
+}
+
+impl AsRef<str> for AriaAttr {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl Display for AriaAttr {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl From<String> for AriaAttr {
+    fn from(value: String) -> Self {
+        Self::new(value)
+    }
+}
+
+impl From<&str> for AriaAttr {
+    fn from(value: &str) -> Self {
+        Self::new(value)
+    }
+}
 
 /// Modifiers for interaction and stateful styling like hover, focus, data, and aria hooks.
 #[derive(Debug, Clone, PartialEq, Default)]
@@ -72,12 +237,12 @@ impl StateStyles {
         self.closed.as_ref()
     }
 
-    pub fn data_style(&self, name: &str) -> Option<&Style> {
-        self.data.get(name)
+    pub fn data_style(&self, name: impl AsRef<str>) -> Option<&Style> {
+        self.data.get(name.as_ref())
     }
 
-    pub fn aria_style(&self, name: &str) -> Option<&Style> {
-        self.aria.get(name)
+    pub fn aria_style(&self, name: impl AsRef<str>) -> Option<&Style> {
+        self.aria.get(name.as_ref())
     }
 }
 

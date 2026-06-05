@@ -5,6 +5,7 @@
 ## Core entry points
 
 - `Style`
+- `twill::prelude::core::*`
 - `twill::prelude::*`
 - `Merge`
 - `ComputeValue`
@@ -45,11 +46,11 @@ use twill::prelude::*;
 
 let card = Style::new()
     .padding(Padding::all(Spacing::S4))
-    .bg(Color::slate(Scale::S50))
+    .background_color(Color::slate(Scale::S50))
     .text_color_arbitrary(ColorValueToken::from_rgb8(15, 23, 42))
     .rounded(BorderRadius::Lg)
     .hover(|style| style.shadow(Shadow::Md))
-    .lg(|style| style.padding(Padding::all(Spacing::S6)));
+    .at_lg(|style| style.padding(Padding::all(Spacing::S6)));
 
 assert!(!card.is_empty());
 ```

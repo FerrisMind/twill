@@ -22,24 +22,27 @@
 //! ## Quick Start
 //!
 //! ```rust
-//! use twill::prelude::*;
+//! use twill::prelude::core::*;
 //!
 //! // Create a reusable surface style
 //! let surface_style = Style::new()
 //!     .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
-//!     .bg(Color::blue(Scale::S500))
+//!     .background_color(Color::blue(Scale::S500))
 //!     .text_color(Color::slate(Scale::S50))
 //!     .rounded(BorderRadius::Md)
 //!     .hover(|style| style.opacity(0.9))
-//!     .md(|style| style.padding(Padding::all(Spacing::S6)));
+//!     .at_md(|style| style.padding(Padding::all(Spacing::S6)));
 //! ```
 //!
 //!
 //! ## API Surface
 //!
 //! The root namespace intentionally stays small.
-//! Import day-to-day styling types from [`prelude`], and use module namespaces
-//! like [`tokens`], [`utilities`], and [`backends`] for the rest.
+//! Start with [`prelude::core`] for the small, ergonomic import path.
+//! [`prelude`] remains available as the full power-user import surface.
+//! Use module namespaces like [`tokens`], [`utilities`], and [`backends`] for the rest.
+
+#![forbid(unsafe_code)]
 
 #[cfg_attr(
     docsrs,
@@ -65,7 +68,25 @@ pub mod utilities;
 
 /// Canonical import surface for day-to-day twill usage.
 pub mod prelude {
-    pub use crate::style::Style;
+    /// Smaller starter prelude for most applications.
+    pub mod core {
+        pub use crate::style::{AriaAttr, DataAttr, DataState, Style};
+        pub use crate::tokens::{
+            AnimationToken, BorderRadius, BorderStyle, BorderWidth, Breakpoint, Color, ColorFamily,
+            Container, Cursor, Easing, FontFamily, FontSize, FontWeight, LetterSpacing, LineHeight,
+            MotionDefaults, Percentage, Perspective, RingWidth, Scale, SemanticColor,
+            SemanticThemeVars, Shadow, Spacing, TextAlign, TextDecoration, TextOverflow,
+            TextTransform, ThemeVariant, TransitionDuration, TransitionProperty, WhiteSpace,
+            WordBreak,
+        };
+        pub use crate::utilities::{
+            AlignItems, Columns, Display, Flex, FlexContainer, FlexDirection, GridContainer,
+            GridTemplate, Height, JustifyContent, Margin, Overflow, Padding, Position,
+            SizeConstraints, Width, ZIndex,
+        };
+    }
+
+    pub use crate::style::{AriaAttr, DataAttr, DataState, Style};
     pub use crate::tokens::{
         AnimationToken, BackgroundColor, BackgroundColorVar, BorderColor, BorderColorVar,
         BorderRadius, BorderStyle, BorderWidth, Breakpoint, Color, ColorFamily, ColorValue,
