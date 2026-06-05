@@ -8,10 +8,10 @@ Run the core checks before opening a PR:
 
 ```bash
 cargo fmt --all --check
-cargo test
-cargo clippy --all-features --all-targets -- -D warnings
-cargo test --all-features
-cargo doc --all-features --no-deps
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+cargo test --workspace --all-features
+cargo check --workspace --all-features --examples
+cargo doc --workspace --all-features --no-deps
 ```
 
 ## API principles
@@ -20,7 +20,8 @@ cargo doc --all-features --no-deps
 - Keep `Style` as the main composition surface instead of introducing component abstractions.
 - Prefer typed entry points such as `prelude::core::*`, `data_attr(...)`, and `aria_attr(...)`.
 - Leave raw escape hatches available when they remove friction for advanced users.
-- Avoid backend-specific behavior in the core crate unless it is fully feature-gated.
+- Keep backend-specific behavior in dedicated adapter crates unless it genuinely belongs in `twill-core`.
+- Preserve the facade ergonomics of `twill`, but keep adapter logic publishable as standalone crates.
 
 ## Docs and examples
 

@@ -15,7 +15,7 @@ categories = ["gui", "rendering"]
 [dependencies]
 twill-core = { path = "../twill-core", version = "0.3.0" }
 twill-backend-common = { path = "../twill-backend-common", version = "0.3.0" }
-iced = { version = "0.14", default-features = false, features = ["advanced", "image", "tokio", "canvas", "wayland", "x11"] }
+iced = { version = "0.14", default-features = false, features = ["advanced", "image", "tokio", "canvas", "wgpu", "wayland", "x11"] }
 
 [package.metadata.docs.rs]
 rustdoc-args = ["--cfg", "docsrs"]

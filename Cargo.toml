@@ -1,5 +1,11 @@
 [workspace]
-members = ["crates/twill-core"]
+members = [
+    "crates/twill-backend-common",
+    "crates/twill-core",
+    "crates/twill-egui",
+    "crates/twill-iced",
+    "crates/twill-slint",
+]
 
 [package]
 name = "twill"
@@ -30,23 +36,23 @@ codegen-units = 1
 strip = true
 
 [dependencies]
+twill-backend-common = { path = "crates/twill-backend-common", version = "0.3.0" }
 twill-core = { path = "crates/twill-core", version = "0.3.0" }
-
-# Optional UI framework backends
-egui = { version = "0.33", optional = true }
-iced = { version = "0.14", optional = true, default-features = false, features = ["advanced", "image", "tokio", "canvas", "wayland", "x11"] }
-slint = { version = "1.15", optional = true }
+twill-egui = { path = "crates/twill-egui", version = "0.3.0", optional = true }
+twill-iced = { path = "crates/twill-iced", version = "0.3.0", optional = true }
+twill-slint = { path = "crates/twill-slint", version = "0.3.0", optional = true }
 
 [dev-dependencies]
 eframe = { version = "0.33", default-features = false, features = ["glow", "x11", "wayland"] }
+iced = { version = "0.14", default-features = false, features = ["advanced", "image", "tokio", "canvas", "wgpu", "wayland", "x11"] }
 image = { version = "0.25", default-features = false, features = ["png"] }
 regex = "1.12.3"
 
 [features]
 default = []
-egui = ["dep:egui"]
-iced = ["dep:iced"]
-slint = ["dep:slint"]
+egui = ["dep:twill-egui"]
+iced = ["dep:twill-iced"]
+slint = ["dep:twill-slint"]
 
 [package.metadata.docs.rs]
 all-features = true
