@@ -1,0 +1,19 @@
+[package]
+name = "twill-backend-common"
+version = "0.3.0"
+edition = "2024"
+rust-version = "1.93"
+description = "Shared backend adapter glue for the Twill Rust styling ecosystem"
+license = "MIT"
+authors = ["FerrisMind"]
+repository = "https://github.com/FerrisMind/twill"
+documentation = "https://docs.rs/twill-backend-common"
+readme = "README.md"
+keywords = ["styling", "gui", "adapter", "backend", "rust"]
+categories = ["gui", "rendering"]
+
+[dependencies]
+twill-core = { path = "../twill-core", version = "0.3.0" }
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "docsrs"]

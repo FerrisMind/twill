@@ -25,19 +25,15 @@ use crate::utilities::{
 /// ```rust
 /// use twill_core::prelude::core::*;
 ///
-/// let style = Style::new()
+/// let style = Style::card()
+///     .merged(Style::interactive())
 ///     .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
-///     .bg(Color::blue(Scale::S500))
-///     .text_color(Color::slate(Scale::S50))
-///     .rounded(BorderRadius::Md)
 ///     .hover(|style| style.opacity(0.9))
-///     .focus_visible(|style| style.ring(RingWidth::S2, Color::blue(Scale::S300)))
 ///     .data_attr(DataState::Open, |style| style.shadow(Shadow::Lg))
 ///     .at_md(|style| style.padding(Padding::all(Spacing::S6)));
 ///
-/// assert_eq!(style.text_color_value(), Some(Color::slate(Scale::S50)));
-/// assert!(style.hover_style().is_some());
 /// assert!(style.focus_visible_style().is_some());
+/// assert!(style.hover_style().is_some());
 /// assert!(style.data_attr_style(DataState::Open).is_some());
 /// ```
 #[derive(Debug, Clone, PartialEq, Default)]
@@ -1913,6 +1909,11 @@ impl Style {
         self
     }
 
+    /// Verbose alias for `background_token(...)`.
+    pub fn background_color_token(self, token: BackgroundColor) -> Self {
+        self.background_token(token)
+    }
+
     /// `bg-inherit` equivalent.
     pub fn bg_inherit(self) -> Self {
         self.background_token(BackgroundColor::inherit())
@@ -1995,6 +1996,24 @@ impl Style {
         self
     }
 
+    /// Set border width without changing style or color.
+    pub fn border_width(mut self, width: BorderWidth) -> Self {
+        self.border_width = Some(width);
+        self
+    }
+
+    /// Set border style without changing width or color.
+    pub fn border_style(mut self, style: BorderStyle) -> Self {
+        self.border_style = Some(style);
+        self
+    }
+
+    /// Set border color without changing width or style.
+    pub fn border_color(mut self, color: Color) -> Self {
+        self.border_color = Some(BorderColor::palette(color));
+        self
+    }
+
     /// Set border color token directly.
     pub fn border_color_token(mut self, token: BorderColor) -> Self {
         self.border_color = Some(token);
@@ -2015,6 +2034,24 @@ impl Style {
     pub fn outline(mut self, width: BorderWidth, style: OutlineStyle, color: Color) -> Self {
         self.outline_width = Some(width);
         self.outline_style = Some(style);
+        self.outline_color = Some(OutlineColor::palette(color));
+        self
+    }
+
+    /// Set outline width without changing style or color.
+    pub fn outline_width(mut self, width: BorderWidth) -> Self {
+        self.outline_width = Some(width);
+        self
+    }
+
+    /// Set outline style without changing width or color.
+    pub fn outline_style(mut self, style: OutlineStyle) -> Self {
+        self.outline_style = Some(style);
+        self
+    }
+
+    /// Set outline color without changing width or style.
+    pub fn outline_color(mut self, color: Color) -> Self {
         self.outline_color = Some(OutlineColor::palette(color));
         self
     }
@@ -2042,6 +2079,25 @@ impl Style {
         self
     }
 
+    /// Set ring width and a typed color token directly.
+    pub fn ring_token(mut self, width: RingWidth, token: RingColor) -> Self {
+        self.ring_width = Some(width);
+        self.ring_color = Some(token);
+        self
+    }
+
+    /// Set ring width without changing color.
+    pub fn ring_width(mut self, width: RingWidth) -> Self {
+        self.ring_width = Some(width);
+        self
+    }
+
+    /// Set ring color without changing width.
+    pub fn ring_color(mut self, color: Color) -> Self {
+        self.ring_color = Some(RingColor::palette(color));
+        self
+    }
+
     /// Set ring color token directly.
     pub fn ring_color_token(mut self, token: RingColor) -> Self {
         self.ring_color = Some(token);
@@ -2064,6 +2120,11 @@ impl Style {
     pub fn shadow(mut self, shadow: Shadow) -> Self {
         self.box_shadow = Some(shadow);
         self
+    }
+
+    /// Verbose alias for `shadow(...)`.
+    pub fn box_shadow(self, shadow: Shadow) -> Self {
+        self.shadow(shadow)
     }
 
     /// Set inset shadow.
@@ -2820,6 +2881,31 @@ mod tests {
         assert_eq!(style.text_color_value(), None);
         assert_eq!(style.border_color_value(), None);
         assert_eq!(style.shadow_color_value(), None);
+    }
+
+    #[test]
+    fn test_verbose_color_aliases_and_incremental_ring_builders() {
+        let background = BackgroundColor::semantic(SemanticColor::Background);
+        let ring = RingColor::semantic(SemanticColor::Ring);
+
+        let style = Style::new()
+            .background_color_token(background)
+            .border_color(Color::emerald(Scale::S500))
+            .outline_color(Color::amber(Scale::S500))
+            .ring_width(RingWidth::S2)
+            .ring_color(Color::violet(Scale::S500))
+            .ring_color_token(ring)
+            .box_shadow(Shadow::Md);
+
+        assert_eq!(style.background_color_value(), Some(background));
+        assert_eq!(
+            style.border_color_value(),
+            Some(Color::emerald(Scale::S500))
+        );
+        assert_eq!(style.outline_color_value(), Some(Color::amber(Scale::S500)));
+        assert_eq!(style.ring_width_value(), Some(RingWidth::S2));
+        assert_eq!(style.ring_color_token_value(), Some(ring));
+        assert_eq!(style.box_shadow_value(), Some(Shadow::Md));
     }
 
     #[test]

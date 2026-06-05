@@ -35,7 +35,9 @@ pub use cursor::Cursor;
 pub use motion::{AnimationToken, Easing, MotionDefaults, TransitionDuration, TransitionProperty};
 pub use oklch::OklchConverter;
 pub use perspective::Perspective;
-pub use semantic::{DynamicSemanticTheme, SemanticColor, SemanticThemeVars, ThemeVariant};
+pub use semantic::{
+    DynamicSemanticTheme, SemanticColor, SemanticThemeSource, SemanticThemeVars, ThemeVariant,
+};
 pub use shadows::{DropShadow, InsetShadow, Shadow, TextShadow};
 pub use spacing::{Breakpoint, Container, Percentage, Spacing};
 pub use typography::{

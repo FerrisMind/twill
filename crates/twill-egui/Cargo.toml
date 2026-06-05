@@ -1,0 +1,21 @@
+[package]
+name = "twill-egui"
+version = "0.3.0"
+edition = "2024"
+rust-version = "1.93"
+description = "egui adapter crate for the Twill Rust styling ecosystem"
+license = "MIT"
+authors = ["FerrisMind"]
+repository = "https://github.com/FerrisMind/twill"
+documentation = "https://docs.rs/twill-egui"
+readme = "README.md"
+keywords = ["styling", "gui", "egui", "adapter", "rust"]
+categories = ["gui", "rendering"]
+
+[dependencies]
+twill-core = { path = "../twill-core", version = "0.3.0" }
+twill-backend-common = { path = "../twill-backend-common", version = "0.3.0" }
+egui = "0.33"
+
+[package.metadata.docs.rs]
+rustdoc-args = ["--cfg", "docsrs"]
