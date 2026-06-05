@@ -1,14 +1,9 @@
-use twill::prelude::*;
+use twill::prelude::{arbitrary::*, core::*};
 
 fn main() {
-    let base = Style::new()
+    let base = Style::card()
         .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
-        .rounded(BorderRadius::Lg)
-        .border(
-            BorderWidth::S1,
-            BorderStyle::Solid,
-            Color::slate(Scale::S300),
-        );
+        .rounded(BorderRadius::Lg);
 
     let emphasis = Style::new()
         .bg(Color::blue(Scale::S500))
@@ -20,7 +15,7 @@ fn main() {
         .flex_arbitrary("2_1_auto")
         .grid_cols_arbitrary("200px_minmax(0,_1fr)");
 
-    let composed = base.with(emphasis);
+    let composed = base.merged(emphasis);
 
     println!("== style builder ==");
     println!("padding: {:?}", composed.padding_value());

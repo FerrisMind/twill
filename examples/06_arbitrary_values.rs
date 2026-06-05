@@ -1,4 +1,4 @@
-use twill::prelude::*;
+use twill::prelude::{arbitrary::*, core::*};
 
 fn main() {
     let style = Style::new()

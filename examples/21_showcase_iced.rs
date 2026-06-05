@@ -13,7 +13,7 @@ use iced::{Element, Fill, Theme};
 #[cfg(feature = "iced")]
 use twill::backends::iced::{self as twill_iced, styled_container};
 #[cfg(feature = "iced")]
-use twill::prelude::*;
+use twill::prelude::{core::*, theme::*};
 
 #[cfg(feature = "iced")]
 fn main() -> iced::Result {

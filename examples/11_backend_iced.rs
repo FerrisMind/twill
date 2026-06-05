@@ -6,7 +6,7 @@ use common::{interactive_style, surface_style};
 #[cfg(feature = "iced")]
 use twill::backends::iced::{self, ToIced};
 #[cfg(feature = "iced")]
-use twill::prelude::*;
+use twill::prelude::{arbitrary::*, core::*, theme::*};
 #[cfg(feature = "iced")]
 use twill::tokens::Cursor;
 
