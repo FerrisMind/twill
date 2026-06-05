@@ -5,8 +5,8 @@ This example shows breakpoint layers and how they resolve through `Style::at_bre
 - File: `examples/04_responsive.rs`
 - Run:
 
-```powershell
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" run --example responsive
+```bash
+cargo run --example responsive
 ```
 
 - Expected output: one line per breakpoint showing the resolved width, height, padding, and shadow values.

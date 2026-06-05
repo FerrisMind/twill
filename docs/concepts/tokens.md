@@ -6,11 +6,11 @@ Twill tokens are Rust enums and value types representing styling primitives.
 Use `Color` + `Scale`:
 
 ```rust
-use twill::prelude::*;
+use twill::prelude::core::*;
 
 let primary = Color::blue(Scale::S500);
 let danger = Color::red(Scale::S600);
-let bg = Color::gray(Scale::S50);
+let bg = Color::slate(Scale::S50);
 ```
 
 Special colors:
@@ -31,7 +31,7 @@ Typed arbitrary/custom-property escape hatches:
 Use `Spacing` for paddings, margins, gaps:
 
 ```rust
-use twill::prelude::*;
+use twill::prelude::core::*;
 
 let p = Spacing::S4;   // 1rem
 let gap = Spacing::S2; // 0.5rem
@@ -56,6 +56,15 @@ Typography also supports typed custom values:
 - `LineHeightVar`
 - `LetterSpacing::Em(...)`
 - `LineHeight::Number(...)`
+
+Semantic aliases intentionally live in a separate import layer:
+
+```rust
+use twill::prelude::theme::*;
+
+let theme = SemanticThemeVars::shadcn_neutral();
+let foreground = theme.resolve_light(SemanticColor::Foreground);
+```
 
 ## Shadow tokens
 - `Shadow`

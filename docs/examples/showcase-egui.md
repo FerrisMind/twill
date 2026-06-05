@@ -5,8 +5,8 @@ This is the full `egui` showcase for `main`/`0.3.x`. It combines tokens, compose
 - File: `examples/20_showcase_egui.rs`
 - Run:
 
-```powershell
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" run --example showcase_egui --features egui
+```bash
+cargo run --example showcase_egui --features egui
 ```
 
 - Expected UI: a native `egui` window with token swatches, semantic theme labels, and composed cards built from shared Twill styles.
