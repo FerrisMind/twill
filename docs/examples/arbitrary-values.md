@@ -5,8 +5,8 @@ This example shows the controlled escape-hatch layer of `twill`: arbitrary and c
 - File: `examples/06_arbitrary_values.rs`
 - Run:
 
-```powershell
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" run --example arbitrary_values
+```bash
+cargo run --example arbitrary_values
 ```
 
 - Expected output: a terminal dump showing arbitrary/custom tokens for background, text, spacing, constraints, border, ring, shadow color, typography overrides, and custom motion/effect values.

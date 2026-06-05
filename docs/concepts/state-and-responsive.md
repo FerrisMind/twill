@@ -7,9 +7,10 @@ Twill keeps interactive and responsive styling at the `Style` layer instead of s
 ```rust
 use twill::prelude::core::*;
 
-let style = Style::new()
+let style = Style::interactive()
+    .bg(Color::slate(Scale::S100))
+    .text_color(Color::slate(Scale::S900))
     .hover(|style| style.opacity(0.9))
-    .focus_visible(|style| style.ring(RingWidth::S2, Color::blue(Scale::S300)))
     .selected(|style| style.bg(Color::blue(Scale::S500)))
     .checked(|style| {
         style.border(
@@ -45,7 +46,7 @@ Supported arbitrary hooks:
 ```rust
 use twill::prelude::core::*;
 
-let style = Style::new()
+let style = Style::card()
     .w(Spacing::S12)
     .at_sm(|style| style.w(Spacing::S24))
     .at_lg(|style| style.h(Spacing::S32));
