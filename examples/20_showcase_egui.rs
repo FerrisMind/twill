@@ -11,7 +11,7 @@ use eframe::egui::{self, RichText};
 #[cfg(feature = "egui")]
 use twill::backends::egui::{self as twill_egui, ToEgui};
 #[cfg(feature = "egui")]
-use twill::prelude::*;
+use twill::prelude::{core::*, theme::*};
 
 #[cfg(feature = "egui")]
 fn main() -> eframe::Result<()> {

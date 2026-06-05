@@ -6,7 +6,7 @@ use common::interactive_style;
 #[cfg(feature = "slint")]
 use twill::backends::slint::{self, ToSlint};
 #[cfg(feature = "slint")]
-use twill::prelude::*;
+use twill::prelude::{arbitrary::*, core::*, theme::*};
 #[cfg(feature = "slint")]
 use twill::tokens::Cursor;
 

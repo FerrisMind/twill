@@ -6,8 +6,11 @@
 //! optional adapters for `egui`, `iced`, or `slint`.
 //!
 //! - Use [`prelude::core`] for the small day-to-day import surface.
-//! - Use [`prelude`] when you want the full power-user surface.
+//! - Add [`prelude::theme`], [`prelude::arbitrary`], and [`prelude::traits`] only as needed.
+//! - Use [`prelude`] when you explicitly want the full power-user surface.
 //! - Depend on `twill-core` directly when you only need the backend-agnostic style engine.
+//! - Depend on `twill-egui`, `twill-iced`, or `twill-slint` directly when you want one adapter
+//!   without the facade crate.
 
 #![forbid(unsafe_code)]
 

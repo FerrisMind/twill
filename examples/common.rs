@@ -19,17 +19,7 @@ pub fn token_palette() -> [(Color, &'static str); 4] {
 }
 
 pub fn surface_style() -> Style {
-    Style::new()
-        .bg(Color::white())
-        .text_color(Color::slate(Scale::S900))
-        .padding(Padding::all(Spacing::S4))
-        .rounded(BorderRadius::Xl)
-        .border(
-            BorderWidth::S1,
-            BorderStyle::Solid,
-            Color::slate(Scale::S200),
-        )
-        .shadow(Shadow::Sm)
+    Style::card().rounded(BorderRadius::Xl)
 }
 
 pub fn composition_style() -> Style {
@@ -45,11 +35,10 @@ pub fn composition_style() -> Style {
 
 pub fn interactive_style() -> Style {
     surface_style()
+        .merged(Style::interactive())
         .bg(Color::blue(Scale::S500))
         .text_color(Color::white())
         .hover(|style| style.opacity(0.92))
-        .focus_visible(|style| style.ring(RingWidth::S2, Color::blue(Scale::S300)))
-        .disabled(|style| style.opacity(0.55))
         .data_attr(DataState::Open, |style| style.shadow(Shadow::Lg))
         .aria_attr(AriaAttr::Selected, |style| {
             style.border(

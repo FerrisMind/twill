@@ -6,7 +6,7 @@ use common::{interactive_style, surface_style};
 #[cfg(feature = "egui")]
 use twill::backends::egui::{self, ToEgui};
 #[cfg(feature = "egui")]
-use twill::prelude::*;
+use twill::prelude::{arbitrary::*, core::*, theme::*};
 #[cfg(feature = "egui")]
 use twill::tokens::Cursor;
 

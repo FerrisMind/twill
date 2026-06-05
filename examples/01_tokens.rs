@@ -1,4 +1,4 @@
-use twill::prelude::*;
+use twill::prelude::{arbitrary::*, core::*, traits::*};
 
 fn main() {
     let palette = [
