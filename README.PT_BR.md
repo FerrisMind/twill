@@ -22,16 +22,29 @@ Twill é um style system agnóstico de backend para código de UI em Rust. Ele f
 
 - design tokens tipados para cor, espaçamento, tipografia, sombras, motion e aliases semânticos;
 - um builder fluente `Style` para composição utility-first;
-- camadas de estado como `hover`, `focus`, `focus_visible`, `selected`, `checked`, `open`, `closed`, `data_state` e `aria_state`;
+- escape hatches tipados para valores arbitrários e custom properties;
+- camadas de estado como `hover`, `focus`, `focus_visible`, `selected`, `checked`, `open`, `closed`, `data_attr` e `aria_attr`;
 - composição responsiva com `sm`, `md`, `lg`, `xl` e `s2xl`;
 - adapters para `egui`, `iced` e `slint`.
 
 O crate **não** inclui componentes de UI como `Button`, `Card` ou `Dialog`, e **não** expõe serialização para CSS.
 
+O ecossistema agora tem uma estrutura em camadas:
+
+- `twill-core` para bibliotecas e apps que só precisam do style engine agnóstico de backend;
+- `twill-egui`, `twill-iced` e `twill-slint` como adapter crates finos sobre `twill-core`;
+- `twill` como crate facade que reexporta `twill-core` e esses adapters via feature flags.
+
 ## Instalação
 
 ```toml
 [dependencies]
+twill-core = "0.3"
+twill-egui = "0.3"
+twill-iced = "0.3"
+twill-slint = "0.3"
+
+# ou use o crate facade
 twill = "0.3"
 
 twill = { version = "0.3", features = ["egui"] }
@@ -39,37 +52,41 @@ twill = { version = "0.3", features = ["iced"] }
 twill = { version = "0.3", features = ["slint"] }
 ```
 
+MSRV: Rust `1.93`.
+
 ## Exemplo rápido
 
 ```rust
-use twill::prelude::*;
+use twill::prelude::core::*;
 
-let style = Style::new()
+let style = Style::card()
+    .merged(Style::interactive())
     .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
-    .bg(Color::blue(Scale::S500))
-    .text_color(Color::slate(Scale::S50))
-    .rounded(BorderRadius::Md)
     .hover(|style| style.opacity(0.9))
-    .focus_visible(|style| style.ring_color(Color::blue(Scale::S300)))
-    .data_state("state=open", |style| style.shadow(Shadow::Lg))
-    .md(|style| style.padding(Padding::all(Spacing::S6)));
+    .data_attr(DataState::Open, |style| style.shadow(Shadow::Lg))
+    .at_md(|style| style.padding(Padding::all(Spacing::S6)));
 ```
 
 ## API central
 
 - `Style`
-- `twill::prelude::*`
+- `twill-core`
+- `twill-egui`, `twill-iced`, `twill-slint`
+- `twill::prelude::core::*`
+- `twill::prelude::{theme::*, arbitrary::*, traits::*}`
 - `SemanticThemeVars`
 - `DynamicSemanticTheme`
 - `twill::backends::{egui, iced, slint}`
 
+Se você não quiser o facade crate, pode depender diretamente de `twill-egui`, `twill-iced` ou `twill-slint`.
+
 ## Desenvolvimento
 
-```powershell
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" fmt --all --check
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" build
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" clippy -- -D warnings
-& "$env:USERPROFILE\.cargo\bin\cargo.exe" test
+```bash
+cargo fmt --all --check
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+cargo test --workspace --all-features
+cargo check --workspace --all-features --examples
 ```
 
 ## Licença

@@ -29,9 +29,12 @@ Twill is a backend-agnostic style system for Rust UI code. It provides:
 
 Twill does **not** ship UI components such as `Button`, `Card`, or `Dialog`, and it does **not** expose a CSS serialization layer.
 
-The ecosystem now has two entry points:
+The ecosystem now has five entry points:
 
 - `twill-core` for libraries and applications that only need the backend-agnostic style engine;
+- `twill-egui` for egui-only adapter code on top of `twill-core`;
+- `twill-iced` for iced-only adapter code on top of `twill-core`;
+- `twill-slint` for slint-only adapter code on top of `twill-core`;
 - `twill` as the facade crate that re-exports `twill-core` and optionally adds GUI adapters.
 
 Examples and cookbook pages in `main` target the `0.3.x` API only. Legacy demos built around component APIs or CSS serialization belong to the `0.2.x` release line, not this branch.
@@ -41,6 +44,9 @@ Examples and cookbook pages in `main` target the `0.3.x` API only. Legacy demos 
 ```toml
 [dependencies]
 twill-core = "0.3"
+twill-egui = "0.3"
+twill-iced = "0.3"
+twill-slint = "0.3"
 
 # or use the facade crate
 twill = "0.3"
@@ -56,6 +62,8 @@ MSRV: Rust `1.93`.
 Backend notes:
 
 - `twill-core` is synchronous and backend-agnostic.
+- `twill-egui`, `twill-iced`, and `twill-slint` are thin adapter crates that depend on
+  `twill-core` directly.
 - `twill` re-exports the full core API and only pulls GUI dependencies when you enable a backend feature.
 - `egui` adds conversion helpers for egui types only.
 - `iced` adds the Iced adapter and the Unix windowing/runtime feature set used by this crate configuration.
@@ -66,24 +74,29 @@ Backend notes:
 ```rust
 use twill::prelude::core::*;
 
-let style = Style::new()
+let style = Style::card()
+    .merged(Style::interactive())
     .padding(Padding::symmetric(Spacing::S2, Spacing::S4))
-    .bg(Color::blue(Scale::S500))
-    .text_color(Color::slate(Scale::S50))
-    .rounded(BorderRadius::Md)
     .hover(|style| style.opacity(0.9))
-    .focus_visible(|style| style.ring(RingWidth::S2, Color::blue(Scale::S300)))
     .data_attr(DataState::Open, |style| style.shadow(Shadow::Lg))
     .at_md(|style| style.padding(Padding::all(Spacing::S6)));
 ```
 
-If you prefer the old wide import surface or need advanced escape hatches, `twill::prelude::*`
-remains available as the power-user path.
+## Prelude Layers
+
+Twill now has a stratified import surface:
+
+- `twill::prelude::core::*` for day-to-day `Style`, tokens, layout, and state builders;
+- `twill::prelude::theme::*` for semantic aliases such as `SemanticColor` and theme resolvers;
+- `twill::prelude::arbitrary::*` for typed arbitrary/custom-property escape hatches;
+- `twill::prelude::traits::*` for generic integration traits like `Merge` and `Responsive`.
+
+`twill::prelude::*` still exists when you explicitly want the full power-user surface.
 
 Typed escape hatches stay in the style layer:
 
 ```rust
-use twill::prelude::*;
+use twill::prelude::{arbitrary::*, core::*};
 
 let style = Style::new()
     .text_color_arbitrary(ColorValueToken::from_rgb8(248, 250, 252))
@@ -97,12 +110,27 @@ let style = Style::new()
     .transition_duration_ms(240);
 ```
 
+## Compositional Presets
+
+The core crate now ships a few reusable presets that stay intentionally small:
+
+- `Style::surface()` for structural spacing, radius, and elevation;
+- `Style::card()` for semantic card/background/border defaults;
+- `Style::interactive()` for cursor, transition, focus ring, and disabled affordances.
+
+Use them as building blocks and layer app-specific details with `merged(...)` or
+`merge_in_place(...)`.
+
 ## Core API
 
 - `Style` is the central style composition type.
 - `twill-core` is the lightest dependency when you do not need backend adapters.
-- `twill::prelude::core::*` is the recommended starter import; `twill::prelude::*` remains the full power-user import.
+- `twill-egui`, `twill-iced`, and `twill-slint` are the narrowest way to depend on one backend adapter.
+- `twill::prelude::core::*` is the recommended starter import.
+- `twill::prelude::{theme::*, arbitrary::*, traits::*}` expand the API surface only when needed.
 - `SemanticThemeVars` and `DynamicSemanticTheme` provide semantic alias mapping inspired by shadcn theme variables.
+- `Style::resolved_theme(...)`, `resolved_light_theme(...)`, and `resolved_dark_theme(...)` let you
+  turn semantic aliases into concrete color tokens before backend conversion.
 - `twill::backends::{egui, iced, slint}` expose typed conversion helpers for each supported runtime.
 
 ## State And Responsive Composition
@@ -139,7 +167,8 @@ Supported adapters:
 - `slint`
 
 Each backend translates Twill tokens and `Style` values into framework-specific primitives without changing the core style model.
-The core crate stays synchronous and backend-agnostic; only enabled adapters pull runtime-specific dependencies.
+Use `twill-egui`, `twill-iced`, or `twill-slint` directly when you want one adapter crate; use
+`twill` when you want the facade and feature-gated re-exports.
 
 ## Documentation
 
@@ -153,8 +182,9 @@ Useful checks:
 
 ```bash
 cargo fmt --all --check
-cargo clippy --all-targets --all-features -- -D warnings
-cargo test --all-features
+cargo clippy --workspace --all-targets --all-features -- -D warnings
+cargo test --workspace --all-features
+cargo check --workspace --all-features --examples
 ```
 
 ## License
