@@ -2,9 +2,9 @@
 
 use std::{collections::BTreeMap, num::NonZeroU8};
 
-use crate::style::{AriaAttr, DataAttr};
 #[cfg(test)]
 use crate::style::DataState;
+use crate::style::{AriaAttr, DataAttr};
 use crate::tokens::{
     AnimationToken, AspectRatio, BackgroundColor, BackgroundColorVar, Blur, BorderColor,
     BorderColorVar, BorderRadius, BorderStyle, BorderWidth, Breakpoint, Color, ColorValueToken,
