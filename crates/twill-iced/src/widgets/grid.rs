@@ -14,9 +14,9 @@ use super::common::{
 };
 
 pub fn columns_layout<'a, Message: Clone + 'a>(
-    items: Vec<iced::Element<'a, Message>>,
+    items: Vec<super::common::Element<'a, Message>>,
     style: &Style,
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     let gap = style.column_gap_value().map_or(0.0, spacing_to_px);
     let max_columns = style
         .columns_max_count_value()
@@ -30,7 +30,7 @@ pub fn columns_layout<'a, Message: Clone + 'a>(
             .width(Length::Fill)
             .into(),
         None => {
-            let mut fallback = iced::widget::Column::new().spacing(gap);
+            let mut fallback = iced_widget::Column::new().spacing(gap);
             for item in items {
                 fallback = fallback.push(item);
             }
@@ -141,15 +141,15 @@ pub(crate) fn resolve_grid_template_track_count(
 }
 
 fn build_grid_template_columns_layout<'a, Message: Clone + 'a>(
-    items: Vec<iced::Element<'a, Message>>,
+    items: Vec<super::common::Element<'a, Message>>,
     track_count: usize,
     gap: Spacing,
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     let track_count = clamp_track_count(track_count);
     let gap_px = spacing_to_px(gap);
 
     if track_count <= 1 {
-        let mut col = iced::widget::Column::new()
+        let mut col = iced_widget::Column::new()
             .spacing(gap_px)
             .width(Length::Fill);
         for item in items {
@@ -158,19 +158,19 @@ fn build_grid_template_columns_layout<'a, Message: Clone + 'a>(
         return col.into();
     }
 
-    let mut grid_rows = iced::widget::Column::new()
+    let mut grid_rows = iced_widget::Column::new()
         .spacing(gap_px)
         .width(Length::Fill);
-    let mut current_row = iced::widget::Row::new().spacing(gap_px).width(Length::Fill);
+    let mut current_row = iced_widget::Row::new().spacing(gap_px).width(Length::Fill);
     let mut items_in_row = 0_usize;
 
     for item in items {
-        current_row = current_row.push(iced::widget::container(item).width(Length::FillPortion(1)));
+        current_row = current_row.push(iced_widget::container(item).width(Length::FillPortion(1)));
         items_in_row += 1;
 
         if items_in_row == track_count {
             grid_rows = grid_rows.push(current_row);
-            current_row = iced::widget::Row::new().spacing(gap_px).width(Length::Fill);
+            current_row = iced_widget::Row::new().spacing(gap_px).width(Length::Fill);
             items_in_row = 0;
         }
     }
@@ -178,7 +178,7 @@ fn build_grid_template_columns_layout<'a, Message: Clone + 'a>(
     if items_in_row > 0 {
         for _ in items_in_row..track_count {
             current_row = current_row.push(
-                iced::widget::Space::new()
+                iced_widget::Space::new()
                     .width(Length::FillPortion(1))
                     .height(Length::Shrink),
             );
@@ -191,10 +191,10 @@ fn build_grid_template_columns_layout<'a, Message: Clone + 'a>(
 
 /// Create an iced layout for a typed `grid-template-columns` value.
 pub fn grid_template_columns_layout<'a, Message: Clone + 'a>(
-    items: Vec<iced::Element<'a, Message>>,
+    items: Vec<super::common::Element<'a, Message>>,
     template: GridTemplate,
     gap: Spacing,
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     grid_template_columns_layout_with_context(items, template, gap, None, &[])
 }
 
@@ -203,19 +203,19 @@ pub fn grid_template_columns_layout<'a, Message: Clone + 'a>(
 /// - `inherited_track_count` is used for `Subgrid`.
 /// - `custom_properties` is used for `CustomProperty`.
 pub fn grid_template_columns_layout_with_context<'a, Message: Clone + 'a>(
-    items: Vec<iced::Element<'a, Message>>,
+    items: Vec<super::common::Element<'a, Message>>,
     template: GridTemplate,
     gap: Spacing,
     inherited_track_count: Option<usize>,
     custom_properties: &[(&str, &str)],
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     let track_count =
         resolve_grid_template_track_count(&template, inherited_track_count, custom_properties);
     build_grid_template_columns_layout(items, track_count, gap)
 }
 
-struct ColumnsFlow<'a, Message, Theme = iced_core::Theme, Renderer = iced::Renderer> {
-    elements: Vec<iced::Element<'a, Message, Theme, Renderer>>,
+struct ColumnsFlow<'a, Message, Theme = iced_core::Theme, Renderer = iced_widget::Renderer> {
+    elements: Vec<super::common::Element<'a, Message, Theme, Renderer>>,
     columns: Columns,
     max_columns: usize,
     gap: f32,
@@ -225,7 +225,7 @@ struct ColumnsFlow<'a, Message, Theme = iced_core::Theme, Renderer = iced::Rende
 
 impl<'a, Message, Theme, Renderer> ColumnsFlow<'a, Message, Theme, Renderer> {
     fn with_elements(
-        elements: Vec<iced::Element<'a, Message, Theme, Renderer>>,
+        elements: Vec<super::common::Element<'a, Message, Theme, Renderer>>,
         columns: Columns,
     ) -> Self {
         Self {
@@ -451,13 +451,13 @@ where
 }
 
 impl<'a, Message, Theme, Renderer> From<ColumnsFlow<'a, Message, Theme, Renderer>>
-    for iced::Element<'a, Message, Theme, Renderer>
+    for super::common::Element<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer + 'a,
     Theme: 'a,
     Message: 'a,
 {
     fn from(flow: ColumnsFlow<'a, Message, Theme, Renderer>) -> Self {
-        iced::Element::new(flow)
+        super::common::Element::new(flow)
     }
 }

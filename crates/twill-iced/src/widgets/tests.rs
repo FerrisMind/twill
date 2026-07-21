@@ -523,9 +523,9 @@ fn test_resolve_grid_template_track_count_variants() {
 
 #[test]
 fn test_grid_template_columns_layout_builds() {
-    let _: iced::Element<'_, ()> =
+    let _: super::common::Element<'_, ()> =
         grid_template_columns_layout(vec![], GridTemplate::count(4), Spacing::S4);
-    let _: iced::Element<'_, ()> = grid_template_columns_layout_with_context(
+    let _: super::common::Element<'_, ()> = grid_template_columns_layout_with_context(
         vec![],
         GridTemplate::subgrid(),
         Spacing::S2,
@@ -577,9 +577,9 @@ fn test_reverse_directions_detection() {
 
 #[test]
 fn test_flex_direction_layout_reverse_builds() {
-    let _: iced::Element<'_, ()> =
+    let _: super::common::Element<'_, ()> =
         flex_direction_layout(vec![], FlexDirection::RowReverse, Spacing::S4);
-    let _: iced::Element<'_, ()> =
+    let _: super::common::Element<'_, ()> =
         flex_direction_layout(vec![], FlexDirection::ColReverse, Spacing::S4);
 }
 
@@ -601,13 +601,13 @@ fn test_align_items_safe_and_baseline_mapping() {
 
 #[test]
 fn test_align_items_layout_builds() {
-    let _: iced::Element<'_, ()> = align_items_layout(
+    let _: super::common::Element<'_, ()> = align_items_layout(
         vec![],
         FlexDirection::Row,
         Spacing::S4,
         AlignItems::CenterSafe,
     );
-    let _: iced::Element<'_, ()> = align_items_layout(
+    let _: super::common::Element<'_, ()> = align_items_layout(
         vec![],
         FlexDirection::ColReverse,
         Spacing::S2,
@@ -652,9 +652,9 @@ fn test_gap_main_axis_mapping() {
 
 #[test]
 fn test_gap_layout_builds() {
-    let _: iced::Element<'_, ()> = gap_layout(vec![], FlexDirection::Row, Spacing::S4);
-    let _: iced::Element<'_, ()> = gap_x_layout(vec![], FlexDirection::Row, Spacing::S6);
-    let _: iced::Element<'_, ()> = gap_y_layout(vec![], FlexDirection::Col, Spacing::S3);
+    let _: super::common::Element<'_, ()> = gap_layout(vec![], FlexDirection::Row, Spacing::S4);
+    let _: super::common::Element<'_, ()> = gap_x_layout(vec![], FlexDirection::Row, Spacing::S6);
+    let _: super::common::Element<'_, ()> = gap_y_layout(vec![], FlexDirection::Col, Spacing::S3);
 }
 
 #[test]
@@ -675,19 +675,19 @@ fn test_justify_content_safe_mapping() {
 
 #[test]
 fn test_justify_content_layout_builds() {
-    let _: iced::Element<'_, ()> = justify_content_layout(
+    let _: super::common::Element<'_, ()> = justify_content_layout(
         vec![],
         FlexDirection::Row,
         Spacing::S4,
         JustifyContent::Between,
     );
-    let _: iced::Element<'_, ()> = justify_content_layout(
+    let _: super::common::Element<'_, ()> = justify_content_layout(
         vec![],
         FlexDirection::RowReverse,
         Spacing::S2,
         JustifyContent::CenterSafe,
     );
-    let _: iced::Element<'_, ()> = justify_content_layout(
+    let _: super::common::Element<'_, ()> = justify_content_layout(
         vec![],
         FlexDirection::ColReverse,
         Spacing::S2,

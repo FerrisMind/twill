@@ -7,15 +7,23 @@ use iced_core::{Length, Rectangle, Size, Vector, mouse};
 
 use super::common::resolve_aspect_size;
 
-pub(super) struct AspectRatioBox<'a, Message, Theme = iced_core::Theme, Renderer = iced::Renderer> {
-    child: iced::Element<'a, Message, Theme, Renderer>,
+pub(super) struct AspectRatioBox<
+    'a,
+    Message,
+    Theme = iced_core::Theme,
+    Renderer = iced_widget::Renderer,
+> {
+    child: super::common::Element<'a, Message, Theme, Renderer>,
     ratio: f32,
     width: Length,
     height: Length,
 }
 
 impl<'a, Message, Theme, Renderer> AspectRatioBox<'a, Message, Theme, Renderer> {
-    pub(super) fn new(child: iced::Element<'a, Message, Theme, Renderer>, ratio: f32) -> Self {
+    pub(super) fn new(
+        child: super::common::Element<'a, Message, Theme, Renderer>,
+        ratio: f32,
+    ) -> Self {
         Self {
             child,
             ratio: ratio.max(0.0001),
@@ -184,26 +192,34 @@ where
 }
 
 impl<'a, Message, Theme, Renderer> From<AspectRatioBox<'a, Message, Theme, Renderer>>
-    for iced::Element<'a, Message, Theme, Renderer>
+    for super::common::Element<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer + 'a,
     Theme: 'a,
     Message: 'a,
 {
     fn from(boxed: AspectRatioBox<'a, Message, Theme, Renderer>) -> Self {
-        iced::Element::new(boxed)
+        super::common::Element::new(boxed)
     }
 }
 
-pub(super) struct WidthRatioBox<'a, Message, Theme = iced_core::Theme, Renderer = iced::Renderer> {
-    child: iced::Element<'a, Message, Theme, Renderer>,
+pub(super) struct WidthRatioBox<
+    'a,
+    Message,
+    Theme = iced_core::Theme,
+    Renderer = iced_widget::Renderer,
+> {
+    child: super::common::Element<'a, Message, Theme, Renderer>,
     ratio: f32,
     width: Length,
     height: Length,
 }
 
 impl<'a, Message, Theme, Renderer> WidthRatioBox<'a, Message, Theme, Renderer> {
-    pub(super) fn new(child: iced::Element<'a, Message, Theme, Renderer>, ratio: f32) -> Self {
+    pub(super) fn new(
+        child: super::common::Element<'a, Message, Theme, Renderer>,
+        ratio: f32,
+    ) -> Self {
         Self {
             child,
             ratio: ratio.clamp(0.0, 1.0),
@@ -380,26 +396,34 @@ where
 }
 
 impl<'a, Message, Theme, Renderer> From<WidthRatioBox<'a, Message, Theme, Renderer>>
-    for iced::Element<'a, Message, Theme, Renderer>
+    for super::common::Element<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer + 'a,
     Theme: 'a,
     Message: 'a,
 {
     fn from(boxed: WidthRatioBox<'a, Message, Theme, Renderer>) -> Self {
-        iced::Element::new(boxed)
+        super::common::Element::new(boxed)
     }
 }
 
-pub(super) struct HeightRatioBox<'a, Message, Theme = iced_core::Theme, Renderer = iced::Renderer> {
-    child: iced::Element<'a, Message, Theme, Renderer>,
+pub(super) struct HeightRatioBox<
+    'a,
+    Message,
+    Theme = iced_core::Theme,
+    Renderer = iced_widget::Renderer,
+> {
+    child: super::common::Element<'a, Message, Theme, Renderer>,
     ratio: f32,
     width: Length,
     height: Length,
 }
 
 impl<'a, Message, Theme, Renderer> HeightRatioBox<'a, Message, Theme, Renderer> {
-    pub(super) fn new(child: iced::Element<'a, Message, Theme, Renderer>, ratio: f32) -> Self {
+    pub(super) fn new(
+        child: super::common::Element<'a, Message, Theme, Renderer>,
+        ratio: f32,
+    ) -> Self {
         Self {
             child,
             ratio: ratio.clamp(0.0, 1.0),
@@ -576,13 +600,13 @@ where
 }
 
 impl<'a, Message, Theme, Renderer> From<HeightRatioBox<'a, Message, Theme, Renderer>>
-    for iced::Element<'a, Message, Theme, Renderer>
+    for super::common::Element<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer + 'a,
     Theme: 'a,
     Message: 'a,
 {
     fn from(boxed: HeightRatioBox<'a, Message, Theme, Renderer>) -> Self {
-        iced::Element::new(boxed)
+        super::common::Element::new(boxed)
     }
 }

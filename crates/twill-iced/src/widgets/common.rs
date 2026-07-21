@@ -3,6 +3,12 @@ use twill_core::style::Style;
 use twill_core::tokens::{ColorValue, Container, Spacing};
 use twill_core::utilities::Columns;
 
+/// A generic widget.
+///
+/// This is an alias of an `iced_native` element with a default `Renderer`.
+pub(super) type Element<'a, Message, Theme = iced_core::Theme, Renderer = iced_widget::Renderer> =
+    iced_core::Element<'a, Message, Theme, Renderer>;
+
 pub(super) fn apply_opacity_to_color(
     mut color: iced_core::Color,
     opacity: f32,

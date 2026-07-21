@@ -15,11 +15,8 @@ categories = ["gui", "rendering"]
 [dependencies]
 twill-core = { path = "../twill-core", version = "0.3.0" }
 twill-backend-common = { path = "../twill-backend-common", version = "0.3.0" }
-iced = { version = "0.14", default-features = false, features = ["canvas"] }
-iced_core = { version = "0.14", features = ["advanced"] }
-
-[features]
-default = []
+iced_core = "0.14"
+iced_widget = { version = "0.14", features = ["canvas"] }
 
 [package.metadata.docs.rs]
 rustdoc-args = ["--cfg", "docsrs"]

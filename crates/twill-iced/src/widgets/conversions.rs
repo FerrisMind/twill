@@ -586,15 +586,15 @@ pub(super) fn shadow_layers_with_color_value_and_opacity(
 }
 
 pub(super) fn wrap_with_shadow_layers<'a, Message: 'a>(
-    content: iced::Element<'a, Message>,
+    content: super::common::Element<'a, Message>,
     layers: &[iced_core::Shadow],
     border_radius: f32,
-) -> iced::widget::Container<'a, Message> {
+) -> iced_widget::Container<'a, Message> {
     let mut current = content;
 
     for shadow in layers.iter().copied().rev() {
-        current = iced::widget::container(current)
-            .style(move |_| iced::widget::container::Style {
+        current = iced_widget::container(current)
+            .style(move |_| iced_widget::container::Style {
                 border: iced_core::Border {
                     radius: border_radius.into(),
                     width: 0.0,
@@ -606,7 +606,7 @@ pub(super) fn wrap_with_shadow_layers<'a, Message: 'a>(
             .into();
     }
 
-    iced::widget::container(current)
+    iced_widget::container(current)
 }
 
 /// Convert twill Shadow to iced Shadow.
