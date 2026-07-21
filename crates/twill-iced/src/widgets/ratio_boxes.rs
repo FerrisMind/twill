@@ -1,13 +1,13 @@
-use iced::advanced::layout::{Layout as AdvancedLayout, Limits, Node};
-use iced::advanced::overlay;
-use iced::advanced::renderer;
-use iced::advanced::widget::{Operation, Tree};
-use iced::advanced::{Clipboard, Shell, Widget as AdvancedWidget};
-use iced::{Length, Rectangle, Size, Vector, mouse};
+use iced_core::layout::{Layout as AdvancedLayout, Limits, Node};
+use iced_core::overlay;
+use iced_core::renderer;
+use iced_core::widget::{Operation, Tree};
+use iced_core::{Clipboard, Shell, Widget as AdvancedWidget};
+use iced_core::{Length, Rectangle, Size, Vector, mouse};
 
 use super::common::resolve_aspect_size;
 
-pub(super) struct AspectRatioBox<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
+pub(super) struct AspectRatioBox<'a, Message, Theme = iced_core::Theme, Renderer = iced::Renderer> {
     child: iced::Element<'a, Message, Theme, Renderer>,
     ratio: f32,
     width: Length,
@@ -98,7 +98,7 @@ where
     fn update(
         &mut self,
         tree: &mut Tree,
-        event: &iced::Event,
+        event: &iced_core::Event,
         layout: AdvancedLayout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
@@ -195,7 +195,7 @@ where
     }
 }
 
-pub(super) struct WidthRatioBox<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
+pub(super) struct WidthRatioBox<'a, Message, Theme = iced_core::Theme, Renderer = iced::Renderer> {
     child: iced::Element<'a, Message, Theme, Renderer>,
     ratio: f32,
     width: Length,
@@ -294,7 +294,7 @@ where
     fn update(
         &mut self,
         tree: &mut Tree,
-        event: &iced::Event,
+        event: &iced_core::Event,
         layout: AdvancedLayout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
@@ -391,7 +391,7 @@ where
     }
 }
 
-pub(super) struct HeightRatioBox<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
+pub(super) struct HeightRatioBox<'a, Message, Theme = iced_core::Theme, Renderer = iced::Renderer> {
     child: iced::Element<'a, Message, Theme, Renderer>,
     ratio: f32,
     width: Length,
@@ -490,7 +490,7 @@ where
     fn update(
         &mut self,
         tree: &mut Tree,
-        event: &iced::Event,
+        event: &iced_core::Event,
         layout: AdvancedLayout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,

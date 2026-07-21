@@ -1,9 +1,9 @@
-use iced::advanced::layout::{Layout as AdvancedLayout, Limits, Node};
-use iced::advanced::overlay;
-use iced::advanced::renderer;
-use iced::advanced::widget::{Operation, Tree};
-use iced::advanced::{Clipboard, Shell, Widget as AdvancedWidget};
-use iced::{Length, Point, Rectangle, Size, Vector, mouse};
+use iced_core::layout::{Layout as AdvancedLayout, Limits, Node};
+use iced_core::overlay;
+use iced_core::renderer;
+use iced_core::widget::{Operation, Tree};
+use iced_core::{Clipboard, Shell, Widget as AdvancedWidget};
+use iced_core::{Length, Point, Rectangle, Size, Vector, mouse};
 use twill_core::style::Style;
 use twill_core::tokens::Spacing;
 use twill_core::utilities::{Columns, GridTemplate};
@@ -214,7 +214,7 @@ pub fn grid_template_columns_layout_with_context<'a, Message: Clone + 'a>(
     build_grid_template_columns_layout(items, track_count, gap)
 }
 
-struct ColumnsFlow<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
+struct ColumnsFlow<'a, Message, Theme = iced_core::Theme, Renderer = iced::Renderer> {
     elements: Vec<iced::Element<'a, Message, Theme, Renderer>>,
     columns: Columns,
     max_columns: usize,
@@ -368,7 +368,7 @@ where
     fn update(
         &mut self,
         tree: &mut Tree,
-        event: &iced::Event,
+        event: &iced_core::Event,
         layout: AdvancedLayout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,

@@ -1,9 +1,9 @@
-use iced::Size;
+use iced_core::Size;
 use twill_core::style::Style;
 use twill_core::tokens::{ColorValue, Container, Spacing};
 use twill_core::utilities::Columns;
 
-pub(super) fn apply_opacity_to_color(mut color: iced::Color, opacity: f32) -> iced::Color {
+pub(super) fn apply_opacity_to_color(mut color: iced_core::Color, opacity: f32) -> iced_core::Color {
     if opacity.is_finite() {
         color.a *= opacity.clamp(0.0, 1.0);
     }

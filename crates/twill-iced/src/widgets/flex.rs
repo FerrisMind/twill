@@ -1,4 +1,4 @@
-use iced::Length;
+use iced_core::Length;
 use twill_core::style::Style;
 use twill_core::tokens::Spacing;
 use twill_core::utilities::{
@@ -15,23 +15,23 @@ pub(crate) fn is_reverse_direction(direction: FlexDirection) -> bool {
     )
 }
 
-pub(crate) fn row_alignment_for_items(items: AlignItems) -> iced::alignment::Vertical {
+pub(crate) fn row_alignment_for_items(items: AlignItems) -> iced_core::alignment::Vertical {
     match items {
-        AlignItems::Start | AlignItems::Stretch => iced::alignment::Vertical::Top,
-        AlignItems::End | AlignItems::EndSafe => iced::alignment::Vertical::Bottom,
-        AlignItems::Center | AlignItems::CenterSafe => iced::alignment::Vertical::Center,
-        AlignItems::Baseline | AlignItems::BaselineLast => iced::alignment::Vertical::Bottom,
+        AlignItems::Start | AlignItems::Stretch => iced_core::alignment::Vertical::Top,
+        AlignItems::End | AlignItems::EndSafe => iced_core::alignment::Vertical::Bottom,
+        AlignItems::Center | AlignItems::CenterSafe => iced_core::alignment::Vertical::Center,
+        AlignItems::Baseline | AlignItems::BaselineLast => iced_core::alignment::Vertical::Bottom,
     }
 }
 
-pub(crate) fn column_alignment_for_items(items: AlignItems) -> iced::alignment::Horizontal {
+pub(crate) fn column_alignment_for_items(items: AlignItems) -> iced_core::alignment::Horizontal {
     match items {
         AlignItems::Start
         | AlignItems::Stretch
         | AlignItems::Baseline
-        | AlignItems::BaselineLast => iced::alignment::Horizontal::Left,
-        AlignItems::End | AlignItems::EndSafe => iced::alignment::Horizontal::Right,
-        AlignItems::Center | AlignItems::CenterSafe => iced::alignment::Horizontal::Center,
+        | AlignItems::BaselineLast => iced_core::alignment::Horizontal::Left,
+        AlignItems::End | AlignItems::EndSafe => iced_core::alignment::Horizontal::Right,
+        AlignItems::Center | AlignItems::CenterSafe => iced_core::alignment::Horizontal::Center,
     }
 }
 

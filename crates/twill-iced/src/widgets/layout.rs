@@ -1,4 +1,4 @@
-use iced::{Length, Point, Rectangle, Size, Vector, mouse};
+use iced_core::{Length, Point, Rectangle, Size, Vector, mouse};
 use twill_core::style::Style;
 use twill_core::tokens::{SemanticThemeVars, ThemeVariant};
 
@@ -8,13 +8,13 @@ use super::conversions::{
     resolve_height, resolve_width, to_aspect_ratio, to_style_margin,
 };
 use super::ratio_boxes::{AspectRatioBox, HeightRatioBox, WidthRatioBox};
-use iced::advanced::layout::{Layout as AdvancedLayout, Limits, Node};
-use iced::advanced::overlay;
-use iced::advanced::renderer;
-use iced::advanced::widget::{Operation, Tree};
-use iced::advanced::{Clipboard, Shell, Widget as AdvancedWidget};
+use iced_core::layout::{Layout as AdvancedLayout, Limits, Node};
+use iced_core::overlay;
+use iced_core::renderer;
+use iced_core::widget::{Operation, Tree};
+use iced_core::{Clipboard, Shell, Widget as AdvancedWidget};
 
-struct MarginBox<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
+struct MarginBox<'a, Message, Theme = iced_core::Theme, Renderer = iced::Renderer> {
     child: iced::Element<'a, Message, Theme, Renderer>,
     margin: MarginOffsets,
     width: Length,
@@ -100,7 +100,7 @@ where
     fn update(
         &mut self,
         tree: &mut Tree,
-        event: &iced::Event,
+        event: &iced_core::Event,
         layout: AdvancedLayout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
@@ -212,7 +212,7 @@ fn apply_margin<'a, Message: Clone + 'a>(
         top: match resolved.top {
             Some(ResolvedMarginValue::Px(px)) => px,
             Some(ResolvedMarginValue::Auto) => {
-                vertical_auto = Some(iced::alignment::Vertical::Bottom);
+                vertical_auto = Some(iced_core::alignment::Vertical::Bottom);
                 0.0
             }
             None => 0.0,
@@ -220,7 +220,7 @@ fn apply_margin<'a, Message: Clone + 'a>(
         right: match resolved.right {
             Some(ResolvedMarginValue::Px(px)) => px,
             Some(ResolvedMarginValue::Auto) => {
-                horizontal_auto = Some(iced::alignment::Horizontal::Left);
+                horizontal_auto = Some(iced_core::alignment::Horizontal::Left);
                 0.0
             }
             None => 0.0,
@@ -228,7 +228,7 @@ fn apply_margin<'a, Message: Clone + 'a>(
         bottom: match resolved.bottom {
             Some(ResolvedMarginValue::Px(px)) => px,
             Some(ResolvedMarginValue::Auto) => {
-                vertical_auto = Some(iced::alignment::Vertical::Top);
+                vertical_auto = Some(iced_core::alignment::Vertical::Top);
                 0.0
             }
             None => 0.0,
@@ -236,7 +236,7 @@ fn apply_margin<'a, Message: Clone + 'a>(
         left: match resolved.left {
             Some(ResolvedMarginValue::Px(px)) => px,
             Some(ResolvedMarginValue::Auto) => {
-                horizontal_auto = Some(iced::alignment::Horizontal::Right);
+                horizontal_auto = Some(iced_core::alignment::Horizontal::Right);
                 0.0
             }
             None => 0.0,
@@ -246,13 +246,13 @@ fn apply_margin<'a, Message: Clone + 'a>(
     if matches!(resolved.left, Some(ResolvedMarginValue::Auto))
         && matches!(resolved.right, Some(ResolvedMarginValue::Auto))
     {
-        horizontal_auto = Some(iced::alignment::Horizontal::Center);
+        horizontal_auto = Some(iced_core::alignment::Horizontal::Center);
     }
 
     if matches!(resolved.top, Some(ResolvedMarginValue::Auto))
         && matches!(resolved.bottom, Some(ResolvedMarginValue::Auto))
     {
-        vertical_auto = Some(iced::alignment::Vertical::Center);
+        vertical_auto = Some(iced_core::alignment::Vertical::Center);
     }
 
     if !offsets.is_zero() {

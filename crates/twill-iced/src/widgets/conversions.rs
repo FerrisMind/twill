@@ -1,4 +1,4 @@
-use iced::{ContentFit, Length};
+use iced_core::{ContentFit, Length};
 use twill_backend_common::ShadowColor;
 use twill_core::tokens::{
     AspectRatio, BackgroundColor, Blur, BorderColor, BorderRadius, Color, ColorValue, Cursor,
@@ -12,14 +12,14 @@ use super::common::{apply_opacity_to_color, container_to_px, spacing_to_px};
 pub use crate::convert::TextDirection;
 pub use twill_core::tokens::SemanticThemeSource;
 
-pub fn to_color(color: Color) -> iced::Color {
+pub fn to_color(color: Color) -> iced_core::Color {
     to_color_value(color.compute())
 }
 
 /// Convert twill ColorValue to iced Color.
-pub fn to_color_value(value: twill_core::tokens::ColorValue) -> iced::Color {
+pub fn to_color_value(value: twill_core::tokens::ColorValue) -> iced_core::Color {
     let (r, g, b) = value.to_rgb8();
-    iced::Color::from_rgba(
+    iced_core::Color::from_rgba(
         r as f32 / 255.0,
         g as f32 / 255.0,
         b as f32 / 255.0,
@@ -95,17 +95,17 @@ pub(crate) fn resolve_background_color_token_with_semantic_theme<
 }
 
 /// Convert twill Spacing to iced Padding.
-pub fn to_padding(spacing: Spacing) -> iced::Padding {
-    iced::Padding::new(spacing_to_px(spacing))
+pub fn to_padding(spacing: Spacing) -> iced_core::Padding {
+    iced_core::Padding::new(spacing_to_px(spacing))
 }
 
 /// Convert twill easing tokens into iced animation easing curves.
-pub fn to_easing(easing: Easing) -> iced::animation::Easing {
+pub fn to_easing(easing: Easing) -> iced_core::animation::Easing {
     match easing {
-        Easing::Linear => iced::animation::Easing::Linear,
-        Easing::In => iced::animation::Easing::EaseIn,
-        Easing::Out => iced::animation::Easing::EaseOut,
-        Easing::InOut => iced::animation::Easing::EaseInOut,
+        Easing::Linear => iced_core::animation::Easing::Linear,
+        Easing::In => iced_core::animation::Easing::EaseIn,
+        Easing::Out => iced_core::animation::Easing::EaseOut,
+        Easing::InOut => iced_core::animation::Easing::EaseInOut,
     }
 }
 
@@ -137,8 +137,8 @@ fn resolve_padding_value_px(value: PaddingValue, custom_properties: &[(&str, f32
 pub(crate) fn to_style_padding(
     padding: twill_core::utilities::Padding,
     custom_properties: &[(&str, f32)],
-) -> iced::Padding {
-    iced::Padding {
+) -> iced_core::Padding {
+    iced_core::Padding {
         top: padding
             .top_side()
             .map(|value| resolve_padding_value_px(value, custom_properties))
@@ -430,67 +430,67 @@ pub fn to_content_fit(fit: ObjectFit) -> ContentFit {
 }
 
 /// Convert twill Shadow to iced Shadow with an optional color override.
-pub fn to_shadow_with_color(shadow: Shadow, color: ShadowColor) -> iced::Shadow {
+pub fn to_shadow_with_color(shadow: Shadow, color: ShadowColor) -> iced_core::Shadow {
     let base = match color {
         ShadowColor::Default => Color::black(),
         ShadowColor::Explicit(color) => color,
     };
     let mut color = to_color(base);
     match shadow {
-        Shadow::None => iced::Shadow::default(),
+        Shadow::None => iced_core::Shadow::default(),
         Shadow::Xs2 => {
             color.a *= 0.05;
-            iced::Shadow {
+            iced_core::Shadow {
                 color,
-                offset: iced::Vector::new(0.0, 1.0),
+                offset: iced_core::Vector::new(0.0, 1.0),
                 blur_radius: 0.0,
             }
         }
         Shadow::Xs => {
             color.a *= 0.05;
-            iced::Shadow {
+            iced_core::Shadow {
                 color,
-                offset: iced::Vector::new(0.0, 1.0),
+                offset: iced_core::Vector::new(0.0, 1.0),
                 blur_radius: 2.0,
             }
         }
         Shadow::Sm => {
             color.a *= 0.1;
-            iced::Shadow {
+            iced_core::Shadow {
                 color,
-                offset: iced::Vector::new(0.0, 1.0),
+                offset: iced_core::Vector::new(0.0, 1.0),
                 blur_radius: 3.0,
             }
         }
         Shadow::Md => {
             color.a *= 0.1;
-            iced::Shadow {
+            iced_core::Shadow {
                 color,
-                offset: iced::Vector::new(0.0, 4.0),
+                offset: iced_core::Vector::new(0.0, 4.0),
                 blur_radius: 6.0,
             }
         }
         Shadow::Lg => {
             color.a *= 0.1;
-            iced::Shadow {
+            iced_core::Shadow {
                 color,
-                offset: iced::Vector::new(0.0, 10.0),
+                offset: iced_core::Vector::new(0.0, 10.0),
                 blur_radius: 15.0,
             }
         }
         Shadow::Xl => {
             color.a *= 0.1;
-            iced::Shadow {
+            iced_core::Shadow {
                 color,
-                offset: iced::Vector::new(0.0, 20.0),
+                offset: iced_core::Vector::new(0.0, 20.0),
                 blur_radius: 25.0,
             }
         }
         Shadow::S2xl => {
             color.a *= 0.25;
-            iced::Shadow {
+            iced_core::Shadow {
                 color,
-                offset: iced::Vector::new(0.0, 25.0),
+                offset: iced_core::Vector::new(0.0, 25.0),
                 blur_radius: 50.0,
             }
         }
@@ -502,7 +502,7 @@ pub fn to_shadow_with_color(shadow: Shadow, color: ShadowColor) -> iced::Shadow 
 /// Tailwind defines multiple box-shadow layers for some tokens (`sm`, `md`, `lg`, `xl`).
 /// Iced supports only one shadow per container, so layered fidelity is achieved
 /// by wrapping content with multiple shadow containers.
-pub fn to_shadow_layers_with_color(shadow: Shadow, color: ShadowColor) -> Vec<iced::Shadow> {
+pub fn to_shadow_layers_with_color(shadow: Shadow, color: ShadowColor) -> Vec<iced_core::Shadow> {
     let layers: &[(f32, f32, f32)] = match shadow {
         Shadow::None => &[],
         Shadow::Xs2 => &[(1.0, 0.0, 0.05)],
@@ -523,9 +523,9 @@ pub fn to_shadow_layers_with_color(shadow: Shadow, color: ShadowColor) -> Vec<ic
         .map(|(offset_y, blur, alpha)| {
             let mut c = to_color(base);
             c.a *= *alpha;
-            iced::Shadow {
+            iced_core::Shadow {
                 color: c,
-                offset: iced::Vector::new(0.0, *offset_y),
+                offset: iced_core::Vector::new(0.0, *offset_y),
                 blur_radius: *blur,
             }
         })
@@ -535,7 +535,7 @@ pub fn to_shadow_layers_with_color(shadow: Shadow, color: ShadowColor) -> Vec<ic
 pub(super) fn to_shadow_layers_with_color_value(
     shadow: Shadow,
     color: ColorValue,
-) -> Vec<iced::Shadow> {
+) -> Vec<iced_core::Shadow> {
     let layers: &[(f32, f32, f32)] = match shadow {
         Shadow::None => &[],
         Shadow::Xs2 => &[(1.0, 0.0, 0.05)],
@@ -552,9 +552,9 @@ pub(super) fn to_shadow_layers_with_color_value(
         .map(|(offset_y, blur, alpha)| {
             let mut c = to_color_value(color);
             c.a *= *alpha;
-            iced::Shadow {
+            iced_core::Shadow {
                 color: c,
-                offset: iced::Vector::new(0.0, *offset_y),
+                offset: iced_core::Vector::new(0.0, *offset_y),
                 blur_radius: *blur,
             }
         })
@@ -565,7 +565,7 @@ pub(super) fn shadow_layers_with_opacity(
     shadow: Shadow,
     color: ShadowColor,
     opacity: f32,
-) -> Vec<iced::Shadow> {
+) -> Vec<iced_core::Shadow> {
     let mut layers = to_shadow_layers_with_color(shadow, color);
     for layer in &mut layers {
         layer.color = apply_opacity_to_color(layer.color, opacity);
@@ -577,7 +577,7 @@ pub(super) fn shadow_layers_with_color_value_and_opacity(
     shadow: Shadow,
     color: ColorValue,
     opacity: f32,
-) -> Vec<iced::Shadow> {
+) -> Vec<iced_core::Shadow> {
     let mut layers = to_shadow_layers_with_color_value(shadow, color);
     for layer in &mut layers {
         layer.color = apply_opacity_to_color(layer.color, opacity);
@@ -587,7 +587,7 @@ pub(super) fn shadow_layers_with_color_value_and_opacity(
 
 pub(super) fn wrap_with_shadow_layers<'a, Message: 'a>(
     content: iced::Element<'a, Message>,
-    layers: &[iced::Shadow],
+    layers: &[iced_core::Shadow],
     border_radius: f32,
 ) -> iced::widget::Container<'a, Message> {
     let mut current = content;
@@ -595,10 +595,10 @@ pub(super) fn wrap_with_shadow_layers<'a, Message: 'a>(
     for shadow in layers.iter().copied().rev() {
         current = iced::widget::container(current)
             .style(move |_| iced::widget::container::Style {
-                border: iced::Border {
+                border: iced_core::Border {
                     radius: border_radius.into(),
                     width: 0.0,
-                    color: iced::Color::TRANSPARENT,
+                    color: iced_core::Color::TRANSPARENT,
                 },
                 shadow,
                 ..Default::default()
@@ -610,7 +610,7 @@ pub(super) fn wrap_with_shadow_layers<'a, Message: 'a>(
 }
 
 /// Convert twill Shadow to iced Shadow.
-pub fn to_shadow(shadow: Shadow, color: Color) -> iced::Shadow {
+pub fn to_shadow(shadow: Shadow, color: Color) -> iced_core::Shadow {
     to_shadow_with_color(shadow, ShadowColor::Explicit(color))
 }
 
@@ -625,17 +625,17 @@ pub fn resolve_font_size(size: FontSize, custom_properties: &[(&str, f32)]) -> O
 }
 
 /// Convert twill FontWeight to iced font Weight
-pub fn to_font_weight(weight: FontWeight) -> iced::font::Weight {
+pub fn to_font_weight(weight: FontWeight) -> iced_core::font::Weight {
     match weight {
-        FontWeight::Thin => iced::font::Weight::Thin,
-        FontWeight::ExtraLight => iced::font::Weight::ExtraLight,
-        FontWeight::Light => iced::font::Weight::Light,
-        FontWeight::Normal => iced::font::Weight::Normal,
-        FontWeight::Medium => iced::font::Weight::Medium,
-        FontWeight::SemiBold => iced::font::Weight::Semibold,
-        FontWeight::Bold => iced::font::Weight::Bold,
-        FontWeight::ExtraBold => iced::font::Weight::ExtraBold,
-        FontWeight::Black => iced::font::Weight::Black,
+        FontWeight::Thin => iced_core::font::Weight::Thin,
+        FontWeight::ExtraLight => iced_core::font::Weight::ExtraLight,
+        FontWeight::Light => iced_core::font::Weight::Light,
+        FontWeight::Normal => iced_core::font::Weight::Normal,
+        FontWeight::Medium => iced_core::font::Weight::Medium,
+        FontWeight::SemiBold => iced_core::font::Weight::Semibold,
+        FontWeight::Bold => iced_core::font::Weight::Bold,
+        FontWeight::ExtraBold => iced_core::font::Weight::ExtraBold,
+        FontWeight::Black => iced_core::font::Weight::Black,
     }
 }
 
@@ -643,7 +643,7 @@ pub fn to_font_weight(weight: FontWeight) -> iced::font::Weight {
 ///
 /// For direction-aware logical alignment (`text-start` / `text-end`),
 /// use [`to_text_alignment_with_direction`].
-pub fn to_text_alignment(align: TextAlign) -> iced::widget::text::Alignment {
+pub fn to_text_alignment(align: TextAlign) -> iced_core::widget::text::Alignment {
     to_text_alignment_with_direction(align, TextDirection::LeftToRight)
 }
 
@@ -654,24 +654,24 @@ pub fn to_text_alignment(align: TextAlign) -> iced::widget::text::Alignment {
 pub fn to_text_alignment_with_direction(
     align: TextAlign,
     direction: TextDirection,
-) -> iced::widget::text::Alignment {
+) -> iced_core::widget::text::Alignment {
     match align {
-        TextAlign::Left => iced::widget::text::Alignment::Left,
-        TextAlign::Center => iced::widget::text::Alignment::Center,
-        TextAlign::Right => iced::widget::text::Alignment::Right,
-        TextAlign::Justify => iced::widget::text::Alignment::Justified,
+        TextAlign::Left => iced_core::widget::text::Alignment::Left,
+        TextAlign::Center => iced_core::widget::text::Alignment::Center,
+        TextAlign::Right => iced_core::widget::text::Alignment::Right,
+        TextAlign::Justify => iced_core::widget::text::Alignment::Justified,
         TextAlign::Start => {
             if matches!(direction, TextDirection::RightToLeft) {
-                iced::widget::text::Alignment::Right
+                iced_core::widget::text::Alignment::Right
             } else {
-                iced::widget::text::Alignment::Left
+                iced_core::widget::text::Alignment::Left
             }
         }
         TextAlign::End => {
             if matches!(direction, TextDirection::RightToLeft) {
-                iced::widget::text::Alignment::Left
+                iced_core::widget::text::Alignment::Left
             } else {
-                iced::widget::text::Alignment::Right
+                iced_core::widget::text::Alignment::Right
             }
         }
     }
@@ -681,7 +681,7 @@ pub fn to_semantic_color_with_theme<S: SemanticThemeSource + ?Sized>(
     semantic: SemanticColor,
     semantic_theme: &S,
     variant: ThemeVariant,
-) -> iced::Color {
+) -> iced_core::Color {
     let color = semantic_theme
         .resolve_value(semantic, variant)
         .unwrap_or_else(|| Color::black().compute());
@@ -689,7 +689,7 @@ pub fn to_semantic_color_with_theme<S: SemanticThemeSource + ?Sized>(
 }
 
 /// Convert twill SemanticColor to iced Color based on the default semantic theme.
-pub fn to_semantic_color(semantic: SemanticColor, variant: ThemeVariant) -> iced::Color {
+pub fn to_semantic_color(semantic: SemanticColor, variant: ThemeVariant) -> iced_core::Color {
     to_semantic_color_with_theme(semantic, SemanticThemeVars::shadcn_neutral(), variant)
 }
 
@@ -699,41 +699,41 @@ pub fn to_duration(duration: TransitionDuration) -> std::time::Duration {
 }
 
 /// Convert twill Cursor to iced mouse Interaction.
-pub fn to_interaction(cursor: Cursor) -> iced::mouse::Interaction {
+pub fn to_interaction(cursor: Cursor) -> iced_core::mouse::Interaction {
     match cursor {
-        Cursor::Auto | Cursor::Default => iced::mouse::Interaction::Idle,
-        Cursor::Pointer => iced::mouse::Interaction::Pointer,
-        Cursor::Wait => iced::mouse::Interaction::Wait,
-        Cursor::Progress => iced::mouse::Interaction::Progress,
-        Cursor::Text | Cursor::VerticalText => iced::mouse::Interaction::Text,
-        Cursor::Move => iced::mouse::Interaction::Move,
-        Cursor::Help => iced::mouse::Interaction::Help,
-        Cursor::NotAllowed => iced::mouse::Interaction::NotAllowed,
-        Cursor::NoDrop => iced::mouse::Interaction::NoDrop,
-        Cursor::None => iced::mouse::Interaction::None,
-        Cursor::ContextMenu => iced::mouse::Interaction::ContextMenu,
-        Cursor::Cell => iced::mouse::Interaction::Cell,
-        Cursor::Crosshair => iced::mouse::Interaction::Crosshair,
-        Cursor::Alias => iced::mouse::Interaction::Alias,
-        Cursor::Copy => iced::mouse::Interaction::Copy,
-        Cursor::Grab => iced::mouse::Interaction::Grab,
-        Cursor::Grabbing => iced::mouse::Interaction::Grabbing,
-        Cursor::AllScroll => iced::mouse::Interaction::AllScroll,
-        Cursor::ColResize => iced::mouse::Interaction::ResizingColumn,
-        Cursor::RowResize => iced::mouse::Interaction::ResizingRow,
+        Cursor::Auto | Cursor::Default => iced_core::mouse::Interaction::Idle,
+        Cursor::Pointer => iced_core::mouse::Interaction::Pointer,
+        Cursor::Wait => iced_core::mouse::Interaction::Wait,
+        Cursor::Progress => iced_core::mouse::Interaction::Progress,
+        Cursor::Text | Cursor::VerticalText => iced_core::mouse::Interaction::Text,
+        Cursor::Move => iced_core::mouse::Interaction::Move,
+        Cursor::Help => iced_core::mouse::Interaction::Help,
+        Cursor::NotAllowed => iced_core::mouse::Interaction::NotAllowed,
+        Cursor::NoDrop => iced_core::mouse::Interaction::NoDrop,
+        Cursor::None => iced_core::mouse::Interaction::None,
+        Cursor::ContextMenu => iced_core::mouse::Interaction::ContextMenu,
+        Cursor::Cell => iced_core::mouse::Interaction::Cell,
+        Cursor::Crosshair => iced_core::mouse::Interaction::Crosshair,
+        Cursor::Alias => iced_core::mouse::Interaction::Alias,
+        Cursor::Copy => iced_core::mouse::Interaction::Copy,
+        Cursor::Grab => iced_core::mouse::Interaction::Grab,
+        Cursor::Grabbing => iced_core::mouse::Interaction::Grabbing,
+        Cursor::AllScroll => iced_core::mouse::Interaction::AllScroll,
+        Cursor::ColResize => iced_core::mouse::Interaction::ResizingColumn,
+        Cursor::RowResize => iced_core::mouse::Interaction::ResizingRow,
         Cursor::NResize | Cursor::SResize | Cursor::NsResize => {
-            iced::mouse::Interaction::ResizingVertically
+            iced_core::mouse::Interaction::ResizingVertically
         }
         Cursor::EResize | Cursor::WResize | Cursor::EwResize => {
-            iced::mouse::Interaction::ResizingHorizontally
+            iced_core::mouse::Interaction::ResizingHorizontally
         }
         Cursor::NeResize | Cursor::SwResize | Cursor::NeswResize => {
-            iced::mouse::Interaction::ResizingDiagonallyUp
+            iced_core::mouse::Interaction::ResizingDiagonallyUp
         }
         Cursor::NwResize | Cursor::SeResize | Cursor::NwseResize => {
-            iced::mouse::Interaction::ResizingDiagonallyDown
+            iced_core::mouse::Interaction::ResizingDiagonallyDown
         }
-        Cursor::ZoomIn => iced::mouse::Interaction::ZoomIn,
-        Cursor::ZoomOut => iced::mouse::Interaction::ZoomOut,
+        Cursor::ZoomIn => iced_core::mouse::Interaction::ZoomIn,
+        Cursor::ZoomOut => iced_core::mouse::Interaction::ZoomOut,
     }
 }
