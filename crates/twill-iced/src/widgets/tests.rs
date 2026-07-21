@@ -42,12 +42,18 @@ fn test_font_size_resolution_variants() {
 
 #[test]
 fn test_font_weight_mapping_variants() {
-    assert_eq!(to_font_weight(FontWeight::Thin), iced_core::font::Weight::Thin);
+    assert_eq!(
+        to_font_weight(FontWeight::Thin),
+        iced_core::font::Weight::Thin
+    );
     assert_eq!(
         to_font_weight(FontWeight::ExtraLight),
         iced_core::font::Weight::ExtraLight
     );
-    assert_eq!(to_font_weight(FontWeight::Light), iced_core::font::Weight::Light);
+    assert_eq!(
+        to_font_weight(FontWeight::Light),
+        iced_core::font::Weight::Light
+    );
     assert_eq!(
         to_font_weight(FontWeight::Normal),
         iced_core::font::Weight::Normal
@@ -60,20 +66,35 @@ fn test_font_weight_mapping_variants() {
         to_font_weight(FontWeight::SemiBold),
         iced_core::font::Weight::Semibold
     );
-    assert_eq!(to_font_weight(FontWeight::Bold), iced_core::font::Weight::Bold);
+    assert_eq!(
+        to_font_weight(FontWeight::Bold),
+        iced_core::font::Weight::Bold
+    );
     assert_eq!(
         to_font_weight(FontWeight::ExtraBold),
         iced_core::font::Weight::ExtraBold
     );
-    assert_eq!(to_font_weight(FontWeight::Black), iced_core::font::Weight::Black);
+    assert_eq!(
+        to_font_weight(FontWeight::Black),
+        iced_core::font::Weight::Black
+    );
 }
 
 #[test]
 fn test_easing_mapping_variants() {
-    assert_eq!(to_easing(Easing::Linear), iced_core::animation::Easing::Linear);
+    assert_eq!(
+        to_easing(Easing::Linear),
+        iced_core::animation::Easing::Linear
+    );
     assert_eq!(to_easing(Easing::In), iced_core::animation::Easing::EaseIn);
-    assert_eq!(to_easing(Easing::Out), iced_core::animation::Easing::EaseOut);
-    assert_eq!(to_easing(Easing::InOut), iced_core::animation::Easing::EaseInOut);
+    assert_eq!(
+        to_easing(Easing::Out),
+        iced_core::animation::Easing::EaseOut
+    );
+    assert_eq!(
+        to_easing(Easing::InOut),
+        iced_core::animation::Easing::EaseInOut
+    );
 }
 
 #[test]
