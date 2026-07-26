@@ -22,7 +22,12 @@ iced_widget = { version = "0.14", default-features = false, features = ["canvas"
 [features]
 default = ["wgpu", "tiny-skia"]
 wgpu = ["iced_widget/wgpu"]
-tiny-skia = ["dep:iced_renderer", "iced_renderer/tiny-skia"]
+tiny-skia = [
+    "dep:iced_renderer",
+    "iced_renderer/tiny-skia",
+    "iced_renderer/x11",
+    "iced_renderer/wayland",
+]
 
 [package.metadata.docs.rs]
 rustdoc-args = ["--cfg", "docsrs"]
