@@ -449,7 +449,7 @@ pub fn to_frame(style: &Style) -> egui::Frame {
     if let (Some(width), Some(color)) =
         (style.border_width_value(), style.border_color_token_value())
     {
-        let w = match width {
+        let w: f32 = match width {
             BorderWidth::S0 => 0.0,
             BorderWidth::S1 => 1.0,
             BorderWidth::S2 => 2.0,
