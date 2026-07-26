@@ -39,7 +39,7 @@ strip = true
 twill-backend-common = { path = "crates/twill-backend-common", version = "0.3.0" }
 twill-core = { path = "crates/twill-core", version = "0.3.0" }
 twill-egui = { path = "crates/twill-egui", version = "0.3.0", optional = true }
-twill-iced = { path = "crates/twill-iced", version = "0.3.0", optional = true }
+twill-iced = { path = "crates/twill-iced", version = "0.3.0", default-features = false, optional = true }
 twill-slint = { path = "crates/twill-slint", version = "0.3.0", optional = true }
 
 [dev-dependencies]
@@ -52,7 +52,9 @@ slint = { version = "1.15", features = ["unstable-winit-030"] }
 [features]
 default = []
 egui = ["dep:twill-egui"]
-iced = ["dep:twill-iced"]
+iced = ["dep:twill-iced", "twill-iced/wgpu", "twill-iced/tiny-skia"]
+iwgpu = ["dep:twill-iced", "twill-iced/wgpu"]
+itskia = ["dep:twill-iced", "twill-iced/tiny-skia"]
 slint = ["dep:twill-slint"]
 
 [package.metadata.docs.rs]

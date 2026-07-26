@@ -49,7 +49,9 @@ twill = "0.3"
 
 # Опциональные адаптеры бэкендов
 twill = { version = "0.3", features = ["egui"] }
-twill = { version = "0.3", features = ["iced"] }
+twill = { version = "0.3", features = ["iced"] }       # WGPU + Tiny Skia
+twill = { version = "0.3", features = ["iwgpu"] }      # только WGPU
+twill = { version = "0.3", features = ["itskia"] }     # только Tiny Skia
 twill = { version = "0.3", features = ["slint"] }
 ```
 
@@ -113,6 +115,9 @@ Responsive-слои:
 
 Каждый backend переводит токены и `Style` в framework-specific primitives, не смешивая их с компонентной семантикой.
 Если facade crate не нужен, можно зависеть напрямую от `twill-egui`, `twill-iced` или `twill-slint`.
+
+Фича `iced` включает WGPU и Tiny Skia. Для выбора только одного renderer’а используйте `iwgpu`
+или `itskia`.
 
 ## Документация
 

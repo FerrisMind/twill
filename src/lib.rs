@@ -18,7 +18,13 @@ pub use twill_core::{Style, prelude, style, tokens, traits, utilities};
 
 #[cfg_attr(
     docsrs,
-    doc(cfg(any(feature = "egui", feature = "iced", feature = "slint")))
+    doc(cfg(any(
+        feature = "egui",
+        feature = "iced",
+        feature = "iwgpu",
+        feature = "itskia",
+        feature = "slint"
+    )))
 )]
 pub mod backends;
 
@@ -26,8 +32,11 @@ pub mod backends;
 #[cfg_attr(docsrs, doc(cfg(feature = "egui")))]
 pub use backends::egui;
 
-#[cfg(feature = "iced")]
-#[cfg_attr(docsrs, doc(cfg(feature = "iced")))]
+#[cfg(any(feature = "iced", feature = "iwgpu", feature = "itskia"))]
+#[cfg_attr(
+    docsrs,
+    doc(cfg(any(feature = "iced", feature = "iwgpu", feature = "itskia")))
+)]
 pub use backends::iced;
 
 #[cfg(feature = "slint")]

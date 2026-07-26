@@ -54,6 +54,8 @@ twill = "0.3"
 # Optional backend adapters
 twill = { version = "0.3", features = ["egui"] }
 twill = { version = "0.3", features = ["iced"] }
+twill = { version = "0.3", features = ["iwgpu"] }
+twill = { version = "0.3", features = ["itskia"] }
 twill = { version = "0.3", features = ["slint"] }
 ```
 
@@ -66,7 +68,9 @@ Backend notes:
   `twill-core` directly.
 - `twill` re-exports the full core API and only pulls GUI dependencies when you enable a backend feature.
 - `egui` adds conversion helpers for egui types only.
-- `iced` adds the Iced adapter and the Unix windowing/runtime feature set used by this crate configuration.
+- `iced` adds the Iced adapter with WGPU and Tiny Skia renderers enabled.
+- `iwgpu` adds the Iced adapter with only WGPU enabled.
+- `itskia` adds the Iced adapter with only Tiny Skia enabled.
 - `slint` adds Slint conversion helpers only when requested.
 
 ## Quick Start

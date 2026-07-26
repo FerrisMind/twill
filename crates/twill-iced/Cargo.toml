@@ -16,7 +16,13 @@ categories = ["gui", "rendering"]
 twill-core = { path = "../twill-core", version = "0.3.0" }
 twill-backend-common = { path = "../twill-backend-common", version = "0.3.0" }
 iced_core = "0.14"
-iced_widget = { version = "0.14", features = ["canvas", "wgpu"] }
+iced_renderer = { version = "0.14", default-features = false, optional = true }
+iced_widget = { version = "0.14", default-features = false, features = ["canvas"] }
+
+[features]
+default = ["wgpu", "tiny-skia"]
+wgpu = ["iced_widget/wgpu"]
+tiny-skia = ["dep:iced_renderer", "iced_renderer/tiny-skia"]
 
 [package.metadata.docs.rs]
 rustdoc-args = ["--cfg", "docsrs"]

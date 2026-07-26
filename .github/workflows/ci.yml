@@ -34,6 +34,15 @@ jobs:
       - name: Test core crate
         run: cargo test
 
+      - name: Check iced default backends
+        run: cargo check -p twill-iced --release
+
+      - name: Check iced WGPU-only backend
+        run: cargo check -p twill-iced --release --no-default-features --features wgpu
+
+      - name: Check iced tiny-skia backend
+        run: cargo check -p twill-iced --release --no-default-features --features tiny-skia
+
       - name: Lint all features
         run: cargo clippy --all-features --all-targets -- -D warnings
 

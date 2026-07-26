@@ -36,6 +36,10 @@ Enable only the backends you use:
 twill = { version = "0.3", features = ["egui"] }
 # or
 twill = { version = "0.3", features = ["iced"] }
+# or WGPU only
+twill = { version = "0.3", features = ["iwgpu"] }
+# or Tiny Skia only
+twill = { version = "0.3", features = ["itskia"] }
 # or
 twill = { version = "0.3", features = ["slint"] }
 ```
@@ -53,7 +57,9 @@ twill = { version = "0.3", features = ["egui", "iced", "slint"] }
 - `twill-egui`, `twill-iced`, and `twill-slint` each depend only on `twill-core` plus their own runtime crate.
 - Base `twill` simply re-exports `twill-core`; it does not require a GUI runtime until you enable a backend feature.
 - `egui` enables egui conversion helpers only.
-- `iced` enables the Iced adapter and the Linux windowing/runtime feature set used by this crate configuration.
+- `iced` enables the Iced adapter with WGPU and Tiny Skia renderers.
+- `iwgpu` enables the Iced adapter with only WGPU.
+- `itskia` enables the Iced adapter with only Tiny Skia.
 - `slint` enables Slint conversion helpers only.
 
 ## Verify installation
@@ -68,6 +74,8 @@ If you enabled backend features, you can verify the crate builds with:
 ```bash
 cargo check --features egui
 cargo check --features iced
+cargo check --features iwgpu
+cargo check --features itskia
 cargo check --features slint
 ```
 

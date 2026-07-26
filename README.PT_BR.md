@@ -48,7 +48,9 @@ twill-slint = "0.3"
 twill = "0.3"
 
 twill = { version = "0.3", features = ["egui"] }
-twill = { version = "0.3", features = ["iced"] }
+twill = { version = "0.3", features = ["iced"] }       # WGPU + Tiny Skia
+twill = { version = "0.3", features = ["iwgpu"] }      # apenas WGPU
+twill = { version = "0.3", features = ["itskia"] }     # apenas Tiny Skia
 twill = { version = "0.3", features = ["slint"] }
 ```
 
@@ -79,6 +81,9 @@ let style = Style::card()
 - `twill::backends::{egui, iced, slint}`
 
 Se você não quiser o facade crate, pode depender diretamente de `twill-egui`, `twill-iced` ou `twill-slint`.
+
+A feature `iced` habilita WGPU e Tiny Skia. Para usar apenas um renderer, escolha `iwgpu`
+ou `itskia`.
 
 ## Desenvolvimento
 

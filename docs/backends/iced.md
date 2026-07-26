@@ -6,6 +6,13 @@ Enable feature:
 twill = { version = "0.3", features = ["iced"] }
 ```
 
+The `iced` feature enables both WGPU and Tiny Skia. To select only one renderer, use:
+
+```toml
+twill = { version = "0.3", features = ["iwgpu"] }  # WGPU only
+twill = { version = "0.3", features = ["itskia"] } # Tiny Skia only
+```
+
 ## What you get
 - color/style mapping helpers for `iced`,
 - compatibility with `iced` application architecture,

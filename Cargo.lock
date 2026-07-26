@@ -5600,6 +5600,7 @@ name = "twill-iced"
 version = "0.3.0"
 dependencies = [
  "iced_core",
+ "iced_renderer",
  "iced_widget",
  "twill-backend-common",
  "twill-core",
