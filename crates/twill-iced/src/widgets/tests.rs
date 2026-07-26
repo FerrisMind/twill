@@ -1,6 +1,6 @@
 use super::*;
 use crate::TextDirection;
-use iced::Length;
+use iced_core::Length;
 use twill_core::prelude::*;
 use twill_core::tokens::AspectRatio;
 use twill_core::tokens::Scale;
@@ -42,38 +42,59 @@ fn test_font_size_resolution_variants() {
 
 #[test]
 fn test_font_weight_mapping_variants() {
-    assert_eq!(to_font_weight(FontWeight::Thin), iced::font::Weight::Thin);
+    assert_eq!(
+        to_font_weight(FontWeight::Thin),
+        iced_core::font::Weight::Thin
+    );
     assert_eq!(
         to_font_weight(FontWeight::ExtraLight),
-        iced::font::Weight::ExtraLight
+        iced_core::font::Weight::ExtraLight
     );
-    assert_eq!(to_font_weight(FontWeight::Light), iced::font::Weight::Light);
+    assert_eq!(
+        to_font_weight(FontWeight::Light),
+        iced_core::font::Weight::Light
+    );
     assert_eq!(
         to_font_weight(FontWeight::Normal),
-        iced::font::Weight::Normal
+        iced_core::font::Weight::Normal
     );
     assert_eq!(
         to_font_weight(FontWeight::Medium),
-        iced::font::Weight::Medium
+        iced_core::font::Weight::Medium
     );
     assert_eq!(
         to_font_weight(FontWeight::SemiBold),
-        iced::font::Weight::Semibold
+        iced_core::font::Weight::Semibold
     );
-    assert_eq!(to_font_weight(FontWeight::Bold), iced::font::Weight::Bold);
+    assert_eq!(
+        to_font_weight(FontWeight::Bold),
+        iced_core::font::Weight::Bold
+    );
     assert_eq!(
         to_font_weight(FontWeight::ExtraBold),
-        iced::font::Weight::ExtraBold
+        iced_core::font::Weight::ExtraBold
     );
-    assert_eq!(to_font_weight(FontWeight::Black), iced::font::Weight::Black);
+    assert_eq!(
+        to_font_weight(FontWeight::Black),
+        iced_core::font::Weight::Black
+    );
 }
 
 #[test]
 fn test_easing_mapping_variants() {
-    assert_eq!(to_easing(Easing::Linear), iced::animation::Easing::Linear);
-    assert_eq!(to_easing(Easing::In), iced::animation::Easing::EaseIn);
-    assert_eq!(to_easing(Easing::Out), iced::animation::Easing::EaseOut);
-    assert_eq!(to_easing(Easing::InOut), iced::animation::Easing::EaseInOut);
+    assert_eq!(
+        to_easing(Easing::Linear),
+        iced_core::animation::Easing::Linear
+    );
+    assert_eq!(to_easing(Easing::In), iced_core::animation::Easing::EaseIn);
+    assert_eq!(
+        to_easing(Easing::Out),
+        iced_core::animation::Easing::EaseOut
+    );
+    assert_eq!(
+        to_easing(Easing::InOut),
+        iced_core::animation::Easing::EaseInOut
+    );
 }
 
 #[test]
@@ -127,35 +148,35 @@ fn test_semantic_color_resolution_with_dynamic_theme() {
 fn test_text_alignment_mapping_variants() {
     assert_eq!(
         to_text_alignment(TextAlign::Left),
-        iced::widget::text::Alignment::Left
+        iced_core::widget::text::Alignment::Left
     );
     assert_eq!(
         to_text_alignment(TextAlign::Center),
-        iced::widget::text::Alignment::Center
+        iced_core::widget::text::Alignment::Center
     );
     assert_eq!(
         to_text_alignment(TextAlign::Right),
-        iced::widget::text::Alignment::Right
+        iced_core::widget::text::Alignment::Right
     );
     assert_eq!(
         to_text_alignment(TextAlign::Justify),
-        iced::widget::text::Alignment::Justified
+        iced_core::widget::text::Alignment::Justified
     );
     assert_eq!(
         to_text_alignment_with_direction(TextAlign::Start, TextDirection::LeftToRight),
-        iced::widget::text::Alignment::Left
+        iced_core::widget::text::Alignment::Left
     );
     assert_eq!(
         to_text_alignment_with_direction(TextAlign::Start, TextDirection::RightToLeft),
-        iced::widget::text::Alignment::Right
+        iced_core::widget::text::Alignment::Right
     );
     assert_eq!(
         to_text_alignment_with_direction(TextAlign::End, TextDirection::LeftToRight),
-        iced::widget::text::Alignment::Right
+        iced_core::widget::text::Alignment::Right
     );
     assert_eq!(
         to_text_alignment_with_direction(TextAlign::End, TextDirection::RightToLeft),
-        iced::widget::text::Alignment::Left
+        iced_core::widget::text::Alignment::Left
     );
 }
 
@@ -502,9 +523,9 @@ fn test_resolve_grid_template_track_count_variants() {
 
 #[test]
 fn test_grid_template_columns_layout_builds() {
-    let _: iced::Element<'_, ()> =
+    let _: super::common::Element<'_, ()> =
         grid_template_columns_layout(vec![], GridTemplate::count(4), Spacing::S4);
-    let _: iced::Element<'_, ()> = grid_template_columns_layout_with_context(
+    let _: super::common::Element<'_, ()> = grid_template_columns_layout_with_context(
         vec![],
         GridTemplate::subgrid(),
         Spacing::S2,
@@ -556,9 +577,9 @@ fn test_reverse_directions_detection() {
 
 #[test]
 fn test_flex_direction_layout_reverse_builds() {
-    let _: iced::Element<'_, ()> =
+    let _: super::common::Element<'_, ()> =
         flex_direction_layout(vec![], FlexDirection::RowReverse, Spacing::S4);
-    let _: iced::Element<'_, ()> =
+    let _: super::common::Element<'_, ()> =
         flex_direction_layout(vec![], FlexDirection::ColReverse, Spacing::S4);
 }
 
@@ -566,27 +587,27 @@ fn test_flex_direction_layout_reverse_builds() {
 fn test_align_items_safe_and_baseline_mapping() {
     assert_eq!(
         row_alignment_for_items(AlignItems::EndSafe),
-        iced::alignment::Vertical::Bottom
+        iced_core::alignment::Vertical::Bottom
     );
     assert_eq!(
         row_alignment_for_items(AlignItems::BaselineLast),
-        iced::alignment::Vertical::Bottom
+        iced_core::alignment::Vertical::Bottom
     );
     assert_eq!(
         column_alignment_for_items(AlignItems::CenterSafe),
-        iced::alignment::Horizontal::Center
+        iced_core::alignment::Horizontal::Center
     );
 }
 
 #[test]
 fn test_align_items_layout_builds() {
-    let _: iced::Element<'_, ()> = align_items_layout(
+    let _: super::common::Element<'_, ()> = align_items_layout(
         vec![],
         FlexDirection::Row,
         Spacing::S4,
         AlignItems::CenterSafe,
     );
-    let _: iced::Element<'_, ()> = align_items_layout(
+    let _: super::common::Element<'_, ()> = align_items_layout(
         vec![],
         FlexDirection::ColReverse,
         Spacing::S2,
@@ -631,9 +652,9 @@ fn test_gap_main_axis_mapping() {
 
 #[test]
 fn test_gap_layout_builds() {
-    let _: iced::Element<'_, ()> = gap_layout(vec![], FlexDirection::Row, Spacing::S4);
-    let _: iced::Element<'_, ()> = gap_x_layout(vec![], FlexDirection::Row, Spacing::S6);
-    let _: iced::Element<'_, ()> = gap_y_layout(vec![], FlexDirection::Col, Spacing::S3);
+    let _: super::common::Element<'_, ()> = gap_layout(vec![], FlexDirection::Row, Spacing::S4);
+    let _: super::common::Element<'_, ()> = gap_x_layout(vec![], FlexDirection::Row, Spacing::S6);
+    let _: super::common::Element<'_, ()> = gap_y_layout(vec![], FlexDirection::Col, Spacing::S3);
 }
 
 #[test]
@@ -654,19 +675,19 @@ fn test_justify_content_safe_mapping() {
 
 #[test]
 fn test_justify_content_layout_builds() {
-    let _: iced::Element<'_, ()> = justify_content_layout(
+    let _: super::common::Element<'_, ()> = justify_content_layout(
         vec![],
         FlexDirection::Row,
         Spacing::S4,
         JustifyContent::Between,
     );
-    let _: iced::Element<'_, ()> = justify_content_layout(
+    let _: super::common::Element<'_, ()> = justify_content_layout(
         vec![],
         FlexDirection::RowReverse,
         Spacing::S2,
         JustifyContent::CenterSafe,
     );
-    let _: iced::Element<'_, ()> = justify_content_layout(
+    let _: super::common::Element<'_, ()> = justify_content_layout(
         vec![],
         FlexDirection::ColReverse,
         Spacing::S2,

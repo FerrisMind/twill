@@ -1,9 +1,18 @@
-use iced::Size;
+use iced_core::Size;
 use twill_core::style::Style;
 use twill_core::tokens::{ColorValue, Container, Spacing};
 use twill_core::utilities::Columns;
 
-pub(super) fn apply_opacity_to_color(mut color: iced::Color, opacity: f32) -> iced::Color {
+/// A generic widget.
+///
+/// This is an alias of an `iced_native` element with a default `Renderer`.
+pub(super) type Element<'a, Message, Theme = iced_core::Theme, Renderer = iced_widget::Renderer> =
+    iced_core::Element<'a, Message, Theme, Renderer>;
+
+pub(super) fn apply_opacity_to_color(
+    mut color: iced_core::Color,
+    opacity: f32,
+) -> iced_core::Color {
     if opacity.is_finite() {
         color.a *= opacity.clamp(0.0, 1.0);
     }

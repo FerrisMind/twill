@@ -3,7 +3,7 @@
 mod convert;
 mod widgets;
 
-use iced::ContentFit;
+use iced_core::ContentFit;
 use twill_core::tokens::{
     AspectRatio, Blur, BorderRadius, Color, ColorValue, Cursor, Easing, FontSize, FontWeight,
     Shadow, Spacing, TextAlign, TransitionDuration,
@@ -50,7 +50,7 @@ pub trait ToIced: private::Sealed {
 
 impl private::Sealed for Color {}
 impl ToIced for Color {
-    type Output = iced::Color;
+    type Output = iced_core::Color;
 
     fn to_iced(self) -> Self::Output {
         to_color(self)
@@ -59,7 +59,7 @@ impl ToIced for Color {
 
 impl private::Sealed for ColorValue {}
 impl ToIced for ColorValue {
-    type Output = iced::Color;
+    type Output = iced_core::Color;
 
     fn to_iced(self) -> Self::Output {
         to_color_value(self)
@@ -68,7 +68,7 @@ impl ToIced for ColorValue {
 
 impl private::Sealed for Spacing {}
 impl ToIced for Spacing {
-    type Output = iced::Padding;
+    type Output = iced_core::Padding;
 
     fn to_iced(self) -> Self::Output {
         to_padding(self)
@@ -113,7 +113,7 @@ impl ToIced for ObjectFit {
 
 impl private::Sealed for Shadow {}
 impl ToIced for Shadow {
-    type Output = iced::Shadow;
+    type Output = iced_core::Shadow;
 
     fn to_iced(self) -> Self::Output {
         to_shadow_with_color(self, twill_backend_common::ShadowColor::Default)
@@ -131,7 +131,7 @@ impl ToIced for FontSize {
 
 impl private::Sealed for FontWeight {}
 impl ToIced for FontWeight {
-    type Output = iced::font::Weight;
+    type Output = iced_core::font::Weight;
 
     fn to_iced(self) -> Self::Output {
         to_font_weight(self)
@@ -140,7 +140,7 @@ impl ToIced for FontWeight {
 
 impl private::Sealed for TextAlign {}
 impl ToIced for TextAlign {
-    type Output = iced::widget::text::Alignment;
+    type Output = iced_core::widget::text::Alignment;
 
     fn to_iced(self) -> Self::Output {
         to_text_alignment(self)
@@ -158,7 +158,7 @@ impl ToIced for TransitionDuration {
 
 impl private::Sealed for Easing {}
 impl ToIced for Easing {
-    type Output = iced::animation::Easing;
+    type Output = iced_core::animation::Easing;
 
     fn to_iced(self) -> Self::Output {
         to_easing(self)
@@ -167,7 +167,7 @@ impl ToIced for Easing {
 
 impl private::Sealed for Cursor {}
 impl ToIced for Cursor {
-    type Output = iced::mouse::Interaction;
+    type Output = iced_core::mouse::Interaction;
 
     fn to_iced(self) -> Self::Output {
         to_interaction(self)

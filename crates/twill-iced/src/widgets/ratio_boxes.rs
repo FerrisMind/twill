@@ -1,21 +1,29 @@
-use iced::advanced::layout::{Layout as AdvancedLayout, Limits, Node};
-use iced::advanced::overlay;
-use iced::advanced::renderer;
-use iced::advanced::widget::{Operation, Tree};
-use iced::advanced::{Clipboard, Shell, Widget as AdvancedWidget};
-use iced::{Length, Rectangle, Size, Vector, mouse};
+use iced_core::layout::{Layout as AdvancedLayout, Limits, Node};
+use iced_core::overlay;
+use iced_core::renderer;
+use iced_core::widget::{Operation, Tree};
+use iced_core::{Clipboard, Shell, Widget as AdvancedWidget};
+use iced_core::{Length, Rectangle, Size, Vector, mouse};
 
 use super::common::resolve_aspect_size;
 
-pub(super) struct AspectRatioBox<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
-    child: iced::Element<'a, Message, Theme, Renderer>,
+pub(super) struct AspectRatioBox<
+    'a,
+    Message,
+    Theme = iced_core::Theme,
+    Renderer = iced_widget::Renderer,
+> {
+    child: super::common::Element<'a, Message, Theme, Renderer>,
     ratio: f32,
     width: Length,
     height: Length,
 }
 
 impl<'a, Message, Theme, Renderer> AspectRatioBox<'a, Message, Theme, Renderer> {
-    pub(super) fn new(child: iced::Element<'a, Message, Theme, Renderer>, ratio: f32) -> Self {
+    pub(super) fn new(
+        child: super::common::Element<'a, Message, Theme, Renderer>,
+        ratio: f32,
+    ) -> Self {
         Self {
             child,
             ratio: ratio.max(0.0001),
@@ -98,7 +106,7 @@ where
     fn update(
         &mut self,
         tree: &mut Tree,
-        event: &iced::Event,
+        event: &iced_core::Event,
         layout: AdvancedLayout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
@@ -184,26 +192,34 @@ where
 }
 
 impl<'a, Message, Theme, Renderer> From<AspectRatioBox<'a, Message, Theme, Renderer>>
-    for iced::Element<'a, Message, Theme, Renderer>
+    for super::common::Element<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer + 'a,
     Theme: 'a,
     Message: 'a,
 {
     fn from(boxed: AspectRatioBox<'a, Message, Theme, Renderer>) -> Self {
-        iced::Element::new(boxed)
+        super::common::Element::new(boxed)
     }
 }
 
-pub(super) struct WidthRatioBox<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
-    child: iced::Element<'a, Message, Theme, Renderer>,
+pub(super) struct WidthRatioBox<
+    'a,
+    Message,
+    Theme = iced_core::Theme,
+    Renderer = iced_widget::Renderer,
+> {
+    child: super::common::Element<'a, Message, Theme, Renderer>,
     ratio: f32,
     width: Length,
     height: Length,
 }
 
 impl<'a, Message, Theme, Renderer> WidthRatioBox<'a, Message, Theme, Renderer> {
-    pub(super) fn new(child: iced::Element<'a, Message, Theme, Renderer>, ratio: f32) -> Self {
+    pub(super) fn new(
+        child: super::common::Element<'a, Message, Theme, Renderer>,
+        ratio: f32,
+    ) -> Self {
         Self {
             child,
             ratio: ratio.clamp(0.0, 1.0),
@@ -294,7 +310,7 @@ where
     fn update(
         &mut self,
         tree: &mut Tree,
-        event: &iced::Event,
+        event: &iced_core::Event,
         layout: AdvancedLayout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
@@ -380,26 +396,34 @@ where
 }
 
 impl<'a, Message, Theme, Renderer> From<WidthRatioBox<'a, Message, Theme, Renderer>>
-    for iced::Element<'a, Message, Theme, Renderer>
+    for super::common::Element<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer + 'a,
     Theme: 'a,
     Message: 'a,
 {
     fn from(boxed: WidthRatioBox<'a, Message, Theme, Renderer>) -> Self {
-        iced::Element::new(boxed)
+        super::common::Element::new(boxed)
     }
 }
 
-pub(super) struct HeightRatioBox<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
-    child: iced::Element<'a, Message, Theme, Renderer>,
+pub(super) struct HeightRatioBox<
+    'a,
+    Message,
+    Theme = iced_core::Theme,
+    Renderer = iced_widget::Renderer,
+> {
+    child: super::common::Element<'a, Message, Theme, Renderer>,
     ratio: f32,
     width: Length,
     height: Length,
 }
 
 impl<'a, Message, Theme, Renderer> HeightRatioBox<'a, Message, Theme, Renderer> {
-    pub(super) fn new(child: iced::Element<'a, Message, Theme, Renderer>, ratio: f32) -> Self {
+    pub(super) fn new(
+        child: super::common::Element<'a, Message, Theme, Renderer>,
+        ratio: f32,
+    ) -> Self {
         Self {
             child,
             ratio: ratio.clamp(0.0, 1.0),
@@ -490,7 +514,7 @@ where
     fn update(
         &mut self,
         tree: &mut Tree,
-        event: &iced::Event,
+        event: &iced_core::Event,
         layout: AdvancedLayout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
@@ -576,13 +600,13 @@ where
 }
 
 impl<'a, Message, Theme, Renderer> From<HeightRatioBox<'a, Message, Theme, Renderer>>
-    for iced::Element<'a, Message, Theme, Renderer>
+    for super::common::Element<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer + 'a,
     Theme: 'a,
     Message: 'a,
 {
     fn from(boxed: HeightRatioBox<'a, Message, Theme, Renderer>) -> Self {
-        iced::Element::new(boxed)
+        super::common::Element::new(boxed)
     }
 }

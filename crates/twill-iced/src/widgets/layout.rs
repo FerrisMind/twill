@@ -1,4 +1,4 @@
-use iced::{Length, Point, Rectangle, Size, Vector, mouse};
+use iced_core::{Length, Point, Rectangle, Size, Vector, mouse};
 use twill_core::style::Style;
 use twill_core::tokens::{SemanticThemeVars, ThemeVariant};
 
@@ -8,21 +8,24 @@ use super::conversions::{
     resolve_height, resolve_width, to_aspect_ratio, to_style_margin,
 };
 use super::ratio_boxes::{AspectRatioBox, HeightRatioBox, WidthRatioBox};
-use iced::advanced::layout::{Layout as AdvancedLayout, Limits, Node};
-use iced::advanced::overlay;
-use iced::advanced::renderer;
-use iced::advanced::widget::{Operation, Tree};
-use iced::advanced::{Clipboard, Shell, Widget as AdvancedWidget};
+use iced_core::layout::{Layout as AdvancedLayout, Limits, Node};
+use iced_core::overlay;
+use iced_core::renderer;
+use iced_core::widget::{Operation, Tree};
+use iced_core::{Clipboard, Shell, Widget as AdvancedWidget};
 
-struct MarginBox<'a, Message, Theme = iced::Theme, Renderer = iced::Renderer> {
-    child: iced::Element<'a, Message, Theme, Renderer>,
+struct MarginBox<'a, Message, Theme = iced_core::Theme, Renderer = iced_widget::Renderer> {
+    child: super::common::Element<'a, Message, Theme, Renderer>,
     margin: MarginOffsets,
     width: Length,
     height: Length,
 }
 
 impl<'a, Message, Theme, Renderer> MarginBox<'a, Message, Theme, Renderer> {
-    fn new(child: iced::Element<'a, Message, Theme, Renderer>, margin: MarginOffsets) -> Self {
+    fn new(
+        child: super::common::Element<'a, Message, Theme, Renderer>,
+        margin: MarginOffsets,
+    ) -> Self {
         Self {
             child,
             margin,
@@ -100,7 +103,7 @@ where
     fn update(
         &mut self,
         tree: &mut Tree,
-        event: &iced::Event,
+        event: &iced_core::Event,
         layout: AdvancedLayout<'_>,
         cursor: mouse::Cursor,
         renderer: &Renderer,
@@ -186,22 +189,22 @@ where
 }
 
 impl<'a, Message, Theme, Renderer> From<MarginBox<'a, Message, Theme, Renderer>>
-    for iced::Element<'a, Message, Theme, Renderer>
+    for super::common::Element<'a, Message, Theme, Renderer>
 where
     Renderer: renderer::Renderer + 'a,
     Theme: 'a,
     Message: 'a,
 {
     fn from(boxed: MarginBox<'a, Message, Theme, Renderer>) -> Self {
-        iced::Element::new(boxed)
+        super::common::Element::new(boxed)
     }
 }
 
 fn apply_margin<'a, Message: Clone + 'a>(
-    content: iced::Element<'a, Message>,
+    content: super::common::Element<'a, Message>,
     margin: twill_core::utilities::Margin,
     custom_properties: &[(&str, f32)],
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     let resolved = to_style_margin(margin, custom_properties);
     let mut element = content;
 
@@ -212,7 +215,7 @@ fn apply_margin<'a, Message: Clone + 'a>(
         top: match resolved.top {
             Some(ResolvedMarginValue::Px(px)) => px,
             Some(ResolvedMarginValue::Auto) => {
-                vertical_auto = Some(iced::alignment::Vertical::Bottom);
+                vertical_auto = Some(iced_core::alignment::Vertical::Bottom);
                 0.0
             }
             None => 0.0,
@@ -220,7 +223,7 @@ fn apply_margin<'a, Message: Clone + 'a>(
         right: match resolved.right {
             Some(ResolvedMarginValue::Px(px)) => px,
             Some(ResolvedMarginValue::Auto) => {
-                horizontal_auto = Some(iced::alignment::Horizontal::Left);
+                horizontal_auto = Some(iced_core::alignment::Horizontal::Left);
                 0.0
             }
             None => 0.0,
@@ -228,7 +231,7 @@ fn apply_margin<'a, Message: Clone + 'a>(
         bottom: match resolved.bottom {
             Some(ResolvedMarginValue::Px(px)) => px,
             Some(ResolvedMarginValue::Auto) => {
-                vertical_auto = Some(iced::alignment::Vertical::Top);
+                vertical_auto = Some(iced_core::alignment::Vertical::Top);
                 0.0
             }
             None => 0.0,
@@ -236,7 +239,7 @@ fn apply_margin<'a, Message: Clone + 'a>(
         left: match resolved.left {
             Some(ResolvedMarginValue::Px(px)) => px,
             Some(ResolvedMarginValue::Auto) => {
-                horizontal_auto = Some(iced::alignment::Horizontal::Right);
+                horizontal_auto = Some(iced_core::alignment::Horizontal::Right);
                 0.0
             }
             None => 0.0,
@@ -246,13 +249,13 @@ fn apply_margin<'a, Message: Clone + 'a>(
     if matches!(resolved.left, Some(ResolvedMarginValue::Auto))
         && matches!(resolved.right, Some(ResolvedMarginValue::Auto))
     {
-        horizontal_auto = Some(iced::alignment::Horizontal::Center);
+        horizontal_auto = Some(iced_core::alignment::Horizontal::Center);
     }
 
     if matches!(resolved.top, Some(ResolvedMarginValue::Auto))
         && matches!(resolved.bottom, Some(ResolvedMarginValue::Auto))
     {
-        vertical_auto = Some(iced::alignment::Vertical::Center);
+        vertical_auto = Some(iced_core::alignment::Vertical::Center);
     }
 
     if !offsets.is_zero() {
@@ -260,7 +263,7 @@ fn apply_margin<'a, Message: Clone + 'a>(
     }
 
     if horizontal_auto.is_some() || vertical_auto.is_some() {
-        let mut wrapper = iced::widget::container(element);
+        let mut wrapper = iced_widget::container(element);
 
         if let Some(horizontal) = horizontal_auto {
             wrapper = wrapper.width(Length::Fill).align_x(horizontal);
@@ -278,9 +281,9 @@ fn apply_margin<'a, Message: Clone + 'a>(
 
 /// Apply high-level layout wrappers like Display::Hidden, Overflow, MaxWidth
 pub fn apply_layout<'a, Message: Clone + 'a>(
-    content: iced::Element<'a, Message>,
+    content: super::common::Element<'a, Message>,
     style: &Style,
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     apply_layout_with_custom_properties_and_semantic_theme(
         content,
         style,
@@ -295,11 +298,11 @@ pub fn apply_layout_with_semantic_theme<
     Message: Clone + 'a,
     S: SemanticThemeSource + ?Sized,
 >(
-    content: iced::Element<'a, Message>,
+    content: super::common::Element<'a, Message>,
     style: &Style,
     semantic_theme: &S,
     variant: ThemeVariant,
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     apply_layout_with_custom_properties_and_semantic_theme(
         content,
         style,
@@ -311,10 +314,10 @@ pub fn apply_layout_with_semantic_theme<
 
 /// Apply high-level layout wrappers with explicit custom-property values.
 pub fn apply_layout_with_custom_properties<'a, Message: Clone + 'a>(
-    content: iced::Element<'a, Message>,
+    content: super::common::Element<'a, Message>,
     style: &Style,
     custom_properties: &[(&str, f32)],
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     apply_layout_with_custom_properties_and_semantic_theme(
         content,
         style,
@@ -329,17 +332,17 @@ fn apply_layout_with_custom_properties_and_semantic_theme<
     Message: Clone + 'a,
     S: SemanticThemeSource + ?Sized,
 >(
-    content: iced::Element<'a, Message>,
+    content: super::common::Element<'a, Message>,
     style: &Style,
     custom_properties: &[(&str, f32)],
     semantic_theme: &S,
     variant: ThemeVariant,
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     if matches!(
         style.display_mode(),
         Some(twill_core::utilities::Display::Hidden)
     ) {
-        return iced::widget::Space::new().into();
+        return iced_widget::Space::new().into();
     }
 
     let mut container = styled_container_with_custom_properties_and_semantic_theme(
@@ -416,11 +419,11 @@ fn apply_layout_with_custom_properties_and_semantic_theme<
         container = container.clip(true);
     }
 
-    let mut element: iced::Element<'a, Message> = if matches!(
+    let mut element: super::common::Element<'a, Message> = if matches!(
         style.overflow_value(),
         Some(twill_core::utilities::Overflow::Auto) | Some(twill_core::utilities::Overflow::Scroll)
     ) {
-        iced::widget::scrollable(container).into()
+        iced_widget::scrollable(container).into()
     } else {
         container.into()
     };

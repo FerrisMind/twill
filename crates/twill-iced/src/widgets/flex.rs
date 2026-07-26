@@ -1,4 +1,4 @@
-use iced::Length;
+use iced_core::Length;
 use twill_core::style::Style;
 use twill_core::tokens::Spacing;
 use twill_core::utilities::{
@@ -15,23 +15,23 @@ pub(crate) fn is_reverse_direction(direction: FlexDirection) -> bool {
     )
 }
 
-pub(crate) fn row_alignment_for_items(items: AlignItems) -> iced::alignment::Vertical {
+pub(crate) fn row_alignment_for_items(items: AlignItems) -> iced_core::alignment::Vertical {
     match items {
-        AlignItems::Start | AlignItems::Stretch => iced::alignment::Vertical::Top,
-        AlignItems::End | AlignItems::EndSafe => iced::alignment::Vertical::Bottom,
-        AlignItems::Center | AlignItems::CenterSafe => iced::alignment::Vertical::Center,
-        AlignItems::Baseline | AlignItems::BaselineLast => iced::alignment::Vertical::Bottom,
+        AlignItems::Start | AlignItems::Stretch => iced_core::alignment::Vertical::Top,
+        AlignItems::End | AlignItems::EndSafe => iced_core::alignment::Vertical::Bottom,
+        AlignItems::Center | AlignItems::CenterSafe => iced_core::alignment::Vertical::Center,
+        AlignItems::Baseline | AlignItems::BaselineLast => iced_core::alignment::Vertical::Bottom,
     }
 }
 
-pub(crate) fn column_alignment_for_items(items: AlignItems) -> iced::alignment::Horizontal {
+pub(crate) fn column_alignment_for_items(items: AlignItems) -> iced_core::alignment::Horizontal {
     match items {
         AlignItems::Start
         | AlignItems::Stretch
         | AlignItems::Baseline
-        | AlignItems::BaselineLast => iced::alignment::Horizontal::Left,
-        AlignItems::End | AlignItems::EndSafe => iced::alignment::Horizontal::Right,
-        AlignItems::Center | AlignItems::CenterSafe => iced::alignment::Horizontal::Center,
+        | AlignItems::BaselineLast => iced_core::alignment::Horizontal::Left,
+        AlignItems::End | AlignItems::EndSafe => iced_core::alignment::Horizontal::Right,
+        AlignItems::Center | AlignItems::CenterSafe => iced_core::alignment::Horizontal::Center,
     }
 }
 
@@ -46,14 +46,14 @@ pub(crate) fn normalize_justify_content(justify: JustifyContent) -> JustifyConte
 fn main_axis_spacer<'a, Message: Clone + 'a>(
     direction: FlexDirection,
     portion: u16,
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     let portion = portion.max(1);
     match direction {
-        FlexDirection::Row | FlexDirection::RowReverse => iced::widget::Space::new()
+        FlexDirection::Row | FlexDirection::RowReverse => iced_widget::Space::new()
             .width(Length::FillPortion(portion))
             .height(Length::Shrink)
             .into(),
-        FlexDirection::Col | FlexDirection::ColReverse => iced::widget::Space::new()
+        FlexDirection::Col | FlexDirection::ColReverse => iced_widget::Space::new()
             .width(Length::Shrink)
             .height(Length::FillPortion(portion))
             .into(),
@@ -61,10 +61,10 @@ fn main_axis_spacer<'a, Message: Clone + 'a>(
 }
 
 fn distribute_items_for_justify<'a, Message: Clone + 'a>(
-    items: Vec<iced::Element<'a, Message>>,
+    items: Vec<super::common::Element<'a, Message>>,
     direction: FlexDirection,
     justify_content: Option<JustifyContent>,
-) -> (Vec<iced::Element<'a, Message>>, bool) {
+) -> (Vec<super::common::Element<'a, Message>>, bool) {
     let justify = justify_content
         .map(normalize_justify_content)
         .unwrap_or(JustifyContent::Start);
@@ -162,12 +162,12 @@ fn distribute_items_for_justify<'a, Message: Clone + 'a>(
 }
 
 fn flex_layout<'a, Message: Clone + 'a>(
-    mut items: Vec<iced::Element<'a, Message>>,
+    mut items: Vec<super::common::Element<'a, Message>>,
     direction: FlexDirection,
     gap: Spacing,
     align_items: Option<AlignItems>,
     justify_content: Option<JustifyContent>,
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     if is_reverse_direction(direction) {
         items.reverse();
     }
@@ -177,10 +177,10 @@ fn flex_layout<'a, Message: Clone + 'a>(
             .into_iter()
             .map(|item| match direction {
                 FlexDirection::Row | FlexDirection::RowReverse => {
-                    iced::widget::container(item).height(Length::Fill).into()
+                    iced_widget::container(item).height(Length::Fill).into()
                 }
                 FlexDirection::Col | FlexDirection::ColReverse => {
-                    iced::widget::container(item).width(Length::Fill).into()
+                    iced_widget::container(item).width(Length::Fill).into()
                 }
             })
             .collect();
@@ -192,10 +192,10 @@ fn flex_layout<'a, Message: Clone + 'a>(
             .into_iter()
             .map(|item| match direction {
                 FlexDirection::Row | FlexDirection::RowReverse => {
-                    iced::widget::container(item).width(Length::Fill).into()
+                    iced_widget::container(item).width(Length::Fill).into()
                 }
                 FlexDirection::Col | FlexDirection::ColReverse => {
-                    iced::widget::container(item).height(Length::Fill).into()
+                    iced_widget::container(item).height(Length::Fill).into()
                 }
             })
             .collect();
@@ -208,7 +208,7 @@ fn flex_layout<'a, Message: Clone + 'a>(
 
     match direction {
         FlexDirection::Row | FlexDirection::RowReverse => {
-            let mut row = iced::widget::Row::new().spacing(gap).width(Length::Fill);
+            let mut row = iced_widget::Row::new().spacing(gap).width(Length::Fill);
             if let Some(items) = align_items {
                 row = row
                     .align_y(row_alignment_for_items(items))
@@ -220,7 +220,7 @@ fn flex_layout<'a, Message: Clone + 'a>(
             row.into()
         }
         FlexDirection::Col | FlexDirection::ColReverse => {
-            let mut col = iced::widget::Column::new().spacing(gap).width(Length::Fill);
+            let mut col = iced_widget::Column::new().spacing(gap).width(Length::Fill);
             if let Some(items) = align_items {
                 col = col.align_x(column_alignment_for_items(items));
             }
@@ -251,19 +251,19 @@ pub(crate) fn gap_on_main_axis(
 
 /// Create an iced flex layout for a given direction.
 pub fn flex_direction_layout<'a, Message: Clone + 'a>(
-    items: Vec<iced::Element<'a, Message>>,
+    items: Vec<super::common::Element<'a, Message>>,
     direction: FlexDirection,
     gap: Spacing,
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     flex_layout(items, direction, gap, None, None)
 }
 
 /// Create an iced layout for `gap-*` utilities.
 pub fn gap_layout<'a, Message: Clone + 'a>(
-    items: Vec<iced::Element<'a, Message>>,
+    items: Vec<super::common::Element<'a, Message>>,
     direction: FlexDirection,
     gap: Spacing,
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     flex_layout(items, direction, gap, None, None)
 }
 
@@ -271,10 +271,10 @@ pub fn gap_layout<'a, Message: Clone + 'a>(
 ///
 /// In single-line flex layouts, this maps to the main axis for row directions.
 pub fn gap_x_layout<'a, Message: Clone + 'a>(
-    items: Vec<iced::Element<'a, Message>>,
+    items: Vec<super::common::Element<'a, Message>>,
     direction: FlexDirection,
     gap_x: Spacing,
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     let gap = gap_on_main_axis(direction, None, None, Some(gap_x));
     flex_layout(items, direction, gap, None, None)
 }
@@ -283,31 +283,31 @@ pub fn gap_x_layout<'a, Message: Clone + 'a>(
 ///
 /// In single-line flex layouts, this maps to the main axis for column directions.
 pub fn gap_y_layout<'a, Message: Clone + 'a>(
-    items: Vec<iced::Element<'a, Message>>,
+    items: Vec<super::common::Element<'a, Message>>,
     direction: FlexDirection,
     gap_y: Spacing,
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     let gap = gap_on_main_axis(direction, None, Some(gap_y), None);
     flex_layout(items, direction, gap, None, None)
 }
 
 /// Create an iced flex layout for a typed align-items value.
 pub fn align_items_layout<'a, Message: Clone + 'a>(
-    items: Vec<iced::Element<'a, Message>>,
+    items: Vec<super::common::Element<'a, Message>>,
     direction: FlexDirection,
     gap: Spacing,
     align_items: AlignItems,
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     flex_layout(items, direction, gap, Some(align_items), None)
 }
 
 /// Create an iced flex layout for a typed justify-content value.
 pub fn justify_content_layout<'a, Message: Clone + 'a>(
-    items: Vec<iced::Element<'a, Message>>,
+    items: Vec<super::common::Element<'a, Message>>,
     direction: FlexDirection,
     gap: Spacing,
     justify_content: JustifyContent,
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     flex_layout(items, direction, gap, None, Some(justify_content))
 }
 
@@ -401,21 +401,21 @@ fn custom_property_length(name: &str, vars: &[(&str, &str)]) -> Option<Length> {
 /// `direction` is the parent container direction and determines which axis receives
 /// the fill/shrink strategy.
 pub fn apply_flex_item<'a, Message: Clone + 'a>(
-    content: iced::Element<'a, Message>,
+    content: super::common::Element<'a, Message>,
     style: &Style,
     direction: FlexDirection,
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     apply_flex_item_with_custom_properties(content, style, direction, &[])
 }
 
 /// Apply flex-item shorthand with custom property values resolver for
 /// `flex-(<custom-property>)` use cases.
 pub fn apply_flex_item_with_custom_properties<'a, Message: Clone + 'a>(
-    content: iced::Element<'a, Message>,
+    content: super::common::Element<'a, Message>,
     style: &Style,
     direction: FlexDirection,
     custom_properties: &[(&str, &str)],
-) -> iced::Element<'a, Message> {
+) -> super::common::Element<'a, Message> {
     let numeric_custom_properties;
     let element = if style_uses_numeric_custom_properties(style) {
         numeric_custom_properties = custom_properties
@@ -438,10 +438,10 @@ pub fn apply_flex_item_with_custom_properties<'a, Message: Clone + 'a>(
     };
     let wrapper = match direction {
         FlexDirection::Row | FlexDirection::RowReverse => {
-            iced::widget::container(element).width(length)
+            iced_widget::container(element).width(length)
         }
         FlexDirection::Col | FlexDirection::ColReverse => {
-            iced::widget::container(element).height(length)
+            iced_widget::container(element).height(length)
         }
     };
 

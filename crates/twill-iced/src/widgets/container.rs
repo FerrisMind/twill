@@ -1,5 +1,5 @@
-use iced::widget::{canvas, stack};
-use iced::{Point, Rectangle, Renderer, Size, Theme, border, mouse};
+use iced_core::{Point, Rectangle, Size, Theme, border, mouse};
+use iced_widget::{Renderer, canvas, stack};
 use twill_core::style::Style;
 use twill_core::tokens::BorderStyle;
 
@@ -15,9 +15,9 @@ use twill_backend_common::ShadowColor;
 use twill_core::tokens::{SemanticThemeVars, ThemeVariant};
 
 pub fn styled_container<'a, Message: Clone + 'a>(
-    content: iced::Element<'a, Message>,
+    content: super::common::Element<'a, Message>,
     style: &Style,
-) -> iced::widget::Container<'a, Message> {
+) -> iced_widget::Container<'a, Message> {
     styled_container_with_custom_properties_and_semantic_theme(
         content,
         style,
@@ -32,11 +32,11 @@ pub fn styled_container_with_semantic_theme<
     Message: Clone + 'a,
     S: SemanticThemeSource + ?Sized,
 >(
-    content: iced::Element<'a, Message>,
+    content: super::common::Element<'a, Message>,
     style: &Style,
     semantic_theme: &S,
     variant: ThemeVariant,
-) -> iced::widget::Container<'a, Message> {
+) -> iced_widget::Container<'a, Message> {
     styled_container_with_custom_properties_and_semantic_theme(
         content,
         style,
@@ -48,10 +48,10 @@ pub fn styled_container_with_semantic_theme<
 
 /// Create a styled container with twill Style and explicit custom-property values.
 pub fn styled_container_with_custom_properties<'a, Message: Clone + 'a>(
-    content: iced::Element<'a, Message>,
+    content: super::common::Element<'a, Message>,
     style: &Style,
     custom_properties: &[(&str, f32)],
-) -> iced::widget::Container<'a, Message> {
+) -> iced_widget::Container<'a, Message> {
     styled_container_with_custom_properties_and_semantic_theme(
         content,
         style,
@@ -66,12 +66,12 @@ pub(super) fn styled_container_with_custom_properties_and_semantic_theme<
     Message: Clone + 'a,
     S: SemanticThemeSource + ?Sized,
 >(
-    content: iced::Element<'a, Message>,
+    content: super::common::Element<'a, Message>,
     style: &Style,
     custom_properties: &[(&str, f32)],
     semantic_theme: &S,
     variant: ThemeVariant,
-) -> iced::widget::Container<'a, Message> {
+) -> iced_widget::Container<'a, Message> {
     let opacity = resolved_opacity(style);
     let padding = style
         .padding_value()
@@ -107,7 +107,7 @@ pub(super) fn styled_container_with_custom_properties_and_semantic_theme<
         })
         .map(to_color_value)
         .map(|color| apply_opacity_to_color(color, opacity))
-        .unwrap_or(iced::Color::TRANSPARENT);
+        .unwrap_or(iced_core::Color::TRANSPARENT);
     let border_style = style.border_style_value().unwrap_or(BorderStyle::Solid);
     let border_width = base_border_width;
     let shadow_layers = style
@@ -125,13 +125,13 @@ pub(super) fn styled_container_with_custom_properties_and_semantic_theme<
 
     match border_style {
         BorderStyle::Solid => {
-            let mut container = iced::widget::container(content);
+            let mut container = iced_widget::container(content);
             if let Some(p) = padding {
                 container = container.padding(p);
             }
-            let base = container.style(move |_| iced::widget::container::Style {
-                background: bg_color.map(iced::Background::Color),
-                border: iced::Border {
+            let base = container.style(move |_| iced_widget::container::Style {
+                background: bg_color.map(iced_core::Background::Color),
+                border: iced_core::Border {
                     radius: border_radius.into(),
                     width: border_width,
                     color: border_color,
@@ -142,7 +142,7 @@ pub(super) fn styled_container_with_custom_properties_and_semantic_theme<
             wrap_with_shadow_layers(base.into(), &shadow_layers, border_radius)
         }
         _ => {
-            let mut content_layer = iced::widget::container(content);
+            let mut content_layer = iced_widget::container(content);
             if let Some(p) = padding {
                 content_layer = content_layer.padding(p);
             }
@@ -154,10 +154,10 @@ pub(super) fn styled_container_with_custom_properties_and_semantic_theme<
                 border_color,
                 background: bg_color,
             })
-            .width(iced::Length::Fill)
-            .height(iced::Length::Fill);
+            .width(iced_core::Length::Fill)
+            .height(iced_core::Length::Fill);
 
-            let base = iced::widget::container(stack![border_layer, content_layer]);
+            let base = iced_widget::container(stack![border_layer, content_layer]);
             wrap_with_shadow_layers(base.into(), &shadow_layers, border_radius)
         }
     }
@@ -167,8 +167,8 @@ struct BorderCanvas {
     border_style: BorderStyle,
     border_width: f32,
     border_radius: f32,
-    border_color: iced::Color,
-    background: Option<iced::Color>,
+    border_color: iced_core::Color,
+    background: Option<iced_core::Color>,
 }
 
 impl<Message> canvas::Program<Message> for BorderCanvas {
