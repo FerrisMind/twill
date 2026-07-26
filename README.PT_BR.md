@@ -16,6 +16,12 @@
   <i>Estilos tipados e composáveis para GUIs nativas</i>
 </p>
 
+<p align="center">
+  <img src="assets/iced_demo.png" alt="Twill iced showcase em temas semânticos claro e escuro" width="100%">
+  <br>
+  <sub>showcase iced — tokens, tema semântico e estilos compostos em light / dark</sub>
+</p>
+
 ## O que é o Twill
 
 Twill é um style system agnóstico de backend para código de UI em Rust. Ele fornece:

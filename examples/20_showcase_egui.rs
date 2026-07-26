@@ -2,9 +2,9 @@
 mod common;
 
 #[cfg(feature = "egui")]
-use common::{
-    composition_style, interactive_style, responsive_style, semantic_summary, surface_style,
-    token_palette,
+	use common::{
+    composition_style_for, interactive_style, responsive_style_for, semantic_demo_chip,
+    semantic_summary, themed_surface_style, token_palette,
 };
 #[cfg(feature = "egui")]
 use eframe::egui::{self, RichText};
@@ -49,6 +49,12 @@ impl eframe::App for ShowcaseApp {
 
         egui::CentralPanel::default().show(ctx, |ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
+                let variant = if self.dark_mode {
+                    ThemeVariant::Dark
+                } else {
+                    ThemeVariant::Light
+                };
+
                 ui.heading("Tokens");
                 ui.horizontal_wrapped(|ui| {
                     for (color, label) in token_palette() {
@@ -59,28 +65,32 @@ impl eframe::App for ShowcaseApp {
                     }
                 });
                 ui.add_space(8.0);
+                let surface = themed_surface_style(variant);
+                let surface_ink = surface
+                    .text_color_value()
+                    .map(|c| c.to_egui())
+                    .unwrap_or(ui.visuals().text_color());
                 ui.horizontal_wrapped(|ui| {
-                    surface_style().to_egui().show(ui, |ui| {
-                        ui.label(RichText::new("Radius").strong());
-                        ui.label("Rounded XL surface");
+                    surface.to_egui().show(ui, |ui| {
+                        ui.label(RichText::new("Radius").strong().color(surface_ink));
+                        ui.label(RichText::new("Rounded XL surface").color(surface_ink));
                     });
-                    surface_style().shadow(Shadow::Lg).to_egui().show(ui, |ui| {
-                        ui.label(RichText::new("Shadow").strong());
-                        ui.label("Large shadow token");
+                    surface.clone().shadow(Shadow::Lg).to_egui().show(ui, |ui| {
+                        ui.label(RichText::new("Shadow").strong().color(surface_ink));
+                        ui.label(RichText::new("Large shadow token").color(surface_ink));
                     });
-                    surface_style().padding(Padding::all(Spacing::S6)).to_egui().show(ui, |ui| {
-                        ui.label(RichText::new("Spacing").strong());
-                        ui.label("Padding S6 preview");
-                    });
+                    surface
+                        .clone()
+                        .padding(Padding::all(Spacing::S6))
+                        .to_egui()
+                        .show(ui, |ui| {
+                            ui.label(RichText::new("Spacing").strong().color(surface_ink));
+                            ui.label(RichText::new("Padding S6 preview").color(surface_ink));
+                        });
                 });
 
                 ui.add_space(12.0);
                 ui.heading("Semantic theme");
-                let variant = if self.dark_mode {
-                    ThemeVariant::Dark
-                } else {
-                    ThemeVariant::Light
-                };
                 let semantic_surface = Style::new()
                     .bg(
                         SemanticThemeVars::shadcn_neutral()
@@ -106,17 +116,52 @@ impl eframe::App for ShowcaseApp {
                     ui.label("These values switch with the semantic theme toggle.");
                     ui.add_space(8.0);
                     for (label, token) in semantic_summary() {
-                        let color = twill_egui::to_semantic_color32(token, variant);
-                        ui.label(RichText::new(label).color(color));
+                        let (surface_token, ink_token) = semantic_demo_chip(token, variant);
+                        let surface = SemanticThemeVars::shadcn_neutral()
+                            .resolve(surface_token, variant)
+                            .unwrap_or(Color::white());
+                        let ink = twill_egui::to_semantic_color32(ink_token, variant);
+                        let chip = Style::new()
+                            .bg(surface)
+                            .text_color(
+                                SemanticThemeVars::shadcn_neutral()
+                                    .resolve(ink_token, variant)
+                                    .unwrap_or(Color::slate(Scale::S900)),
+                            )
+                            .padding(Padding::symmetric(Spacing::S2, Spacing::S3))
+                            .rounded(BorderRadius::Md)
+                            .border(
+                                BorderWidth::S1,
+                                BorderStyle::Solid,
+                                SemanticThemeVars::shadcn_neutral()
+                                    .resolve(SemanticColor::Border, variant)
+                                    .unwrap_or(Color::slate(Scale::S300)),
+                            );
+                        chip.to_egui().show(ui, |ui| {
+                            ui.label(RichText::new(label).color(ink));
+                        });
+                        ui.add_space(4.0);
                     }
                 });
 
                 ui.add_space(12.0);
                 ui.heading("Composed sections");
-                composition_style().to_egui().show(ui, |ui| {
-                    ui.label(RichText::new("Base style").strong());
-                    ui.label("Reusable surface built from one Style.");
-                    ui.label("Padding, border, text color, radius, and shadow come from core API.");
+                let composition = composition_style_for(variant);
+                let composition_ink = composition
+                    .text_color_value()
+                    .map(|c| c.to_egui())
+                    .unwrap_or(ui.visuals().text_color());
+                composition.to_egui().show(ui, |ui| {
+                    ui.label(RichText::new("Base style").strong().color(composition_ink));
+                    ui.label(
+                        RichText::new("Reusable surface built from one Style.").color(composition_ink),
+                    );
+                    ui.label(
+                        RichText::new(
+                            "Padding, border, text color, radius, and shadow come from core API.",
+                        )
+                        .color(composition_ink),
+                    );
                 });
                 ui.add_space(8.0);
                 interactive_style().to_egui().show(ui, |ui| {
@@ -131,10 +176,23 @@ impl eframe::App for ShowcaseApp {
                     ui.label("The toggle at the top switches the entire semantic surface.");
                 });
                 ui.add_space(8.0);
-                let responsive = responsive_style();
+                let responsive = responsive_style_for(variant);
+                let responsive_ink = responsive
+                    .text_color_value()
+                    .map(|c| c.to_egui())
+                    .unwrap_or(ui.visuals().text_color());
                 responsive.to_egui().show(ui, |ui| {
-                    ui.label(RichText::new("Responsive resolved preview").strong());
-                    ui.label("The same Style resolves into distinct cards at each breakpoint.");
+                    ui.label(
+                        RichText::new("Responsive resolved preview")
+                            .strong()
+                            .color(responsive_ink),
+                    );
+                    ui.label(
+                        RichText::new(
+                            "The same Style resolves into distinct cards at each breakpoint.",
+                        )
+                        .color(responsive_ink),
+                    );
                     ui.add_space(8.0);
                     ui.vertical(|ui| {
                         for breakpoint in [
@@ -144,15 +202,27 @@ impl eframe::App for ShowcaseApp {
                             Breakpoint::S2xl,
                         ] {
                             let resolved = responsive.at_breakpoint(breakpoint);
+                            let resolved_ink = resolved
+                                .text_color_value()
+                                .map(|c| c.to_egui())
+                                .unwrap_or(responsive_ink);
                             resolved.to_egui().show(ui, |ui| {
-                                ui.label(RichText::new(format!("{breakpoint:?}")).strong());
-                                ui.label("Resolved card preview");
-                                ui.small(format!(
-                                    "width={:?}, padding={:?}, shadow={:?}",
-                                    resolved.width_value(),
-                                    resolved.padding_value(),
-                                    resolved.box_shadow_value()
-                                ));
+                                ui.label(
+                                    RichText::new(format!("{breakpoint:?}"))
+                                        .strong()
+                                        .color(resolved_ink),
+                                );
+                                ui.label(RichText::new("Resolved card preview").color(resolved_ink));
+                                ui.label(
+                                    RichText::new(format!(
+                                        "width={:?}, padding={:?}, shadow={:?}",
+                                        resolved.width_value(),
+                                        resolved.padding_value(),
+                                        resolved.box_shadow_value()
+                                    ))
+                                    .small()
+                                    .color(resolved_ink),
+                                );
                             });
                             ui.add_space(8.0);
                         }

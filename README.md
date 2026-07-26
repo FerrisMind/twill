@@ -16,6 +16,12 @@
   <i>Type-safe, composable styles for native GUI applications</i>
 </p>
 
+<p align="center">
+  <img src="assets/iced_demo.png" alt="Twill iced showcase in light and dark semantic themes" width="100%">
+  <br>
+  <sub>iced showcase — tokens, semantic theme, and composed styles in light / dark</sub>
+</p>
+
 ## What Twill Is
 
 Twill is a backend-agnostic style system for Rust UI code. It provides:
