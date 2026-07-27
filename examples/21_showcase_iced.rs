@@ -2,7 +2,7 @@
 mod common;
 
 #[cfg(feature = "iced")]
-	use common::{
+use common::{
     composition_style_for, interactive_style, responsive_style_for, semantic_demo_chip,
     semantic_summary, themed_surface_style, token_palette,
 };
@@ -165,8 +165,7 @@ impl ShowcaseApp {
                     .resolve(SemanticColor::Border, variant)
                     .unwrap_or(Color::slate(Scale::S300)),
             );
-        let semantic_surface_text =
-            Self::text_color(&semantic_surface, self.default_body_color());
+        let semantic_surface_text = Self::text_color(&semantic_surface, self.default_body_color());
         let semantic_swatches = column(
             semantic_summary()
                 .into_iter()

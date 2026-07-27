@@ -2,7 +2,7 @@
 mod common;
 
 #[cfg(feature = "egui")]
-	use common::{
+use common::{
     composition_style_for, interactive_style, responsive_style_for, semantic_demo_chip,
     semantic_summary, themed_surface_style, token_palette,
 };
