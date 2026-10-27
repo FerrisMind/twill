@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+## [0.3.0] — unreleased on crates.io
+
+First split release after `twill 0.2.0` (monolith). All workspace crates share
+`0.3.0`: `twill`, `twill-core`, `twill-backend-common`, `twill-egui`,
+`twill-iced`, `twill-slint`.
 
 ### Added
 

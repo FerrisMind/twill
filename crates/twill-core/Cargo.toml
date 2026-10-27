@@ -8,7 +8,7 @@ license = "MIT"
 authors = ["FerrisMind"]
 repository = "https://github.com/FerrisMind/twill"
 documentation = "https://docs.rs/twill-core"
-readme = "../../README.md"
+readme = "README.md"
 keywords = ["styling", "tailwind", "gui", "design-tokens", "rust"]
 categories = ["gui", "rendering"]
 
