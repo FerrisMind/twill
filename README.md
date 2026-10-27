@@ -45,6 +45,16 @@ The ecosystem now has five entry points:
 
 Examples and cookbook pages in `main` target the `0.3.x` API only. Legacy demos built around component APIs or CSS serialization belong to the `0.2.x` release line, not this branch.
 
+## Ecosystem
+
+| Project | Role | Links |
+| --- | --- | --- |
+| **twill** (this repo) | Type-safe styling tokens and `Style` composition (Tailwind-inspired) | [GitHub](https://github.com/FerrisMind/twill) · [crates.io](https://crates.io/crates/twill) |
+| [shadcn-rs](https://github.com/FerrisMind/shadcn-rs) | shadcn/ui-style component kits for egui and iced | [GitHub](https://github.com/FerrisMind/shadcn-rs) · [iced-shadcn](https://crates.io/crates/iced-shadcn) |
+| [enchant](https://github.com/FerrisMind/enchant) | Premium interaction layer for iced (effects, motion, marketing widgets) | [GitHub](https://github.com/FerrisMind/enchant) · [crates.io](https://crates.io/crates/enchant-iced) |
+
+`shadcn-common` and `enchant-iced` consume Twill for tokens and style composition.
+
 ## Installation
 
 ```toml
